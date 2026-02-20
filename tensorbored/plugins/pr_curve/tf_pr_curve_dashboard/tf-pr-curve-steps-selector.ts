@@ -17,7 +17,10 @@ import {computed, customElement, observe, property} from '@polymer/decorators';
 import {html, PolymerElement} from '@polymer/polymer';
 import * as _ from 'lodash';
 import '../../../components/polymer/irons_and_papers';
-import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
+import {
+  RUN_COLOR_MAP_CHANGED_EVENT,
+  runsColorScale,
+} from '../../../components/tf_color_scale/colorScale';
 
 @customElement('tf-pr-curve-steps-selector')
 // tslint:disable-next-line:no-unused-variable
@@ -28,7 +31,7 @@ class TfPrCurveStepsSelector extends PolymerElement {
         <div class="run-display-container">
           <div
             class="run-color-box"
-            style="background:[[_computeColorForRun(run)]];"
+            style="background:[[_computeColorForRun(run, _runColorVersion)]];"
           ></div>
           <div class="run-text">[[run]]</div>
         </div>
@@ -89,8 +92,33 @@ class TfPrCurveStepsSelector extends PolymerElement {
 
   @property({type: Object})
   _runToStepIndex: object = {};
+  @property({type: Number})
+  _runColorVersion = 0;
+  private _runColorMapChangedListener: (() => void) | null = null;
 
-  _computeColorForRun(run) {
+  connectedCallback() {
+    super.connectedCallback();
+    this._runColorMapChangedListener = () => {
+      this._runColorVersion += 1;
+    };
+    window.addEventListener(
+      RUN_COLOR_MAP_CHANGED_EVENT,
+      this._runColorMapChangedListener
+    );
+  }
+
+  disconnectedCallback() {
+    if (this._runColorMapChangedListener) {
+      window.removeEventListener(
+        RUN_COLOR_MAP_CHANGED_EVENT,
+        this._runColorMapChangedListener
+      );
+      this._runColorMapChangedListener = null;
+    }
+    super.disconnectedCallback();
+  }
+
+  _computeColorForRun(run, _) {
     return runsColorScale(run);
   }
 

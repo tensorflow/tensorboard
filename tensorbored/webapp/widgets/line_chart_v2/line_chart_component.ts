@@ -250,6 +250,17 @@ export class LineChartComponent
       this.setIsViewBoxOverridden(false);
     }
 
+    // When the chart transitions from disabled to enabled, the container may
+    // have been resized while updates were suppressed (e.g. persistResize
+    // restoring a height, or a full-width toggle applied asynchronously).
+    // The ResizeDetectorDirective's skip(1) can swallow the only
+    // ResizeObserver event in that window, leaving the renderer and the
+    // interactive overlay with stale dimensions.  Re-read and apply now.
+    if (changes['disableUpdate'] && !this.disableUpdate && this.lineChart) {
+      this.readAndUpdateDomDimensions();
+      this.lineChart.resize(this.domDimensions.main);
+    }
+
     this.isViewBoxChanged =
       this.isViewBoxChanged ||
       this.userViewBoxUpdated ||

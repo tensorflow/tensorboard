@@ -17,6 +17,7 @@ import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {startWith} from 'rxjs/operators';
 import {State} from '../../../app_state';
+import {getMetricsCardMinWidth} from '../../../selectors';
 import {getSuperimposedCardsWithMetadata} from '../../store';
 import {SuperimposedCardMetadata} from '../../types';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
@@ -28,6 +29,7 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
     <superimposed-cards-view-component
       [superimposedCards]="superimposedCards$ | async"
       [cardObserver]="cardObserver"
+      [cardMinWidth]="cardMinWidth$ | async"
     ></superimposed-cards-view-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,11 +37,13 @@ import {CardObserver} from '../card_renderer/card_lazy_loader';
 export class SuperimposedCardsViewContainer {
   @Input() cardObserver!: CardObserver;
 
+  readonly superimposedCards$: Observable<SuperimposedCardMetadata[]>;
+  readonly cardMinWidth$: Observable<number | null>;
+
   constructor(private readonly store: Store<State>) {
     this.superimposedCards$ = this.store
       .select(getSuperimposedCardsWithMetadata)
       .pipe(startWith([]));
+    this.cardMinWidth$ = this.store.select(getMetricsCardMinWidth);
   }
-
-  readonly superimposedCards$: Observable<SuperimposedCardMetadata[]>;
 }

@@ -20,7 +20,10 @@ import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import * as baseStore from '../tf_backend/baseStore';
 import {environmentStore} from '../tf_backend/environmentStore';
 import {runsStore} from '../tf_backend/runsStore';
-import {runsColorScale} from '../tf_color_scale/colorScale';
+import {
+  RUN_COLOR_MAP_CHANGED_EVENT,
+  runsColorScale,
+} from '../tf_color_scale/colorScale';
 import '../tf_dashboard_common/tf-multi-checkbox';
 import '../tf_wbr_string/tf-wbr-string';
 
@@ -245,6 +248,7 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
   _envStoreListener: baseStore.ListenKey;
 
   private _selectionChangedListener: (() => void) | null = null;
+  private _runColorMapChangedListener: (() => void) | null = null;
   private _syncingFromStorage = false;
 
   override attached() {
@@ -264,6 +268,15 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
       'tb-run-selection-changed',
       this._selectionChangedListener
     );
+
+    this._runColorMapChangedListener = () => {
+      this.set('coloring', {getColor: runsColorScale});
+      (this.$.multiCheckbox as any).synchronizeColors();
+    };
+    window.addEventListener(
+      RUN_COLOR_MAP_CHANGED_EVENT,
+      this._runColorMapChangedListener
+    );
   }
 
   private _syncFromStorage() {
@@ -281,6 +294,13 @@ class TfRunsSelector extends LegacyElementMixin(PolymerElement) {
         this._selectionChangedListener
       );
       this._selectionChangedListener = null;
+    }
+    if (this._runColorMapChangedListener) {
+      window.removeEventListener(
+        RUN_COLOR_MAP_CHANGED_EVENT,
+        this._runColorMapChangedListener
+      );
+      this._runColorMapChangedListener = null;
     }
   }
 

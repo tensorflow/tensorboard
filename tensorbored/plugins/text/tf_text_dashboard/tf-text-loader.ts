@@ -23,7 +23,10 @@ import {RequestManager} from '../../../components/tf_backend/requestManager';
 import {getRouter} from '../../../components/tf_backend/router';
 import {addParams} from '../../../components/tf_backend/urlPathHelpers';
 import '../../../components/tf_card_heading/tf-card-heading';
-import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
+import {
+  RUN_COLOR_MAP_CHANGED_EVENT,
+  runsColorScale,
+} from '../../../components/tf_color_scale/colorScale';
 import '../../../components/tf_dashboard_common/scrollbar-style';
 import '../../../components/tf_markdown_view/tf-markdown-view';
 
@@ -115,7 +118,11 @@ class TfTextLoader extends LegacyElementMixin(PolymerElement) {
   @property({type: Object})
   _canceller: Canceller = new Canceller();
 
-  @computed('run')
+  @property({type: Number})
+  _runColorVersion = 0;
+  private _runColorMapChangedListener: (() => void) | null = null;
+
+  @computed('run', '_runColorVersion')
   get _runColor(): string {
     var run = this.run;
     return runsColorScale(run);
@@ -130,7 +137,24 @@ class TfTextLoader extends LegacyElementMixin(PolymerElement) {
   }
 
   override attached() {
+    this._runColorMapChangedListener = () => {
+      this._runColorVersion += 1;
+    };
+    window.addEventListener(
+      RUN_COLOR_MAP_CHANGED_EVENT,
+      this._runColorMapChangedListener
+    );
     this.reload();
+  }
+
+  override detached() {
+    if (this._runColorMapChangedListener) {
+      window.removeEventListener(
+        RUN_COLOR_MAP_CHANGED_EVENT,
+        this._runColorMapChangedListener
+      );
+      this._runColorMapChangedListener = null;
+    }
   }
 
   reload() {

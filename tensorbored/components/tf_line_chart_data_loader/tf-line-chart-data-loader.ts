@@ -19,7 +19,10 @@ import * as Plottable from 'plottable';
 import '../polymer/irons_and_papers';
 import {LegacyElementMixin} from '../polymer/legacy_element_mixin';
 import {RequestManager} from '../tf_backend/requestManager';
-import {runsColorScale} from '../tf_color_scale/colorScale';
+import {
+  RUN_COLOR_MAP_CHANGED_EVENT,
+  runsColorScale,
+} from '../tf_color_scale/colorScale';
 import {DataLoaderBehavior} from '../tf_dashboard_common/data-loader-behavior';
 import {
   AxisScaleType,
@@ -55,7 +58,7 @@ const cascadingRedraw = _.throttle(function internalRedraw() {
     x._maybeRenderedInBadState = false;
   }
   window.cancelAnimationFrame(redrawRaf);
-  window.requestAnimationFrame(internalRedraw);
+  redrawRaf = window.requestAnimationFrame(internalRedraw);
 }, 100);
 
 // A component that fetches data from the TensorBoard server and renders it into
@@ -140,6 +143,53 @@ class _TfLineChartDataLoader<ScalarMetadata>
   `;
 
   private _redrawRaf: number | null = null;
+  private _resizeObserver: ResizeObserver | null = null;
+  private _runColorMapChangedListener: (() => void) | null = null;
+  private _lastObservedWidth = -1;
+  private _lastObservedHeight = -1;
+
+  override connectedCallback() {
+    super.connectedCallback();
+    this._runColorMapChangedListener = () => {
+      if (this.active) {
+        if (!redrawQueue.includes(this)) {
+          redrawQueue.push(this);
+        }
+        cascadingRedraw();
+      } else {
+        this._maybeRenderedInBadState = true;
+      }
+    };
+    window.addEventListener(
+      RUN_COLOR_MAP_CHANGED_EVENT,
+      this._runColorMapChangedListener
+    );
+    this._resizeObserver = new ResizeObserver((entries) => {
+      if (entries.length === 0) return;
+      const {width, height} = entries[0].contentRect;
+      const roundedWidth = Math.round(width);
+      const roundedHeight = Math.round(height);
+      if (
+        roundedWidth === this._lastObservedWidth &&
+        roundedHeight === this._lastObservedHeight
+      ) {
+        return;
+      }
+      this._lastObservedWidth = roundedWidth;
+      this._lastObservedHeight = roundedHeight;
+
+      if (roundedWidth <= 0 || roundedHeight <= 0 || !this.active) {
+        this._maybeRenderedInBadState = true;
+        return;
+      }
+
+      if (!redrawQueue.includes(this)) {
+        redrawQueue.push(this);
+      }
+      cascadingRedraw();
+    });
+    this._resizeObserver.observe(this);
+  }
 
   @property({
     type: Boolean,
@@ -231,6 +281,17 @@ class _TfLineChartDataLoader<ScalarMetadata>
   }
 
   override disconnectedCallback() {
+    if (this._runColorMapChangedListener !== null) {
+      window.removeEventListener(
+        RUN_COLOR_MAP_CHANGED_EVENT,
+        this._runColorMapChangedListener
+      );
+      this._runColorMapChangedListener = null;
+    }
+    if (this._resizeObserver !== null) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
     super.disconnectedCallback();
     if (this._redrawRaf !== null) cancelAnimationFrame(this._redrawRaf);
   }

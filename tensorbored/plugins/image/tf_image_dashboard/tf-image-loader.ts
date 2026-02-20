@@ -23,7 +23,10 @@ import {getRouter} from '../../../components/tf_backend/router';
 import '../../../components/tf_card_heading/tf-card-heading';
 import '../../../components/tf_card_heading/tf-card-heading-style';
 import {formatDate} from '../../../components/tf_card_heading/util';
-import {runsColorScale} from '../../../components/tf_color_scale/colorScale';
+import {
+  RUN_COLOR_MAP_CHANGED_EVENT,
+  runsColorScale,
+} from '../../../components/tf_color_scale/colorScale';
 import '../../../components/tf_dashboard_common/tensorboard-color';
 
 @customElement('tf-image-loader')
@@ -232,7 +235,10 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
     type: Boolean,
   })
   _isImageLoading: boolean = false;
-  @computed('run')
+  @property({type: Number})
+  _runColorVersion = 0;
+  private _runColorMapChangedListener: (() => void) | null = null;
+  @computed('run', '_runColorVersion')
   get _runColor(): string {
     var run = this.run;
     return runsColorScale(run);
@@ -284,7 +290,23 @@ class TfImageLoader extends LegacyElementMixin(PolymerElement) {
     return this.actualSize ? 'true' : 'false';
   }
   override attached() {
+    this._runColorMapChangedListener = () => {
+      this._runColorVersion += 1;
+    };
+    window.addEventListener(
+      RUN_COLOR_MAP_CHANGED_EVENT,
+      this._runColorMapChangedListener
+    );
     this.reload();
+  }
+  override detached() {
+    if (this._runColorMapChangedListener) {
+      window.removeEventListener(
+        RUN_COLOR_MAP_CHANGED_EVENT,
+        this._runColorMapChangedListener
+      );
+      this._runColorMapChangedListener = null;
+    }
   }
   @observe('run', 'tag')
   reload() {
