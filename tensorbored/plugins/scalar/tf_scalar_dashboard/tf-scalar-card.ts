@@ -299,7 +299,7 @@ export class TfScalarCard extends PolymerElement {
     </style>
   `;
 
-  @property({type: String})
+  @property({type: String, observer: '_tagChanged'})
   tag: string;
 
   @property({type: Array})
@@ -499,13 +499,11 @@ export class TfScalarCard extends PolymerElement {
     this.redraw();
   }
 
-  ready() {
-    super.ready();
-    if (this.tag) {
-      const scales = readAxisScalesForTag(this.tag);
-      this._yScaleType = scales.y;
-      this._xScaleType = scales.x;
-    }
+  _tagChanged(tag: string) {
+    if (!tag) return;
+    const scales = readAxisScalesForTag(tag);
+    this._yScaleType = scales.y;
+    this._xScaleType = scales.x;
   }
 
   _toggleYScaleType() {

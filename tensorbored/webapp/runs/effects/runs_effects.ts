@@ -37,6 +37,7 @@ import {
   getActiveRoute,
   getDashboardExperimentNames,
   getExperimentIdsFromRoute,
+  getRunColorMap,
   getRuns,
   getRunsLoadState,
 } from '../../selectors';
@@ -116,9 +117,17 @@ function safeParseStoredRunSelection(
   }
 }
 
+const POLYMER_RUN_COLOR_MAP_KEY = '_tb_run_color_map';
+
+function stripExpPrefix(runId: string): string {
+  const i = runId.indexOf('/');
+  return i >= 0 ? runId.substring(i + 1) : runId;
+}
+
 function persistRunColorsToLocalStorage(
   runColorOverrides: Map<string, string>,
-  groupKeyToColorId: Map<string, number>
+  groupKeyToColorId: Map<string, number>,
+  runColorMap: Record<string, string>
 ) {
   const payload: StoredRunColorsV1 = {
     version: 1,
@@ -126,6 +135,16 @@ function persistRunColorsToLocalStorage(
     groupKeyToColorId: Array.from(groupKeyToColorId.entries()),
   };
   window.localStorage.setItem(RUN_COLOR_STORAGE_KEY, JSON.stringify(payload));
+
+  // Write run-name → hex map for old-style Polymer dashboards.
+  const polymerMap: Record<string, string> = {};
+  for (const [runId, hex] of Object.entries(runColorMap)) {
+    polymerMap[stripExpPrefix(runId)] = hex;
+  }
+  window.localStorage.setItem(
+    POLYMER_RUN_COLOR_MAP_KEY,
+    JSON.stringify(polymerMap)
+  );
 }
 
 function persistRunSelectionToLocalStorage(runSelection: Map<string, boolean>) {
@@ -292,13 +311,19 @@ export class RunsEffects {
           debounceTime(200),
           withLatestFrom(
             this.store.select(getRunColorOverride),
-            this.store.select(getGroupKeyToColorIdMap)
+            this.store.select(getGroupKeyToColorIdMap),
+            this.store.select(getRunColorMap)
           ),
-          tap(([, runColorOverrides, groupKeyToColorId]) => {
-            persistRunColorsToLocalStorage(
-              runColorOverrides,
-              groupKeyToColorId
-            );
+          tap(([, runColorOverrides, groupKeyToColorId, runColorMap]) => {
+            try {
+              persistRunColorsToLocalStorage(
+                runColorOverrides,
+                groupKeyToColorId,
+                runColorMap
+              );
+            } catch {
+              // getRunColorMap may fail during test teardown; safe to skip.
+            }
           })
         );
       },
