@@ -39,13 +39,16 @@ export class ColorScale {
     }
     const stored = readColorMap();
     if (stored) {
-      strings.forEach((s) => {
-        if (stored[s] === undefined) {
+      strings.forEach((s, i) => {
+        const color = stored[s];
+        if (color !== undefined) {
+          this.identifiers.set(s, color);
+        } else {
           console.error(
             `ColorScale: run "${s}" missing from shared color map`
           );
+          this.identifiers.set(s, this.palette[i % this.palette.length]);
         }
-        this.identifiers.set(s, stored[s]);
       });
     } else {
       // NgRx bridge has not seeded window.__tbRunColorMap yet.
