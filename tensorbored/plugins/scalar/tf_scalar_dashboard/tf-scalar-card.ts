@@ -485,8 +485,8 @@ export class TfScalarCard extends PolymerElement {
 
   private _axisScalesChangedListener: (() => void) | null = null;
 
-  override attached() {
-    super.attached();
+  connectedCallback() {
+    super.connectedCallback();
     this._axisScalesChangedListener = () => this._applyStoredScales();
     window.addEventListener(
       AXIS_SCALES_CHANGED_EVENT,
@@ -495,7 +495,7 @@ export class TfScalarCard extends PolymerElement {
     this._applyStoredScales();
   }
 
-  override detached() {
+  disconnectedCallback() {
     if (this._axisScalesChangedListener) {
       window.removeEventListener(
         AXIS_SCALES_CHANGED_EVENT,
@@ -503,7 +503,7 @@ export class TfScalarCard extends PolymerElement {
       );
       this._axisScalesChangedListener = null;
     }
-    super.detached();
+    super.disconnectedCallback();
   }
 
   _getChartDataLoader() {

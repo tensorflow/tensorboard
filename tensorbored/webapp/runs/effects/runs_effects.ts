@@ -319,7 +319,10 @@ export class RunsEffects {
             this.store.select(getGroupKeyToColorIdMap)
           ),
           tap(([, runColorOverrides, groupKeyToColorId]) => {
-            persistRunColorsToLocalStorage(runColorOverrides, groupKeyToColorId);
+            persistRunColorsToLocalStorage(
+              runColorOverrides,
+              groupKeyToColorId
+            );
           })
         );
       },
@@ -409,7 +412,6 @@ export class RunsEffects {
         )
       );
     });
-
   }
 
   private getRunsListLoadState(experimentId: string): Observable<LoadState> {
