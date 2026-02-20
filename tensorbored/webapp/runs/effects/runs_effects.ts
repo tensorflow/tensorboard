@@ -311,19 +311,25 @@ export class RunsEffects {
           debounceTime(200),
           withLatestFrom(
             this.store.select(getRunColorOverride),
-            this.store.select(getGroupKeyToColorIdMap),
-            this.store.select(getRunColorMap)
+            this.store.select(getGroupKeyToColorIdMap)
           ),
-          tap(([, runColorOverrides, groupKeyToColorId, runColorMap]) => {
+          tap(([, runColorOverrides, groupKeyToColorId]) => {
+            let runColorMap: Record<string, string> = {};
             try {
-              persistRunColorsToLocalStorage(
-                runColorOverrides,
-                groupKeyToColorId,
-                runColorMap
-              );
+              this.store
+                .select(getRunColorMap)
+                .pipe(take(1))
+                .subscribe((m) => {
+                  runColorMap = m;
+                });
             } catch {
-              // getRunColorMap may fail during test teardown; safe to skip.
+              // getRunColorMap may fail during test teardown.
             }
+            persistRunColorsToLocalStorage(
+              runColorOverrides,
+              groupKeyToColorId,
+              runColorMap
+            );
           })
         );
       },
