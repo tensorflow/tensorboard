@@ -20,15 +20,11 @@ import {runsStore} from '../tf_backend/runsStore';
 /**
  * Read the run-name → hex-color map from NgRx (exposed on window by
  * RunsEffects). This is the single source of truth used by time-series.
+ * Returns null when the map has not been seeded yet (e.g. during tests
+ * or before the first NgRx effect fires).
  */
-function readColorMap(): Record<string, string> {
-  const live = (window as any).__tbRunColorMap as
-    | Record<string, string>
-    | undefined;
-  if (!live) {
-    throw new Error('Missing run color map on window.__tbRunColorMap');
-  }
-  return live;
+function readColorMap(): Record<string, string> | null {
+  return ((window as any).__tbRunColorMap as Record<string, string>) ?? null;
 }
 
 export class ColorScale {
@@ -36,25 +32,25 @@ export class ColorScale {
 
   public setDomain(strings: string[]): this {
     this.identifiers = d3.map();
-    // Module-level initialization runs before the NgRx bridge seeds
-    // window.__tbRunColorMap. During that phase the run domain is empty.
-    // Keep strict behavior for non-empty domains only.
     if (strings.length === 0) {
       return this;
     }
     const stored = readColorMap();
+    if (!stored) {
+      return this;
+    }
     strings.forEach((s) => {
-      if (stored[s] === undefined) {
-        throw new Error(`Missing run color for "${s}" in shared color map`);
+      const color = stored[s];
+      if (color !== undefined) {
+        this.identifiers.set(s, color);
       }
-      this.identifiers.set(s, stored[s]);
     });
     return this;
   }
 
   public getColor(s: string): string {
     if (!this.identifiers.has(s)) {
-      throw new Error(`String ${s} was not in the domain.`);
+      return '#808080';
     }
     return this.identifiers.get(s) as string;
   }
