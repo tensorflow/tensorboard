@@ -106,7 +106,7 @@ describe('header test', () => {
     fixture.detectChanges();
 
     const els = fixture.debugElement.queryAll(By.css('.mat-mdc-tab'));
-    expect(els.length).toBe(2);
+    expect(els.length).toBe(2); // .mat-mdc-tab is the MDC-based class used since Angular Material v15+
 
     assertDebugElementText(els[0], 'FOO FIGHTER');
     assertDebugElementText(els[1], 'BARBER');
@@ -126,7 +126,7 @@ describe('header test', () => {
     await fixture.whenStable();
 
     const els = fixture.debugElement.queryAll(By.css('.mat-mdc-tab'));
-    expect(els.length).toBe(3);
+    expect(els.length).toBe(3); // .mat-mdc-tab is the MDC-based class used since Angular Material v15+
     assertDebugElementText(els[0], 'MEOW');
     assertDebugElementText(els[1], 'WOOF');
     assertDebugElementText(els[2], 'TRUMPET');
