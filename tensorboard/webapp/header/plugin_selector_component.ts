@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {MatSelectChange} from '@angular/material/select';
+// MatSelectChange is still exported from @angular/material/select in v21
 import {PluginId} from '../types/api';
 import {UiPluginMetadata} from './types';
 

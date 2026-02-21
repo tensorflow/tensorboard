@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
 import {MatSnackBarRef, MAT_SNACK_BAR_DATA} from '@angular/material/snack-bar';
+// Note: MAT_SNACK_BAR_DATA and MatSnackBarRef import paths are unchanged in v21
 import {Store} from '@ngrx/store';
 import {State} from '../../app_state';
 import {splitByURL} from '../../util/string';

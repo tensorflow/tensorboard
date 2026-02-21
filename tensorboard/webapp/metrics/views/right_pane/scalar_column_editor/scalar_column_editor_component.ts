@@ -22,6 +22,7 @@ import {
   Output,
 } from '@angular/core';
 import {MatTabChangeEvent} from '@angular/material/tabs';
+// MatTabChangeEvent is still exported from @angular/material/tabs in v21
 import {
   ColumnHeader,
   DataTableMode,
