@@ -14,7 +14,6 @@
 # ==============================================================================
 """Unit tests for program package."""
 
-
 import argparse
 import io
 import sys
@@ -149,9 +148,10 @@ class WerkzeugServerTest(tb_test.TestCase):
             )
             self.assertStartsWith(server.get_url(), "http://127.0.0.1:")
             one_passed = True
-        except program.TensorBoardServerException:
-            # IPv4 is not supported
+        except (program.TensorBoardServerException, OSError, SystemExit):
+            # IPv4 is not supported or failed to bind
             pass
+
         try:
             server = program.WerkzeugServer(
                 self._StubApplication(),
@@ -159,12 +159,14 @@ class WerkzeugServerTest(tb_test.TestCase):
             )
             self.assertStartsWith(server.get_url(), "http://[::1]:")
             one_passed = True
-        except program.TensorBoardServerException:
-            # IPv6 is not supported
+        except (program.TensorBoardServerException, OSError, SystemExit):
+            # IPv6 is not supported or failed to bind
             pass
+
         self.assertTrue(
-            one_passed
-        )  # We expect either IPv4 or IPv6 to be supported
+            one_passed,
+            "Neither IPv4 (127.0.0.1) nor IPv6 (::1) could be bound.",
+        )
 
 
 class SubcommandTest(tb_test.TestCase):
