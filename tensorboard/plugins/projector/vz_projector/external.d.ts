@@ -22,14 +22,3 @@ interface AnalyticsEventType {
 }
 
 declare let ga: (command: string, eventObj: AnalyticsEventType) => void;
-
-// This declaration fixes the Google internal build. Bazel/concatjs needs the
-// .js suffix to find the file (newer concatjs versions don't fix this), but
-// TypeScript looks for OrbitControls.js.d.ts which @types/three doesn't have,
-// causing the build to fail.
-declare module 'three/examples/jsm/controls/OrbitControls.js' {
-  export declare class OrbitControls {
-    constructor(object: object, domElement?: HTMLElement);
-    [key: string]: any; // any: THREE-specific types (e.g. Vector3) can't be declared without module imports
-  }
-}
