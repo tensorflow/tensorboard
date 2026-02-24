@@ -11,6 +11,7 @@ tf_ts_library(
         "mesh-loader.ts",
         "mesh-viewer.ts",
         "tf-mesh-dashboard.ts",
+        "types.d.ts",
     ],
     strict_checks = False,
     deps = [
