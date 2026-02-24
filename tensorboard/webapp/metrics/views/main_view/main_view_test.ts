@@ -198,7 +198,8 @@ describe('metrics main view', () => {
 
     dispatchedActions = [];
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
     store.overrideSelector(settingsSelectors.getPageSize, 10);
