@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import * as THREE from 'three';
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import {ProjectorEventContext} from './projectorEventContext';
 import {CameraType, LabelRenderParams, RenderContext} from './renderContext';
 import {
