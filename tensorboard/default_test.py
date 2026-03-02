@@ -14,7 +14,6 @@
 # ==============================================================================
 """Unit tests for `tensorboard.default`."""
 
-
 from unittest import mock
 
 from tensorboard import default
