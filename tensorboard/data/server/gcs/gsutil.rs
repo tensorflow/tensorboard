@@ -21,7 +21,7 @@ use std::io::Write;
 use rustboard_core::gcs;
 
 #[derive(Clap, Debug)]
-#[clap(name = "gsutil")]
+#[clap(name = "gcloud storage")]
 struct Opts {
     #[clap(long, default_value = "info")]
     log_level: String,
