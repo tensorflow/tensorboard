@@ -12,14 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {
-  Component,
-  ComponentFactoryResolver,
-  Input,
-  OnInit,
-  Type,
-  ViewContainerRef,
-} from '@angular/core';
+import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
 
 /**
  * A Component that defines a customization point. Ideal for use for small
@@ -86,18 +79,13 @@ import {
 export class CustomizableComponent implements OnInit {
   @Input() customizableComponent!: Type<Component> | undefined;
 
-  constructor(
-    private readonly viewContainerRef: ViewContainerRef,
-    private readonly componentFactoryResolver: ComponentFactoryResolver
-  ) {}
+  constructor(private readonly viewContainerRef: ViewContainerRef) {}
 
   ngOnInit() {
     if (this.customizableComponent) {
-      const componentFactory =
-        this.componentFactoryResolver.resolveComponentFactory(
-          this.customizableComponent.constructor as Type<unknown>
-        );
-      this.viewContainerRef.createComponent(componentFactory);
+      this.viewContainerRef.createComponent(
+        this.customizableComponent.constructor as Type<unknown>
+      );
     }
   }
 }

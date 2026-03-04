@@ -15,7 +15,6 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
-  ComponentFactoryResolver,
   Input,
   OnChanges,
   SimpleChanges,
@@ -35,20 +34,12 @@ export class RouterOutletComponent implements OnChanges {
 
   @Input() activeNgComponent!: unknown | null;
 
-  constructor(
-    private readonly componentFactoryResolver: ComponentFactoryResolver
-  ) {}
-
   ngOnChanges(changes: SimpleChanges) {
     const activeComponentChange = changes['activeNgComponent'];
     if (activeComponentChange) {
       this.routeContainer.clear();
       if (activeComponentChange.currentValue) {
-        const componentFactory =
-          this.componentFactoryResolver.resolveComponentFactory(
-            activeComponentChange.currentValue
-          );
-        this.routeContainer.createComponent(componentFactory);
+        this.routeContainer.createComponent(activeComponentChange.currentValue);
       }
     }
   }
