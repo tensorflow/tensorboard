@@ -7,7 +7,7 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "lib": ["dom", "es2020"],
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noEmitOnError": false,
     "noErrorTruncation": false,
     "noResolve": true,
