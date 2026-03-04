@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {DOCUMENT} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {combineLatest, Subject} from 'rxjs';
 import {distinctUntilChanged, takeUntil} from 'rxjs/operators';
 import {reload} from '../core/actions';
@@ -38,20 +38,20 @@ export class ReloaderComponent {
     private store: Store<State>,
     @Inject(DOCUMENT) private readonly document: Document
   ) {
-    this.reloadEnabled$ = this.store.pipe(
-      select(settingsSelectors.getReloadEnabled)
+    this.reloadEnabled$ = this.store.select(
+      settingsSelectors.getReloadEnabled
     );
-    this.reloadPeriodInMs$ = this.store.pipe(
-      select(settingsSelectors.getReloadPeriodInMs)
+    this.reloadPeriodInMs$ = this.store.select(
+      settingsSelectors.getReloadPeriodInMs
     );
   }
 
   ngOnInit() {
     this.document.addEventListener('visibilitychange', this.onVisibilityChange);
-    combineLatest(
+    combineLatest([
       this.reloadEnabled$.pipe(distinctUntilChanged()),
-      this.reloadPeriodInMs$.pipe(distinctUntilChanged())
-    )
+      this.reloadPeriodInMs$.pipe(distinctUntilChanged()),
+    ])
       .pipe(takeUntil(this.ngUnsubscribe))
       .subscribe(([enabled, reloadPeriodInMs]) => {
         this.cancelLoad();

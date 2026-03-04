@@ -19,7 +19,7 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {first, switchMap} from 'rxjs/operators';
 import {getFeatureFlagsToSendToServer} from '../store/feature_flag_selectors';
@@ -39,7 +39,7 @@ export class FeatureFlagHttpInterceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
     return this.store.pipe(
-      select(getFeatureFlagsToSendToServer),
+      this.store.select(getFeatureFlagsToSendToServer),
       first(),
       switchMap((featureFlags) => {
         // Add feature flags to the headers.
