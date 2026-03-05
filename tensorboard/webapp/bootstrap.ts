@@ -17,7 +17,7 @@ limitations under the License.
 // https://angular.io/guide/migration-localize
 import '@angular/localize/init';
 import {platformBrowser} from '@angular/platform-browser';
-import 'zone.js/dist/zone.js'; // Angular runtime dep
+import 'zone.js'; // Angular runtime dep
 import {AppModule} from './app_module';
 
 // Bootstrap needs to happen after body is ready but we cannot reliably

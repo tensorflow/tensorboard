@@ -21,7 +21,6 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
-  ComponentFactoryResolver,
   ElementRef,
   Input,
   OnChanges,
@@ -64,7 +63,6 @@ export enum PluginLoadState {
 })
 export class PluginsComponent implements OnChanges {
   constructor(
-    private readonly componentFactoryResolver: ComponentFactoryResolver,
     private readonly pluginRegistry: PluginRegistryModule,
     @Optional() private readonly pluginApiHost: PluginApiHostModule
   ) {}
@@ -230,12 +228,8 @@ export class PluginsComponent implements OnChanges {
       case LoadingMechanismType.NG_COMPONENT:
         const ngComponentClass = this.pluginRegistry.getComponent(plugin.id);
         if (ngComponentClass) {
-          const componentFactory =
-            this.componentFactoryResolver.resolveComponentFactory(
-              ngComponentClass
-            );
           const pluginComponent =
-            this.ngPluginContainer.createComponent(componentFactory);
+            this.ngPluginContainer.createComponent(ngComponentClass);
           pluginElement = pluginComponent.location.nativeElement;
         } else {
           console.error(
