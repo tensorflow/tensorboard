@@ -64,7 +64,7 @@ setup(
     },
     install_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES,
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     # PyPI package information.
     classifiers=[
         "Development Status :: 4 - Beta",
