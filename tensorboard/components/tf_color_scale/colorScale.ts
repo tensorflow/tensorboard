@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import * as d3 from 'd3';
 import {BaseStore} from '../tf_backend/baseStore';
 import {experimentsStore} from '../tf_backend/experimentsStore';
 import {runsStore} from '../tf_backend/runsStore';
@@ -25,7 +24,7 @@ import {standard} from './palettes';
 // ccs.getColor("train");
 // ccs.getColor("test1");
 export class ColorScale {
-  private identifiers = d3.map();
+  private identifiers = new Map<string, string>();
   /**
    * Creates a color scale with optional custom palette.
    * @param {Array<string>} palette The color palette to use, as an
@@ -38,7 +37,7 @@ export class ColorScale {
    *     domain for your scale.
    */
   public setDomain(strings: string[]): this {
-    this.identifiers = d3.map();
+    this.identifiers = new Map<string, string>();
     strings.forEach((s, i) => {
       this.identifiers.set(s, this.palette[i % this.palette.length]);
     });
