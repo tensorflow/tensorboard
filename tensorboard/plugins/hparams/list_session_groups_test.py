@@ -377,7 +377,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
             aggregation_type: AGGREGATION_AVG
         """
         response = self._run_handler(request)
-        self.assertProtoEquals(
+
+        expected = type(response)()
+        text_format.Parse(
             """
             session_groups {
               name: "group_1"
@@ -391,11 +393,15 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 training_step: 1
                 wall_time_secs: 1.0
               }
-              metric_values { name { tag: "delta_temp" } value: 15
+              metric_values {
+                name { tag: "delta_temp" }
+                value: 15
                 training_step: 2
                 wall_time_secs: 10.0
               }
-              metric_values { name { tag: "optional_metric" } value: 33
+              metric_values {
+                name { tag: "optional_metric" }
+                value: 33
                 training_step: 20
                 wall_time_secs: 2.0
               }
@@ -416,7 +422,6 @@ class ListSessionGroupsTest(tf.test.TestCase):
                   training_step: 2
                   wall_time_secs: 10.0
                 }
-
                 metric_values {
                   name { tag: "optional_metric" }
                   value: 33
@@ -441,7 +446,7 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 name { tag: "delta_temp" }
                 value: 44.5
                 training_step: 2
-                wall_time_secs: 10.3333333
+                wall_time_secs: 10.333333333333334
               }
               sessions {
                 name: "session_2"
@@ -454,7 +459,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
                   training_step: 1
                   wall_time_secs: 1.0
                 }
-                metric_values { name { tag: "delta_temp" }
+                metric_values {
+                  name { tag: "delta_temp" }
                   value: 150
                   training_step: 3
                   wall_time_secs: 11.0
@@ -471,7 +477,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
                   training_step: 1
                   wall_time_secs: 1.0
                 }
-                metric_values { name { tag: "delta_temp" }
+                metric_values {
+                  name { tag: "delta_temp" }
                   value: 1.5
                   training_step: 2
                   wall_time_secs: 10.0
@@ -488,7 +495,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
                   training_step: 1
                   wall_time_secs: 1.0
                 }
-                metric_values { name { tag: "delta_temp" }
+                metric_values {
+                  name { tag: "delta_temp" }
                   value: -18
                   training_step: 2
                   wall_time_secs: 10.0
@@ -502,7 +510,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
               hparams { key: "initial_temp" value { number_value: 300.0 } }
               hparams { key: "string_hparam" value { string_value: "a string_3"}}
               hparams {
-                key: 'optional_string_hparam' value { string_value: 'BB' }
+                key: "optional_string_hparam"
+                value { string_value: "BB" }
               }
               metric_values {
                 name { tag: "current_temp" }
@@ -510,7 +519,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
                 training_step: 1
                 wall_time_secs: 1.0
               }
-              metric_values { name { tag: "delta_temp" } value: -151.0
+              metric_values {
+                name { tag: "delta_temp" }
+                value: -151.0
                 training_step: 2
                 wall_time_secs: 10.0
               }
@@ -525,7 +536,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
                   training_step: 1
                   wall_time_secs: 1.0
                 }
-                metric_values { name { tag: "delta_temp" } value: -151.0
+                metric_values {
+                  name { tag: "delta_temp" }
+                  value: -151.0
                   training_step: 2
                   wall_time_secs: 10.0
                 }
@@ -533,8 +546,9 @@ class ListSessionGroupsTest(tf.test.TestCase):
             }
             total_size: 3
             """,
-            response,
+            expected,
         )
+        self.assertEqual(response, expected)
 
     def test_no_allowed_statuses(self):
         request = """
@@ -2179,39 +2193,51 @@ class ListSessionGroupsTest(tf.test.TestCase):
         """
         response = self._run_handler(request)
         self.assertLen(response.session_groups[0].metric_values, 3)
-        self.assertProtoEquals(
+
+        actual = response.session_groups[0].metric_values[0]
+        expected = type(actual)()
+        text_format.Parse(
             """
-              name {
-                tag: "current_temp"
-              }
-              value: 37.0
-              training_step: 1
-              wall_time_secs: 1.0
+            name {
+              tag: "current_temp"
+            }
+            value: 37.0
+            training_step: 1
+            wall_time_secs: 1.0
             """,
-            response.session_groups[0].metric_values[0],
+            expected,
         )
-        self.assertProtoEquals(
+        self.assertEqual(actual, expected)
+
+        actual = response.session_groups[0].metric_values[1]
+        expected = type(actual)()
+        text_format.Parse(
             """
-              name {
-                tag: "delta_temp"
-              }
-              value: 55.5
-              training_step: 2
-              wall_time_secs: 10.3333333
+            name {
+              tag: "delta_temp"
+            }
+            value: 55.5
+            training_step: 2
+            wall_time_secs: 10.333333333333334
             """,
-            response.session_groups[0].metric_values[1],
+            expected,
         )
-        self.assertProtoEquals(
+        self.assertEqual(actual, expected)
+
+        actual = response.session_groups[0].metric_values[2]
+        expected = type(actual)()
+        text_format.Parse(
             """
-              name {
-                tag: "optional_metric"
-              }
-              value: 33.0
-              training_step: 20
-              wall_time_secs: 2.0
+            name {
+              tag: "optional_metric"
+            }
+            value: 33.0
+            training_step: 20
+            wall_time_secs: 2.0
             """,
-            response.session_groups[0].metric_values[2],
+            expected,
         )
+        self.assertEqual(actual, expected)
 
     def test_experiment_from_data_provider_filters_by_metric_values(
         self,

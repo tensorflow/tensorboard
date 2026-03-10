@@ -19,8 +19,9 @@
 grpcio-testing==1.24.3
 pandas~=2.0
 # For gfile S3 test
-boto3==1.9.86
-moto==1.3.7
+boto3>=1.34
+moto[s3]>=5
+
 # For gfile fsspec test
 fsspec>=2021.06.0
 
