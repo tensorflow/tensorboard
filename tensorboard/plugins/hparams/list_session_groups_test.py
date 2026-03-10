@@ -548,6 +548,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
             """,
             expected,
         )
+        # Avoid assertProtoEquals because TensorFlow's helper is incompatible with
+        # protobuf >= 7 (FieldDescriptor.label removed in upb runtime).
         self.assertEqual(response, expected)
 
     def test_no_allowed_statuses(self):
@@ -2237,6 +2239,8 @@ class ListSessionGroupsTest(tf.test.TestCase):
             """,
             expected,
         )
+        # Avoid assertProtoEquals because TensorFlow's helper is incompatible with
+        # protobuf >= 7 (FieldDescriptor.label removed in upb runtime).
         self.assertEqual(actual, expected)
 
     def test_experiment_from_data_provider_filters_by_metric_values(
