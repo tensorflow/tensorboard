@@ -31,12 +31,13 @@ import {
   getEnableColorByExperiment,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings/';
-import {runGroupByChanged} from '../../actions';
+import {groupColorChanged, runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
   getRunIdsForExperiment,
   getRunGroupBy,
   getRuns,
+  getGroupColorOverride,
 } from '../../store/runs_selectors';
 import {getDashboardExperimentNames} from '../../../selectors';
 import {groupRuns} from '../../store/utils';
@@ -56,6 +57,7 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
     (onSave)="onSave()"
     (regexInputOnChange)="onRegexInputOnChange($event)"
     (regexTypeOnChange)="onRegexTypeOnChange($event)"
+    (groupColorChange)="onGroupColorChange($event)"
   ></regex-edit-dialog-component>`,
   styles: [
     `
@@ -111,7 +113,8 @@ export class RegexEditDialogContainer {
         this.runIdToEid$,
         this.expNameByExpId$,
         this.store.select(settingsSelectors.getColorPalette),
-        this.store.select(getDarkModeEnabled)
+        this.store.select(getDarkModeEnabled),
+        this.store.select(getGroupColorOverride)
       ),
       map(
         ([
@@ -122,6 +125,7 @@ export class RegexEditDialogContainer {
           expNameByExpId,
           colorPalette,
           darkModeEnabled,
+          groupColorOverride,
         ]) => {
           const groupBy = {
             key: regexType,
@@ -137,8 +141,12 @@ export class RegexEditDialogContainer {
           const colorRunPairList: ColorGroup[] = [];
 
           for (const [groupId, runs] of Object.entries(groups.matches)) {
-            let colorHex: string | undefined =
-              groupKeyToColorString.get(groupId);
+            let colorHex: string | undefined = groupColorOverride.get(groupId);
+
+            if (!colorHex) {
+              colorHex = groupKeyToColorString.get(groupId);
+            }
+
             if (!colorHex) {
               const color =
                 colorPalette.colors[
@@ -214,6 +222,10 @@ export class RegexEditDialogContainer {
 
   onRegexTypeOnChange(regexType: GroupByKey) {
     this.tentativeRegexType$.next(regexType);
+  }
+
+  onGroupColorChange({groupId, newColor}: {groupId: string; newColor: string}) {
+    this.store.dispatch(groupColorChanged({groupId, newColor}));
   }
 
   onSave(): void {
