@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {combineLatest, Observable} from 'rxjs';
 import {map, shareReplay} from 'rxjs/operators';
@@ -28,6 +28,7 @@ import {ViewNotificationExt} from './view_types';
 const iconMap = new Map([[CategoryEnum.WHATS_NEW, 'info_outline_24px']]);
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'notification-center',
   template: `

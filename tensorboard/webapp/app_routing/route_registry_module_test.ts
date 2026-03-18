@@ -13,12 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {RouteRegistryModule} from './route_registry_module';
 import {RouteKind} from './types';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'experiment',
   template: 'I am experiment',
@@ -26,6 +27,7 @@ import {RouteKind} from './types';
 class Experiment {}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'experiments',
   template: 'List of experiment',
@@ -33,6 +35,7 @@ class Experiment {}
 class Experiments {}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'not_found',
   template: 'Unknown route',

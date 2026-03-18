@@ -15,6 +15,7 @@ limitations under the License.
 
 import {
   ApplicationRef,
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -22,32 +23,33 @@ import {
   ViewChild,
 } from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {By} from '@angular/platform-browser';
+import {NoopAnimationsModule} from '@angular/platform-browser/animations';
+import {MatIconTestingModule} from '../../testing/mat_icon_module';
+import {CustomModal} from '../custom_modal/custom_modal';
+import {ColumnSelectorComponent} from './column_selector_component';
+import {ColumnSelectorModule} from './column_selector_module';
+import {ContentCellComponent} from './content_cell_component';
+import {DataTableComponent} from './data_table_component';
+import {DataTableModule} from './data_table_module';
+import {FilterDialog} from './filter_dialog_component';
+import {HeaderCellComponent} from './header_cell_component';
 import {
   ColumnHeader,
   ColumnHeaderType,
-  TableData,
+  DiscreteFilter,
+  DomainType,
+  IntervalFilter,
+  Side,
   SortingInfo,
   SortingOrder,
-  DiscreteFilter,
-  IntervalFilter,
-  DomainType,
-  Side,
+  TableData,
 } from './types';
-import {DataTableComponent} from './data_table_component';
-import {DataTableModule} from './data_table_module';
-import {HeaderCellComponent} from './header_cell_component';
-import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {ColumnSelectorComponent} from './column_selector_component';
-import {ContentCellComponent} from './content_cell_component';
-import {ColumnSelectorModule} from './column_selector_module';
-import {FilterDialog} from './filter_dialog_component';
-import {CustomModal} from '../custom_modal/custom_modal';
 
 const ADD_BUTTON_PREDICATE = By.css('.add-button');
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-comp',
   template: `

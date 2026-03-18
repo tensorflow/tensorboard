@@ -12,12 +12,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from '@angular/core';
 import {FeatureFlagType} from '../store/feature_flag_metadata';
 import {FeatureFlags} from '../types';
 import {FeatureFlagStatus, FeatureFlagStatusEvent} from './types';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'feature-flag-dialog-component',
   styleUrls: ['feature_flag_dialog_component.css'],

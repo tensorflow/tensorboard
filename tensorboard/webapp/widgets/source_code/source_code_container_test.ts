@@ -15,7 +15,12 @@ limitations under the License.
 /**
  * Unit tests for the the Source Files component and container.
  */
-import {Component, Input, NO_ERRORS_SCHEMA} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  NO_ERRORS_SCHEMA,
+} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MonacoShim} from './load_monaco_shim';
 import {SourceCodeComponent} from './source_code_component';
@@ -23,6 +28,7 @@ import {SourceCodeContainer} from './source_code_container';
 import {fakes, setUpMonacoFakes, spies, tearDownMonacoFakes} from './testing';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-component',
   template: `

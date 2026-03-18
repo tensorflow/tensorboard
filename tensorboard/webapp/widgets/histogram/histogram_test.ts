@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  ChangeDetectionStrategy,
   Component,
   DebugElement,
   Input,
@@ -66,6 +67,7 @@ function buildHistogramDatum(
 // Wrapper component required to properly trigger Angular lifecycles.
 // Without it, ngOnChanges do not get triggered before ngOnInit.
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-tb-histogram',
   template: `

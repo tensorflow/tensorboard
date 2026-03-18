@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, NgModule} from '@angular/core';
+import {ChangeDetectionStrategy, Component, NgModule} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {
   createInitialExecutionsState,
@@ -354,6 +354,7 @@ export function createState(
 // that use it.
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'tf-debugger-v2',
   template: ``,

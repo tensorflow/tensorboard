@@ -13,13 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createAction, props} from '@ngrx/store';
 import {RouteConfigs, RouteMatch} from './route_config';
 import {ConcreteRouteDef, RedirectionRouteDef} from './route_config_types';
 import {Navigation, RouteKind} from './types';
 
-@Component({standalone: false, selector: 'test', template: ''})
+@Component({
+  changeDetection: ChangeDetectionStrategy.Default,
+  standalone: false,
+  selector: 'test',
+  template: '',
+})
 class TestableComponent {}
 
 function buildConcreteRouteDef(override: Partial<ConcreteRouteDef>) {

@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, inject} from '@angular/core';
-import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
 import {combineLatest, defer, merge, Observable, Subject} from 'rxjs';
 import {
@@ -28,17 +28,17 @@ import {
 import {State} from '../../../app_state';
 import {
   getDarkModeEnabled,
+  getDashboardExperimentNames,
   getEnableColorByExperiment,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings/';
 import {runGroupByChanged} from '../../actions';
 import {
   getColorGroupRegexString,
-  getRunIdsForExperiment,
   getRunGroupBy,
+  getRunIdsForExperiment,
   getRuns,
 } from '../../store/runs_selectors';
-import {getDashboardExperimentNames} from '../../../selectors';
 import {groupRuns} from '../../store/utils';
 import {GroupByKey, Run} from '../../types';
 import {ColorGroup} from './regex_edit_dialog_component';
@@ -46,6 +46,7 @@ import {ColorGroup} from './regex_edit_dialog_component';
 const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'regex-edit-dialog',
   template: `<regex-edit-dialog-component

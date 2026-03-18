@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -35,6 +36,7 @@ import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
 import * as selectors from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {provideMockTbStore} from '../../../testing/utils';
 import {CardFobComponent} from '../../../widgets/card_fob/card_fob_component';
 import {
   CardFobControllerComponent,
@@ -54,6 +56,7 @@ import {
   relativeTimeFormatter,
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
+import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {
   DataSeries,
   DataSeriesMetadataMap,
@@ -69,22 +72,21 @@ import {
 } from '../../actions';
 import {getMetricsCardRangeSelectionEnabled} from '../../store';
 import {TooltipSort, XAxisType} from '../../types';
+import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {ScalarCardLineChartComponent} from './scalar_card_line_chart_component';
 import {ScalarCardLineChartContainer} from './scalar_card_line_chart_container';
-import {ScalarCardFobController} from './scalar_card_fob_controller';
 import {
   MinMaxStep,
   OriginalSeriesMetadata,
+  ScalarCardDataSeries,
   ScalarCardPoint,
   ScalarCardSeriesMetadata,
   ScalarCardSeriesMetadataMap,
-  ScalarCardDataSeries,
   SeriesType,
 } from './scalar_card_types';
-import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
-import {provideMockTbStore} from '../../../testing/utils';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'line-chart',
   template: `
@@ -166,6 +168,7 @@ class TestableLineChart {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'test-scalar-card-line-chart',
   template: `

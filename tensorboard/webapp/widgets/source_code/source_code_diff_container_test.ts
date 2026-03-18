@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   Input,
@@ -26,6 +27,7 @@ import {fakes, setUpMonacoFakes, spies, tearDownMonacoFakes} from './testing';
 
 // Does not use OnPush change detector, making it easier to test with.
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-component',
   template: `

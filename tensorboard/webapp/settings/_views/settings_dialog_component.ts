@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -41,6 +42,7 @@ export function createIntegerValidator(): ValidatorFn {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'settings-dialog-component',
   templateUrl: 'settings_dialog_component.ng.html',

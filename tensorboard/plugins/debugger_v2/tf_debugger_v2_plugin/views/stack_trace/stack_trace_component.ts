@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {
   AfterViewChecked,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   EventEmitter,
@@ -40,6 +41,7 @@ export interface StackFrameForDisplay {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'stack-trace-component',
   templateUrl: './stack_trace_component.ng.html',

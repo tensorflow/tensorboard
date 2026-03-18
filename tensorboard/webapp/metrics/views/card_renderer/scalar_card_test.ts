@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
 import {
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   EventEmitter,
@@ -30,7 +31,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import {MatDialogModule, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import {MAT_DIALOG_DATA, MatDialogModule} from '@angular/material/dialog';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {By} from '@angular/platform-browser';
@@ -40,10 +41,16 @@ import {MockStore} from '@ngrx/store/testing';
 import {Observable, of, ReplaySubject} from 'rxjs';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
+import * as hparamsActions from '../../../hparams/_redux/hparams_actions';
+import * as hparamsSelectors from '../../../hparams/_redux/hparams_selectors';
+import {HparamFilter} from '../../../hparams/_redux/types';
+import * as runsSelectors from '../../../runs/store/runs_selectors';
 import {Run} from '../../../runs/store/runs_types';
 import {buildRun} from '../../../runs/store/testing';
 import * as selectors from '../../../selectors';
+import {getIsScalarColumnContextMenusEnabled} from '../../../selectors';
 import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {provideMockTbStore} from '../../../testing/utils';
 import {DataLoadState} from '../../../types/data';
 import {CardFobComponent} from '../../../widgets/card_fob/card_fob_component';
 import {
@@ -55,8 +62,23 @@ import {
   TimeSelectionAffordance,
   TimeSelectionToggleAffordance,
 } from '../../../widgets/card_fob/card_fob_types';
+import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
+import {ContentRowComponent} from '../../../widgets/data_table/content_row_component';
 import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
+import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
+import {
+  AddColumnEvent,
+  ColumnHeader,
+  ColumnHeaderType,
+  DataTableMode,
+  DomainType,
+  FilterAddedEvent,
+  IntervalFilter,
+  ReorderColumnEvent,
+  Side,
+  SortingOrder,
+} from '../../../widgets/data_table/types';
 import {ExperimentAliasModule} from '../../../widgets/experiment_alias/experiment_alias_module';
 import {IntersectionObserverTestingModule} from '../../../widgets/intersection_observer/intersection_observer_testing_module';
 import {
@@ -64,6 +86,7 @@ import {
   relativeTimeFormatter,
   siNumberFormatter,
 } from '../../../widgets/line_chart_v2/lib/formatter';
+import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
 import {
   DataSeries,
   DataSeriesMetadataMap,
@@ -76,13 +99,13 @@ import {ResizeDetectorTestingModule} from '../../../widgets/resize_detector_test
 import {TruncatedPathModule} from '../../../widgets/text/truncated_path_module';
 import {
   cardViewBoxChanged,
-  metricsCardFullSizeToggled,
-  metricsCardStateUpdated,
-  stepSelectorToggled,
-  timeSelectionChanged,
-  metricsSlideoutMenuOpened,
   dataTableColumnOrderChanged,
   dataTableColumnToggled,
+  metricsCardFullSizeToggled,
+  metricsCardStateUpdated,
+  metricsSlideoutMenuOpened,
+  stepSelectorToggled,
+  timeSelectionChanged,
 } from '../../actions';
 import {PluginType} from '../../data_source';
 import {
@@ -104,6 +127,7 @@ import {
   provideMockCardRunToSeriesData,
 } from '../../testing';
 import {TooltipSort, XAxisType} from '../../types';
+import * as commonSelectors from '../main_view/common_selectors';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
 import {ScalarCardDataTable} from './scalar_card_data_table';
@@ -113,32 +137,10 @@ import {
   ScalarCardSeriesMetadata,
   SeriesType,
 } from './scalar_card_types';
-import {
-  AddColumnEvent,
-  ColumnHeader,
-  ColumnHeaderType,
-  DataTableMode,
-  DomainType,
-  FilterAddedEvent,
-  IntervalFilter,
-  ReorderColumnEvent,
-  Side,
-  SortingOrder,
-} from '../../../widgets/data_table/types';
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
-import {Extent} from '../../../widgets/line_chart_v2/lib/public_types';
-import {provideMockTbStore} from '../../../testing/utils';
-import * as commonSelectors from '../main_view/common_selectors';
-import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
-import {ContentRowComponent} from '../../../widgets/data_table/content_row_component';
-import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
-import {HparamFilter} from '../../../hparams/_redux/types';
-import * as hparamsSelectors from '../../../hparams/_redux/hparams_selectors';
-import * as hparamsActions from '../../../hparams/_redux/hparams_actions';
-import * as runsSelectors from '../../../runs/store/runs_selectors';
-import {getIsScalarColumnContextMenusEnabled} from '../../../selectors';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'line-chart',
   template: `
@@ -223,6 +225,7 @@ class TestableLineChart {
 // DataDownloadContainer pulls in entire redux and, for this test, we don't want to
 // know about their data requirements.
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-data-download-dialog',
   template: `{{ cardId }}`,

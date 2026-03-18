@@ -12,6 +12,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {Overlay, OverlayModule, OverlayRef} from '@angular/cdk/overlay';
+import {CommonModule} from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  TemplateRef,
+  ViewChild,
+  ViewContainerRef,
+} from '@angular/core';
 import {
   ComponentFixture,
   TestBed,
@@ -19,18 +28,11 @@ import {
   tick,
 } from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
-import {CustomModal} from './custom_modal';
-import {CommonModule} from '@angular/common';
-import {
-  Component,
-  TemplateRef,
-  ViewChild,
-  ViewContainerRef,
-} from '@angular/core';
-import {Overlay, OverlayModule, OverlayRef} from '@angular/cdk/overlay';
 import {first} from 'rxjs/operators';
+import {CustomModal} from './custom_modal';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'fake-modal-view-container',
   template: `

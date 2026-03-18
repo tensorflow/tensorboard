@@ -12,7 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+  Type,
+  ViewContainerRef,
+} from '@angular/core';
 
 /**
  * A Component that defines a customization point. Ideal for use for small
@@ -68,6 +75,7 @@ import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
  *    })
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'tb-customization',
   template: `

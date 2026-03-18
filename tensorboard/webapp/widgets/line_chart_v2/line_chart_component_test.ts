@@ -16,6 +16,7 @@ limitations under the License.
 import {OverlayModule} from '@angular/cdk/overlay';
 import {CommonModule} from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -38,6 +39,7 @@ import {buildMetadata, buildSeries} from './lib/testing';
 import {LineChartComponent} from './line_chart_component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'line-chart-grid-view',
   template: ``,
@@ -51,6 +53,7 @@ class FakeGridComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-comp',
   template: `

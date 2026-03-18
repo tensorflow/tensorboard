@@ -13,17 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
-import {Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TestBed, fakeAsync, tick} from '@angular/core/testing';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {KeyType, sendKey} from '../../testing/dom';
-import {getAutocompleteOptions} from '../../testing/material';
 import {MatIconTestingModule} from '../../testing/mat_icon_module';
+import {getAutocompleteOptions} from '../../testing/material';
 import {FilterInputModule} from './filter_input_module';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'test',
   template: `
@@ -46,6 +47,7 @@ class TestableInputWithCompletions {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'test',
   template: ` <tb-filter-input></tb-filter-input> `,
