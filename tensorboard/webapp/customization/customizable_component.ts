@@ -24,7 +24,7 @@ import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
  *
  * 1. Define a customizable Component, for example a button:
  *
- *    const CustomizableButton = new InjectionToken<Type<Component>>('Customizable Button');
+ *    const CustomizableButton = new InjectionToken<Type<unknown>>('Customizable Button');
  *
  * 2. Where the customization point is desired, use this Component to wrap some
  *    default behavior. Bind to some possibly-empty variable with the
@@ -39,7 +39,7 @@ import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
  *
  *    constructor(
  *      @Optional() @Inject(CustomizableButton)
- *      readonly customButtonIfProvided: Type<Component>)
+ *      readonly customButtonIfProvided: Type<unknown>)
  *
  * If you do not wish to customize the behavior for a certain TensorBoard
  * service (in this case, a button), you're done. The TensorBoard service
@@ -77,7 +77,7 @@ import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
   `,
 })
 export class CustomizableComponent implements OnInit {
-  @Input() customizableComponent!: Type<Component> | undefined;
+  @Input() customizableComponent!: Type<unknown> | undefined;
 
   constructor(private readonly viewContainerRef: ViewContainerRef) {}
 

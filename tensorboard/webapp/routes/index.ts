@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Type} from '@angular/core';
+import {Type} from '@angular/core';
 import {RouteDef} from '../app_routing/route_config_types';
 import {RouteKind} from '../app_routing/types';
 import {TensorBoardWrapperComponent} from '../tb_wrapper/tb_wrapper_component';
@@ -23,7 +23,7 @@ export function routesFactory(): RouteDef[] {
     {
       routeKind: RouteKind.EXPERIMENT,
       path: '/',
-      ngComponent: TensorBoardWrapperComponent as Type<Component>,
+      ngComponent: TensorBoardWrapperComponent as Type<unknown>,
       defaultRoute: true,
       deepLinkProvider: new DashboardDeepLinkProvider(),
     },

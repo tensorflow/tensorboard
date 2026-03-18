@@ -13,16 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  Component,
   Inject,
   ModuleWithProviders,
   NgModule,
   Optional,
   Type,
 } from '@angular/core';
-import {PluginConfig, PLUGIN_CONFIG_TOKEN} from './plugin_registry_types';
+import {PLUGIN_CONFIG_TOKEN, PluginConfig} from './plugin_registry_types';
 
-const pluginNameToComponent = new Map<string, Type<Component>>();
+const pluginNameToComponent = new Map<string, Type<unknown>>();
 
 @NgModule({})
 export class PluginRegistryModule {
@@ -40,7 +39,7 @@ export class PluginRegistryModule {
 
     for (const config of configs) {
       const {pluginName, componentClass} = config;
-      pluginNameToComponent.set(pluginName, componentClass as Type<Component>);
+      pluginNameToComponent.set(pluginName, componentClass as Type<unknown>);
     }
   }
 
@@ -71,7 +70,7 @@ export class PluginRegistryModule {
     };
   }
 
-  getComponent(pluginName: string): Type<Component> | null {
+  getComponent(pluginName: string): Type<unknown> | null {
     return pluginNameToComponent.get(pluginName) || null;
   }
 }
