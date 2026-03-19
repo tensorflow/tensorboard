@@ -37,8 +37,8 @@ import {
   LoadingMechanismType,
 } from '../types/api';
 import {DataLoadState} from '../types/data';
-import {UiPluginMetadata} from './plugins_container';
 import {PluginRegistryModule} from './plugin_registry_module';
+import {UiPluginMetadata} from './plugins_container';
 
 interface PolymerDashboard extends HTMLElement {
   reload?: () => void;

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {combineLatestWith, map} from 'rxjs/operators';
@@ -36,6 +36,7 @@ const isReloadDisabledByPlugin = createSelector(
 );
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'app-header-reload',
   template: `

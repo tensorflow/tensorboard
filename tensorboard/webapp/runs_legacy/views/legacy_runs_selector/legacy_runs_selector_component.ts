@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   EventEmitter,
@@ -26,6 +27,7 @@ interface PolymerChangeEvent extends CustomEvent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'tb-legacy-runs-selector-component',
   template: ` <tf-runs-selector #selector></tf-runs-selector> `,

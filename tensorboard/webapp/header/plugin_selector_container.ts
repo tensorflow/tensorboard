@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 import {changePlugin} from '../core/actions';
 import {getActivePlugin, getPlugins, State} from '../core/store';
@@ -29,6 +29,7 @@ const getDisabledPlugins = createSelector(
 );
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'plugin-selector',
   template: `
