@@ -17,18 +17,18 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Input,
   Inject,
+  InjectionToken,
+  Input,
+  Optional,
   Output,
   Type,
-  Optional,
-  InjectionToken,
 } from '@angular/core';
 
 import {PluginType} from '../../types';
 import {CardObserver} from '../card_renderer/card_lazy_loader';
 
-export const SHARE_BUTTON_COMPONENT = new InjectionToken<Type<Component>>(
+export const SHARE_BUTTON_COMPONENT = new InjectionToken<Type<unknown>>(
   'Customizable Share Button'
 );
 
@@ -62,7 +62,7 @@ export class MainViewComponent {
     private readonly host: ElementRef,
     @Optional()
     @Inject(SHARE_BUTTON_COMPONENT)
-    readonly customShareButton: Type<Component>
+    readonly customShareButton: Type<unknown>
   ) {
     this.cardObserver = new CardObserver(
       this.host.nativeElement,
