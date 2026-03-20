@@ -95,7 +95,8 @@ describe('hparam_filterbar', () => {
   function createComponent(): ComponentFixture<TestableComponent> {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     actualActions = [];
-    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       actualActions.push(action);
     });
 

@@ -78,7 +78,8 @@ describe('persistent_settings effects test', () => {
     }).compileComponents();
 
     store = TestBed.inject<Store<any>>(Store) as MockStore<any>;
-    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       actualActions.push(action);
     });
     effects = TestBed.inject(PersistentSettingsEffects);

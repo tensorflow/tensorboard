@@ -401,7 +401,8 @@ describe('Debugger effects', () => {
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
     store.overrideSelector(getActivePlugin, '');
@@ -436,15 +437,15 @@ describe('Debugger effects', () => {
     begin: number,
     end: number,
     alertsResponse: AlertsResponse,
-    alert_type?: string
+    alertType?: string
   ) {
-    if (alert_type === undefined) {
+    if (alertType === undefined) {
       return spyOn(TestBed.inject(Tfdbg2HttpServerDataSource), 'fetchAlerts')
         .withArgs(runId, begin, end)
         .and.returnValue(of(alertsResponse));
     } else {
       return spyOn(TestBed.inject(Tfdbg2HttpServerDataSource), 'fetchAlerts')
-        .withArgs(runId, begin, end, alert_type)
+        .withArgs(runId, begin, end, alertType)
         .and.returnValue(of(alertsResponse));
     }
   }
@@ -1403,7 +1404,7 @@ describe('Debugger effects', () => {
       },
       begin: 0,
       end: 2,
-      alert_type: AlertType.INF_NAN_ALERT,
+      alertType: AlertType.INF_NAN_ALERT,
       per_type_alert_limit: 1000,
       alerts: [alert0, alert1],
     };
@@ -1657,7 +1658,9 @@ describe('Debugger effects', () => {
         .withArgs(runId, fileIndex)
         .and.returnValue(
           of({
+            // tslint:disable-next-line:enforce-name-casing
             host_name: hostName,
+            // tslint:disable-next-line:enforce-name-casing
             file_path: filePath,
             lines,
           })
