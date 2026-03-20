@@ -66,9 +66,11 @@ describe('hparams effects', () => {
 
     actualActions = [];
     // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
-    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
-      actualActions.push(action);
-    });
+    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+      (action: Action) => {
+        actualActions.push(action);
+      }
+    );
 
     effects = TestBed.inject(HparamsEffects);
     dataSource = TestBed.inject(

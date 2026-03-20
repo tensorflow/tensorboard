@@ -402,9 +402,11 @@ describe('Debugger effects', () => {
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
-    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
-      dispatchedActions.push(action);
-    });
+    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+      (action: Action) => {
+        dispatchedActions.push(action);
+      }
+    );
     store.overrideSelector(getActivePlugin, '');
   });
 
