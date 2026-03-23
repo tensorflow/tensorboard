@@ -439,15 +439,16 @@ describe('Debugger effects', () => {
     begin: number,
     end: number,
     alertsResponse: AlertsResponse,
-    alertType?: string
+    // tslint:disable-next-line:enforce-name-casing
+    alert_type?: string
   ) {
-    if (alertType === undefined) {
+    if (alert_type === undefined) {
       return spyOn(TestBed.inject(Tfdbg2HttpServerDataSource), 'fetchAlerts')
         .withArgs(runId, begin, end)
         .and.returnValue(of(alertsResponse));
     } else {
       return spyOn(TestBed.inject(Tfdbg2HttpServerDataSource), 'fetchAlerts')
-        .withArgs(runId, begin, end, alertType)
+        .withArgs(runId, begin, end, alert_type)
         .and.returnValue(of(alertsResponse));
     }
   }
@@ -1467,8 +1468,7 @@ describe('Debugger effects', () => {
 
       action.next(
         alertTypeFocusToggled({
-          // tslint:disable-next-line:enforce-name-casing
-          alert_type: AlertType.INF_NAN_ALERT,
+          alertType: AlertType.INF_NAN_ALERT,
         })
       );
       expect(fetchInfNanAlerts).toHaveBeenCalledTimes(1);
@@ -1482,8 +1482,7 @@ describe('Debugger effects', () => {
           },
           begin: 0,
           end: 2,
-          // tslint:disable-next-line:enforce-name-casing
-          alert_type: AlertType.INF_NAN_ALERT,
+          alertType: AlertType.INF_NAN_ALERT,
           alerts: [alert0, alert1],
         }),
         executionDigestsRequested({
@@ -1553,8 +1552,7 @@ describe('Debugger effects', () => {
 
       action.next(
         alertTypeFocusToggled({
-          // tslint:disable-next-line:enforce-name-casing
-          alert_type: AlertType.INF_NAN_ALERT,
+          alertType: AlertType.INF_NAN_ALERT,
         })
       );
       expect(fetchInfNanAlerts).toHaveBeenCalledTimes(1);
@@ -1568,8 +1566,7 @@ describe('Debugger effects', () => {
           },
           begin: 0,
           end: 2,
-          // tslint:disable-next-line:enforce-name-casing
-          alert_type: AlertType.INF_NAN_ALERT,
+          alertType: AlertType.INF_NAN_ALERT,
           alerts: [alert0, alert1],
         }),
       ]);
@@ -1595,8 +1592,7 @@ describe('Debugger effects', () => {
 
       action.next(
         alertTypeFocusToggled({
-          // tslint:disable-next-line:enforce-name-casing
-          alert_type: AlertType.INF_NAN_ALERT,
+          alertType: AlertType.INF_NAN_ALERT,
         })
       );
       expect(fetchAlerts).not.toHaveBeenCalled();
@@ -1623,8 +1619,7 @@ describe('Debugger effects', () => {
 
       action.next(
         alertTypeFocusToggled({
-          // tslint:disable-next-line:enforce-name-casing
-          alert_type: AlertType.INF_NAN_ALERT,
+          alertType: AlertType.INF_NAN_ALERT,
         })
       );
       expect(fetchAlerts).not.toHaveBeenCalled();
