@@ -1406,7 +1406,8 @@ describe('Debugger effects', () => {
       },
       begin: 0,
       end: 2,
-      alertType: AlertType.INF_NAN_ALERT,
+      // tslint:disable-next-line:enforce-name-casing
+      alert_type: AlertType.INF_NAN_ALERT,
       per_type_alert_limit: 1000,
       alerts: [alert0, alert1],
     };
@@ -1466,7 +1467,8 @@ describe('Debugger effects', () => {
 
       action.next(
         alertTypeFocusToggled({
-          alertType: AlertType.INF_NAN_ALERT,
+          // tslint:disable-next-line:enforce-name-casing
+          alert_type: AlertType.INF_NAN_ALERT,
         })
       );
       expect(fetchInfNanAlerts).toHaveBeenCalledTimes(1);
@@ -1480,7 +1482,8 @@ describe('Debugger effects', () => {
           },
           begin: 0,
           end: 2,
-          alertType: AlertType.INF_NAN_ALERT,
+          // tslint:disable-next-line:enforce-name-casing
+          alert_type: AlertType.INF_NAN_ALERT,
           alerts: [alert0, alert1],
         }),
         executionDigestsRequested({
@@ -1550,7 +1553,8 @@ describe('Debugger effects', () => {
 
       action.next(
         alertTypeFocusToggled({
-          alertType: AlertType.INF_NAN_ALERT,
+          // tslint:disable-next-line:enforce-name-casing
+          alert_type: AlertType.INF_NAN_ALERT,
         })
       );
       expect(fetchInfNanAlerts).toHaveBeenCalledTimes(1);
@@ -1564,7 +1568,8 @@ describe('Debugger effects', () => {
           },
           begin: 0,
           end: 2,
-          alertType: AlertType.INF_NAN_ALERT,
+          // tslint:disable-next-line:enforce-name-casing
+          alert_type: AlertType.INF_NAN_ALERT,
           alerts: [alert0, alert1],
         }),
       ]);
@@ -1590,7 +1595,8 @@ describe('Debugger effects', () => {
 
       action.next(
         alertTypeFocusToggled({
-          alertType: AlertType.INF_NAN_ALERT,
+          // tslint:disable-next-line:enforce-name-casing
+          alert_type: AlertType.INF_NAN_ALERT,
         })
       );
       expect(fetchAlerts).not.toHaveBeenCalled();
@@ -1617,7 +1623,8 @@ describe('Debugger effects', () => {
 
       action.next(
         alertTypeFocusToggled({
-          alertType: AlertType.INF_NAN_ALERT,
+          // tslint:disable-next-line:enforce-name-casing
+          alert_type: AlertType.INF_NAN_ALERT,
         })
       );
       expect(fetchAlerts).not.toHaveBeenCalled();
