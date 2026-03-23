@@ -81,7 +81,8 @@ describe('router_link', () => {
       AppRootProvider
     ) as TestableAppRootProvider;
 
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       actualDispatches.push(action);
     });
   });

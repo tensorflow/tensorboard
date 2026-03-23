@@ -243,7 +243,8 @@ describe('app_routing_effects', () => {
     store.overrideSelector(getRehydratedDeepLinks, []);
     actualActions = [];
 
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       actualActions.push(action);
     });
 

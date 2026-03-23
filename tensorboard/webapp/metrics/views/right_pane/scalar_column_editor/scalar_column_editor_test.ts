@@ -236,9 +236,12 @@ describe('scalar column editor', () => {
     let dispatchedActions: Action[] = [];
     beforeEach(() => {
       dispatchedActions = [];
-      spyOn(store, 'dispatch').and.callFake((action: Action) => {
-        dispatchedActions.push(action);
-      });
+      // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+      (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+        (action: Action) => {
+          dispatchedActions.push(action);
+        }
+      );
     });
 
     it('dispatches dataTableColumnToggled action with singe selection when checkbox is clicked', fakeAsync(() => {
@@ -320,9 +323,12 @@ describe('scalar column editor', () => {
     let dispatchedActions: Action[] = [];
     beforeEach(() => {
       dispatchedActions = [];
-      spyOn(store, 'dispatch').and.callFake((action: Action) => {
-        dispatchedActions.push(action);
-      });
+      // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+      (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+        (action: Action) => {
+          dispatchedActions.push(action);
+        }
+      );
     });
 
     it('dispatches dataTableColumnOrderChanged action with single selection when header is dragged', fakeAsync(() => {
@@ -508,9 +514,12 @@ describe('scalar column editor', () => {
     let dispatchedActions: Action[] = [];
     beforeEach(() => {
       dispatchedActions = [];
-      spyOn(store, 'dispatch').and.callFake((action: Action) => {
-        dispatchedActions.push(action);
-      });
+      // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+      (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+        (action: Action) => {
+          dispatchedActions.push(action);
+        }
+      );
     });
     it('dispatches metricsSlideoutMenuClosed', () => {
       const fixture = createComponent();
@@ -527,9 +536,12 @@ describe('scalar column editor', () => {
     let dispatchedActions: Action[] = [];
     beforeEach(() => {
       dispatchedActions = [];
-      spyOn(store, 'dispatch').and.callFake((action: Action) => {
-        dispatchedActions.push(action);
-      });
+      // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+      (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+        (action: Action) => {
+          dispatchedActions.push(action);
+        }
+      );
     });
     it('dispatches tableEditorTabChanged action when tab is clicked', fakeAsync(() => {
       const fixture = createComponent();
