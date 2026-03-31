@@ -23,7 +23,7 @@ export const notificationBellClicked = createAction(
 );
 
 /**
- * Fires when the response from server is recieved.
+ * Fires when the response from server is received.
  */
 export const fetchNotificationsFailed = createAction(
   '[Notification] Fetch Notification Request Failed'
