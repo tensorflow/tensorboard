@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {OverlayContainer} from '@angular/cdk/overlay';
-import {TestBed} from '@angular/core/testing';
+import {fakeAsync, flush, TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
 import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -130,7 +130,7 @@ describe('alert snackbar', () => {
     });
   });
 
-  it('closes the snackbar on click', async () => {
+  it('closes the snackbar on click', fakeAsync(() => {
     const fixture = TestBed.createComponent(AlertSnackbarContainer);
     fixture.detectChanges();
     store.overrideSelector(selectors.getLatestAlert, {
@@ -144,14 +144,13 @@ describe('alert snackbar', () => {
       .querySelector(Selectors.DISMISS_BUTTON);
     expect(dismissEl).toBeTruthy();
     (dismissEl as HTMLButtonElement).click();
-    fixture.detectChanges();
-    await fixture.whenStable();
+    flush();
 
     const snackbarAfterEl = overlayContainer
       .getContainerElement()
       .querySelector(Selectors.SNACKBAR);
     expect(snackbarAfterEl).not.toBeTruthy();
-  });
+  }));
 
   it('shows the followup action if needed', () => {
     const fixture = TestBed.createComponent(AlertSnackbarContainer);
@@ -188,7 +187,7 @@ describe('alert snackbar', () => {
     expect(followupEl).not.toBeTruthy();
   });
 
-  it('dispatches a followup action and closes', async () => {
+  it('dispatches a followup action and closes', fakeAsync(() => {
     const fixture = TestBed.createComponent(AlertSnackbarContainer);
     fixture.detectChanges();
     store.overrideSelector(selectors.getLatestAlert, {
@@ -205,17 +204,16 @@ describe('alert snackbar', () => {
       .getContainerElement()
       .querySelector(Selectors.FOLLOWUP_BUTTON);
     (followupEl as HTMLButtonElement).click();
-    fixture.detectChanges();
-    await fixture.whenStable();
+    flush();
 
     expect(recordedActions).toEqual([testAction()]);
     const snackbarAfterEl = overlayContainer
       .getContainerElement()
       .querySelector(Selectors.SNACKBAR);
     expect(snackbarAfterEl).not.toBeTruthy();
-  });
+  }));
 
-  it('dispatches a followup action with payload and closes', async () => {
+  it('dispatches a followup action with payload and closes', fakeAsync(() => {
     const fixture = TestBed.createComponent(AlertSnackbarContainer);
     fixture.detectChanges();
     store.overrideSelector(selectors.getLatestAlert, {
@@ -232,13 +230,12 @@ describe('alert snackbar', () => {
       .getContainerElement()
       .querySelector(Selectors.FOLLOWUP_BUTTON);
     (followupEl as HTMLButtonElement).click();
-    fixture.detectChanges();
-    await fixture.whenStable();
+    flush();
 
     expect(recordedActions).toEqual([testActionWithProps({foo: true})]);
     const snackbarAfterEl = overlayContainer
       .getContainerElement()
       .querySelector(Selectors.SNACKBAR);
     expect(snackbarAfterEl).not.toBeTruthy();
-  });
+  }));
 });
