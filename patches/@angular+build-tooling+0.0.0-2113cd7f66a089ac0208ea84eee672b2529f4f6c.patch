@@ -1,0 +1,34 @@
+diff --git a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/BUILD.bazel b/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/BUILD.bazel
+index 870da1b..3f1e5c5 100755
+--- a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/BUILD.bazel
++++ b/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/BUILD.bazel
+@@ -23,6 +23,7 @@ js_library(
+     deps = [
+         "@npm//@babel/core",
+         "@npm//@babel/helper-annotate-as-pure",
++        "@npm//@babel/helper-split-export-declaration",
+     ],
+ )
+
+diff --git a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs b/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
+index 6d5ec3f..ad4b529 100755
+--- a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
++++ b/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
+@@ -86,11 +86,12 @@ export async function createEsbuildAngularOptimizePlugin(opts, additionalBabelPl
+             devkitOptimizePlugins.adjustTypeScriptEnumsPlugin,
+           );
+
+-          // If the current file is denoted as explicit side effect free, add the pure
+-          // top-level functions optimization plugin for this file.
+-          if (opts.optimize.isSideEffectFree && opts.optimize.isSideEffectFree(args.path)) {
+-            plugins.push(devkitOptimizePlugins.pureToplevelFunctionsPlugin);
+-          }
++          // For TensorBoard: This plugin aggressively culls symbols in a way that
++          // is incompatible with TensorBoard source. Remove it. The binary is
++          // bigger than it otherwise could be but the bundle also happens faster.
++          //if (opts.optimize.isSideEffectFree && opts.optimize.isSideEffectFree(args.path)) {
++          //  plugins.push(devkitOptimizePlugins.pureToplevelFunctionsPlugin);
++          //}
+         }
+
+         const shouldRunLinker =

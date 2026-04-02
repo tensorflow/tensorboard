@@ -28,6 +28,40 @@ index fed787a..377915a 100755
      return struct(
          closure_js = closure_js_files,
          devmode_js = devmode_js_files,
+diff --git a/node_modules/@bazel/concatjs/internal/tsc_wrapped/compiler_host.js b/node_modules/@bazel/concatjs/internal/tsc_wrapped/compiler_host.js
+index d9ece1f2b..e8587819c 100755
+--- a/node_modules/@bazel/concatjs/internal/tsc_wrapped/compiler_host.js
++++ b/node_modules/@bazel/concatjs/internal/tsc_wrapped/compiler_host.js
+@@ -351,17 +351,20 @@ class CompilerHost {
+                 if (worker_1.DEBUG) {
+                     worker_1.debug(`Failed to resolve type reference directive '${fileName}'`);
+                 }
++                // TypeScript 5.x requires the result array to be the same length as
++                // the input names array (it uses positional indexing). Previously
++                // doing `return` here (skipping the push) made the array shorter than
++                // `names`, causing TypeScript 5.x to crash with:
++                // "Cannot read properties of undefined (reading 'resolutionDiagnostics')"
++                //
++                // Note: TypeScript 5.x wraps each returned item automatically via:
++                //   .map((r) => ({ resolvedTypeReferenceDirective: r }))
++                // so we must NOT pre-wrap; we just push undefined to maintain length.
++                result.push(undefined);
+                 return;
+             }
+-            // In typescript 2.x the return type for this function
+-            // is `(ts.ResolvedTypeReferenceDirective | undefined)[]` thus we actually
+-            // do allow returning `undefined` in the array but the function is typed
+-            // `(ts.ResolvedTypeReferenceDirective)[]` to compile with both typescript
+-            // 2.x and 3.0/3.1 without error. Typescript 3.0/3.1 do handle the `undefined`
+-            // values in the array correctly despite the return signature.
+-            // It looks like the return type change was a mistake because
+-            // it was changed back to include `| undefined` recently:
+-            // https://github.com/Microsoft/TypeScript/pull/28059.
++            // Return the raw ResolvedTypeReferenceDirective. TypeScript 5.x's adapter
++            // wraps each item in { resolvedTypeReferenceDirective: item } automatically.
+             result.push(resolved);
+         });
+         return result;
 diff --git a/node_modules/@bazel/concatjs/web_test/karma.conf.js b/node_modules/@bazel/concatjs/web_test/karma.conf.js
 index 90a03ef..28778c9 100755
 --- a/node_modules/@bazel/concatjs/web_test/karma.conf.js
