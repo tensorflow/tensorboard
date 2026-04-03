@@ -1,3 +1,4 @@
+common --noenable_bzlmod
 common --experimental_repo_remote_exec  # from TensorFlow
 
 # Use C++ backing implementations for Python proto parsing and deserialization,

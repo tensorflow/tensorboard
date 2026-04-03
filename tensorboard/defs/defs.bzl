@@ -234,6 +234,10 @@ def tf_ng_web_test_suite(name, deps = [], **kwargs):
         deps = [
             "%s_bundle" % name,
         ],
+        # rules_nodejs passes this through to rules_webtesting. An empty dict
+        # avoids forwarding a stray None-valued attribute to web_test under
+        # Bazel 7.7.0 with the currently pinned rules_webtesting stack.
+        browser_overrides = {},
     )
 
 def tf_svg_bundle(name, srcs, out):

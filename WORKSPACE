@@ -18,10 +18,10 @@ versions.check(
     # Preemptively assume the next Bazel major version will break us, since historically they do,
     # and provide a clean error message in that case. Since the maximum version is inclusive rather
     # than exclusive, we set it to the 999th patch release of the current major version.
-    maximum_bazel_version = "6.999.0",
+    maximum_bazel_version = "7.999.0",
     # Keep this version in sync with:
     #  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
-    minimum_bazel_version = "6.5.0",
+    minimum_bazel_version = "7.7.0",
 )
 
 http_archive(
@@ -85,16 +85,21 @@ load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
 yarn_install(
     name = "npm",
-    data = [
+    # Under Bazel 7.7.0 on this stack, invoking patch-package from the
+    # repository rule is fragile. Apply the existing git-format patches
+    # directly in yarn_install instead.
+    post_install_patches = [
         "//patches:@angular+build-tooling+0.0.0-7d103b83a07f132629592fc9918ce17d42a5e382.patch",
         "//patches:@bazel+concatjs+5.7.0.patch",
     ],
+    patch_args = ["-p1"],
     # "Some rules only work by referencing labels nested inside npm packages
     # and therefore require turning off exports_directories_only."
     # This includes "ts_library".
     # See: https://github.com/bazelbuild/rules_nodejs/wiki/Migrating-to-5.0#exports_directories_only
     exports_directories_only = False,
     package_json = "//:package.json",
+    package_json_remove = ["scripts.postinstall"],
     yarn_lock = "//:yarn.lock",
 )
 
@@ -166,6 +171,27 @@ http_archive(
     urls = [
         "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.48.2.tar.gz",
         "https://github.com/grpc/grpc/archive/v1.48.2.tar.gz",  # 2022-09-21
+    ],
+)
+
+# gRPC 1.48.2 still pins Apple rules that are too old for Bazel 7.x.
+# Predeclare Bazel-7-compatible versions so grpc_deps()/grpc_extra_deps() reuse
+# them instead of pulling their own older copies.
+http_archive(
+    name = "build_bazel_rules_apple",
+    sha256 = "b4df908ec14868369021182ab191dbd1f40830c9b300650d5dc389e0b9266c8d",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_apple/releases/download/3.5.1/rules_apple.3.5.1.tar.gz",
+        "https://github.com/bazelbuild/rules_apple/releases/download/3.5.1/rules_apple.3.5.1.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "build_bazel_apple_support",
+    sha256 = "1ae6fcf983cff3edab717636f91ad0efff2e5ba75607fdddddfd6ad0dbdfaf10",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/apple_support/releases/download/1.24.5/apple_support.1.24.5.tar.gz",
+        "https://github.com/bazelbuild/apple_support/releases/download/1.24.5/apple_support.1.24.5.tar.gz",
     ],
 )
 
