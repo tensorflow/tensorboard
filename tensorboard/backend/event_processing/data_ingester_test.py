@@ -61,6 +61,40 @@ class FakeFlags:
         self.window_title = window_title
 
 
+class ReloadErrorHandlingTest(tb_test.TestCase):
+    """Tests that the reload loop survives transient errors."""
+
+    def test_reload_continues_after_exception(self):
+        """Reload loop should log errors and continue, not crash."""
+        flags = FakeFlags(logdir="logdir", reload_interval=0, reload_task="blocking")
+        ingester = data_ingester.LocalDataIngester(flags)
+        # Make AddRunsFromDirectory raise on the first call.
+        with mock.patch.object(
+            ingester._multiplexer, "AddRunsFromDirectory", side_effect=OSError("network error")
+        ) as mock_add:
+            with mock.patch.object(
+                ingester._multiplexer, "Reload"
+            ) as mock_reload:
+                # Should not raise despite the OSError.
+                ingester.start()
+        mock_add.assert_called_once()
+        # Reload should not be called since AddRunsFromDirectory raised first.
+        mock_reload.assert_not_called()
+
+    def test_reload_continues_after_reload_exception(self):
+        """Reload loop should survive errors from Reload() as well."""
+        flags = FakeFlags(logdir="logdir", reload_interval=0, reload_task="blocking")
+        ingester = data_ingester.LocalDataIngester(flags)
+        with mock.patch.object(
+            ingester._multiplexer, "AddRunsFromDirectory"
+        ):
+            with mock.patch.object(
+                ingester._multiplexer, "Reload", side_effect=RuntimeError("reload failed")
+            ):
+                # Should not raise despite the RuntimeError.
+                ingester.start()
+
+
 class GetEventFileActiveFilterTest(tb_test.TestCase):
     def testDisabled(self):
         flags = FakeFlags(logdir="logdir", reload_multifile=False)
