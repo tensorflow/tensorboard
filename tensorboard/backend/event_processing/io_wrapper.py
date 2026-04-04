@@ -203,22 +203,33 @@ def GetLogdirSubdirectories(path):
         )
 
     if io_util.IsCloudPath(path):
-        # Glob-ing for files can be significantly faster than recursively
-        # walking through directories for some file systems.
+        # For cloud filesystems, use a single targeted recursive glob for
+        # event files instead of listing all files level by level. This is
+        # significantly faster when the directory tree contains many
+        # non-event files (e.g., model checkpoints).
         logger.info(
-            "GetLogdirSubdirectories: Starting to list directories via glob-ing."
+            "GetLogdirSubdirectories: Starting to find event files via targeted glob."
         )
-        traversal_method = ListRecursivelyViaGlobbing
+        escaped = _EscapeGlobCharacters(path)
+        glob_pattern = escaped + "/**/*tfevents*"
+        event_files = tf.io.gfile.glob(glob_pattern)
+        logger.info(
+            "GetLogdirSubdirectories: Found %d event files via glob.",
+            len(event_files),
+        )
+        dirs = set()
+        for f in event_files:
+            if IsTensorFlowEventsFile(f):
+                dirs.add(os.path.dirname(f))
+        return tuple(dirs)
     else:
-        # For other file systems, the glob-ing based method might be slower because
-        # each call to glob could involve performing a recursive walk.
+        # For local file systems, walking is more efficient because each
+        # glob call could itself involve a recursive walk.
         logger.info(
             "GetLogdirSubdirectories: Starting to list directories via walking."
         )
-        traversal_method = ListRecursivelyViaWalking
-
-    return (
-        subdir
-        for (subdir, files) in traversal_method(path)
-        if any(IsTensorFlowEventsFile(f) for f in files)
-    )
+        return (
+            subdir
+            for (subdir, files) in ListRecursivelyViaWalking(path)
+            if any(IsTensorFlowEventsFile(f) for f in files)
+        )
