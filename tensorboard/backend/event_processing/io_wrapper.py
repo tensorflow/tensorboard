@@ -176,6 +176,44 @@ def ListRecursivelyViaWalking(top):
         )
 
 
+def _GetLogdirSubdirectoriesViaCloudEventGlobbing(path):
+    """Finds event-file directories in cloud logdirs via targeted globbing.
+
+    Some TensorFlow `tf.io.gfile.glob` backends return false negatives for
+    `**/*tfevents*` even when deeper descendants contain matching event files.
+    Try a second recursive pattern before falling back to the legacy globbing
+    traversal, which is slower but has the expected behavior.
+    """
+    escaped = _EscapeGlobCharacters(path)
+    glob_patterns = (
+        escaped + "/**/*tfevents*",
+        escaped + "/**/**/*tfevents*",
+    )
+    dirs = set()
+    for glob_pattern in glob_patterns:
+        event_files = tf.io.gfile.glob(glob_pattern)
+        logger.info(
+            "GetLogdirSubdirectories: Found %d event files via glob %r.",
+            len(event_files),
+            glob_pattern,
+        )
+        for f in event_files:
+            if IsTensorFlowEventsFile(f):
+                dirs.add(os.path.dirname(f))
+        if dirs:
+            return tuple(dirs)
+
+    logger.info(
+        "GetLogdirSubdirectories: Targeted globbing found no event files; "
+        "falling back to legacy cloud globbing."
+    )
+    return tuple(
+        subdir
+        for (subdir, files) in ListRecursivelyViaGlobbing(path)
+        if any(IsTensorFlowEventsFile(f) for f in files)
+    )
+
+
 def GetLogdirSubdirectories(path):
     """Obtains all subdirectories with events files.
 
@@ -204,24 +242,13 @@ def GetLogdirSubdirectories(path):
 
     if io_util.IsCloudPath(path):
         # For cloud filesystems, use a single targeted recursive glob for
-        # event files instead of listing all files level by level. This is
-        # significantly faster when the directory tree contains many
-        # non-event files (e.g., model checkpoints).
+        # event files instead of listing all files level by level. If the
+        # backend returns a false negative for the fast path, fall back to the
+        # legacy globbing traversal for correctness.
         logger.info(
             "GetLogdirSubdirectories: Starting to find event files via targeted glob."
         )
-        escaped = _EscapeGlobCharacters(path)
-        glob_pattern = escaped + "/**/*tfevents*"
-        event_files = tf.io.gfile.glob(glob_pattern)
-        logger.info(
-            "GetLogdirSubdirectories: Found %d event files via glob.",
-            len(event_files),
-        )
-        dirs = set()
-        for f in event_files:
-            if IsTensorFlowEventsFile(f):
-                dirs.add(os.path.dirname(f))
-        return tuple(dirs)
+        return _GetLogdirSubdirectoriesViaCloudEventGlobbing(path)
     else:
         # For local file systems, walking is more efficient because each
         # glob call could itself involve a recursive walk.
