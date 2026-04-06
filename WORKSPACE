@@ -87,7 +87,6 @@ load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install
 # @sigstore/protobuf-specs). rules_nodejs 5.8.1 does not include Node 18.x
 # in its default version list, so we register 18.20.8 (latest LTS 18.x) explicitly.
 node_repositories(
-    node_version = "18.20.8",
     node_repositories = {
         "18.20.8-darwin_arm64": ("node-v18.20.8-darwin-arm64.tar.gz", "node-v18.20.8-darwin-arm64", "bae4965d29d29bd32f96364eefbe3bca576a03e917ddbb70b9330d75f2cacd76"),
         "18.20.8-darwin_amd64": ("node-v18.20.8-darwin-x64.tar.gz", "node-v18.20.8-darwin-x64", "ed2554677188f4afc0d050ecd8bd56effb2572d6518f8da6d40321ede6698509"),
@@ -95,6 +94,7 @@ node_repositories(
         "18.20.8-linux_amd64": ("node-v18.20.8-linux-x64.tar.xz", "node-v18.20.8-linux-x64", "5467ee62d6af1411d46b6a10e3fb5cacc92734dbcef465fea14e7b90993001c9"),
         "18.20.8-windows_amd64": ("node-v18.20.8-win-x64.zip", "node-v18.20.8-win-x64", "1a1e40260a6facba83636e4cd0ba01eb5bd1386896824b36645afba44857384a"),
     },
+    node_version = "18.20.8",
 )
 
 yarn_install(
