@@ -104,5 +104,3 @@ Here is a snippet of how to build and run the demo application:
 ```
 bazel run tensorboard/plugins/mesh:mesh_demo -- --mesh_path=path/to/ply/file
 ```
-
-bazel run tensorboard/plugins/mesh:mesh_demo -- --mesh_path=/tensorboard/plugins/mesh/test_data/icosphere.ply 
