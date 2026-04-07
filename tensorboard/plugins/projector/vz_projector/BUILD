@@ -140,9 +140,6 @@ tf_ts_library(
 
 tf_ng_web_test_suite(
     name = "vz_projector_test",
-    deps = [
-        ":vz_projector_test_lib",
-    ],
     # node-fetch (transitive dep from @tensorflow/tfjs-core) imports Node
     # built-ins that cannot be resolved when bundling for the browser.
     external = [
@@ -155,5 +152,8 @@ tf_ng_web_test_suite(
         "buffer",
         "punycode",
         "string_decoder",
+    ],
+    deps = [
+        ":vz_projector_test_lib",
     ],
 )
