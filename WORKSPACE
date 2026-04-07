@@ -72,7 +72,6 @@ http_archive(
     name = "build_bazel_rules_nodejs",
     sha256 = "f02557f31d4110595ca6e93660018bcd7fdfdbe7d0086089308f1b3af3a7a7ee",
     urls = [
-        # "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/5.8.1/rules_nodejs-5.8.1.tar.gz",
         "https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.1/rules_nodejs-5.8.1.tar.gz",
     ],
 )
