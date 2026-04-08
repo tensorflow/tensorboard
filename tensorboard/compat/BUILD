@@ -22,6 +22,7 @@ py_library(
     srcs = ["__init__.py"],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
+    deps = ["//tensorboard:lazy"],
 )
 
 py_test(

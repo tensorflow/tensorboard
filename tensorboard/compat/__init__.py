@@ -15,15 +15,30 @@
 """Compatibility interfaces for TensorBoard.
 
 This module provides logic for importing variations on the TensorFlow
-APIs while deferring the actual import work until callers request `tf`
-or `tf2`.
+APIs, as lazily loaded imports to help avoid circular dependency issues
+and defer the search and loading of the module until necessary.
 """
 
 import importlib
 
+import tensorboard.lazy as _lazy
 
-def _resolve_tf():
-    """Provide the root module of a TF-like API for use within TensorBoard."""
+
+@_lazy.lazy_load("tensorboard.compat.tf")
+def tf():
+    """Provide the root module of a TF-like API for use within TensorBoard.
+
+    By default this is equivalent to `import tensorflow as tf`, but it can be used
+    in combination with //tensorboard/compat:tensorflow (to fall back to a stub TF
+    API implementation if the real one is not available) or with
+    //tensorboard/compat:no_tensorflow (to force unconditional use of the stub).
+
+    Returns:
+      The root module of a TF-like API, if available.
+
+    Raises:
+      ImportError: if a TF-like API is not available.
+    """
     try:
         importlib.import_module("tensorboard.compat.notf")
     except ImportError:
@@ -36,28 +51,19 @@ def _resolve_tf():
     return importlib.import_module("tensorboard.compat.tensorflow_stub")
 
 
-def _resolve_tf2():
-    """Provide the root module of a TF-2.0 API for use within TensorBoard."""
-    tf = __getattr__("tf")
+@_lazy.lazy_load("tensorboard.compat.tf2")
+def tf2():
+    """Provide the root module of a TF-2.0 API for use within TensorBoard.
+
+    Returns:
+      The root module of a TF-2.0 API, if available.
+
+    Raises:
+      ImportError: if a TF-2.0 API is not available.
+    """
+    # Resolve the lazy `tf` compat API from earlier in this file and try to find
+    # tf.compat.v2. Don't check tf.__version__ since this is not always reliable
+    # if TF was built with tf_api_version!=2.
     if hasattr(tf, "compat") and hasattr(tf.compat, "v2"):
         return tf.compat.v2
     raise ImportError("cannot import tensorflow 2.0 API")
-
-
-def __getattr__(name):
-    if name == "tf":
-        module = _resolve_tf()
-        globals()[name] = module
-        return module
-    if name == "tf2":
-        module = _resolve_tf2()
-        globals()[name] = module
-        return module
-    raise AttributeError("module %r has no attribute %r" % (__name__, name))
-
-
-def __dir__():
-    return sorted(set(globals()) | {"tf", "tf2"})
-
-
-__all__ = ["tf", "tf2"]
