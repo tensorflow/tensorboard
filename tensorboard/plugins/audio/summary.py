@@ -32,11 +32,17 @@ import numpy as np
 
 from tensorboard.util import encoder as encoder_util
 from tensorboard.plugins.audio import metadata
-from tensorboard.plugins.audio import summary_v2
+
+
+def _summary_v2():
+    from tensorboard.plugins.audio import summary_v2
+
+    return summary_v2
 
 
 # Export V2 versions.
-audio = summary_v2.audio
+def audio(*args, **kwargs):
+    return _summary_v2().audio(*args, **kwargs)
 
 
 _LABELS_WARNING = (

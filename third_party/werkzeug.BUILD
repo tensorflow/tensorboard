@@ -10,6 +10,7 @@ exports_files(["LICENSE"])
 # Note: this library includes test code. Consider creating a testonly target.
 py_library(
     name = "org_pocoo_werkzeug",
+    imports = ["."],
     srcs = glob(["werkzeug/**/*.py"]),
     srcs_version = "PY3",
     visibility = ["//visibility:public"],

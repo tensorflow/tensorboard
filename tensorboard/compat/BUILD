@@ -22,8 +22,15 @@ py_library(
     srcs = ["__init__.py"],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
+)
+
+py_test(
+    name = "compat_test",
+    srcs = ["compat_test.py"],
+    srcs_version = "PY3",
     deps = [
-        "//tensorboard:lazy",
+        ":compat",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 

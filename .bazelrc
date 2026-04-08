@@ -1,6 +1,27 @@
 common --noenable_bzlmod
+common --enable_platform_specific_config
 common --experimental_repo_remote_exec  # from TensorFlow
 
 # Use C++ backing implementations for Python proto parsing and deserialization,
 # which is much faster (~10x).
 build --define=use_fast_cpp_protos=true
+
+# TensorFlow 2.21 builds with C++17 across supported platforms, and protobuf
+# 6.31.1 requires that language level.
+common:linux --cxxopt=-std=c++17
+common:linux --host_cxxopt=-std=c++17
+common:macos --cxxopt=-std=c++17
+common:macos --host_cxxopt=-std=c++17
+common:windows --cxxopt=/std:c++17
+common:windows --host_cxxopt=/std:c++17
+
+# Local shells and virtualenvs can leak Python import state into Bazel tests,
+# which then import from the wrong environment instead of the test runfiles.
+test --test_env=PYTHONPATH=
+test --test_env=PYTHONHOME=
+test --test_env=PYTHONSTARTUP=
+test --test_env=PYTHONSAFEPATH=
+test --test_env=PYTHONNOUSERSITE=1
+test --test_env=PYTHONUSERBASE=
+test --test_env=BUILD_WORKSPACE_DIRECTORY=
+test --test_env=BUILD_WORKING_DIRECTORY=
