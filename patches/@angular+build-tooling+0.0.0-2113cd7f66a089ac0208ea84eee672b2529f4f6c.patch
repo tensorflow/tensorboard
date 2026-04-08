@@ -23,9 +23,7 @@ index 6d5ec3f..ad4b529 100755
 -          if (opts.optimize.isSideEffectFree && opts.optimize.isSideEffectFree(args.path)) {
 -            plugins.push(devkitOptimizePlugins.pureToplevelFunctionsPlugin);
 -          }
-+          // For TensorBoard: This plugin aggressively culls symbols in a way that
-+          // is incompatible with TensorBoard source. Remove it. The binary is
-+          // bigger than it otherwise could be but the bundle also happens faster.
++          // Disabled: breaks TensorBoard by removing code that is still used.
 +          //if (opts.optimize.isSideEffectFree && opts.optimize.isSideEffectFree(args.path)) {
 +          //  plugins.push(devkitOptimizePlugins.pureToplevelFunctionsPlugin);
 +          //}

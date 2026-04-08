@@ -140,8 +140,8 @@ tf_ts_library(
 
 tf_ng_web_test_suite(
     name = "vz_projector_test",
-    # node-fetch (transitive dep from @tensorflow/tfjs-core) imports Node
-    # built-ins that cannot be resolved when bundling for the browser.
+    # Exclude Node.js-only packages from the browser bundle.
+    # These come from @tensorflow/tfjs-core -> node-fetch.
     external = [
         "node-fetch",
         "stream",
