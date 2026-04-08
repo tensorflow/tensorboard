@@ -68,7 +68,7 @@ py_library(
     srcs = ["lazy_tensor_creator.py"],
     srcs_version = "PY3",
     deps = [
-        "//tensorboard/compat",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 

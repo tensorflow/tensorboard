@@ -100,7 +100,7 @@ py_library(
     ],
     deps = [
         ":metadata",
-        "//tensorboard/compat",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
     ],

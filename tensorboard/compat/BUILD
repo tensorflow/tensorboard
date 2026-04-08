@@ -46,9 +46,10 @@ py_test(
 # as written but can be swapped out for a real dependency.
 py_library(
     name = "tensorflow",
+    srcs = ["__init__.py"],
     srcs_version = "PY3",
     deps = [
-        ":compat",
+        "//tensorboard:lazy",
         "//tensorboard/compat/tensorflow_stub",
     ],
 )
@@ -58,10 +59,14 @@ py_library(
 # Depend on this rule if your code should only use the TF stub.
 py_library(
     name = "no_tensorflow",
-    srcs = ["notf.py"],
+    srcs = [
+        "__init__.py",
+        "notf.py",
+    ],
     srcs_version = "PY3",
     deps = [
-        ":tensorflow",
+        "//tensorboard:lazy",
+        "//tensorboard/compat/tensorflow_stub",
     ],
 )
 
