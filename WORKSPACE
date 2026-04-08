@@ -84,6 +84,7 @@ load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install
 
 # Angular 17 needs Node.js 18.17 or higher. rules_nodejs 5.8.1 does not
 # include Node 18, so we add it here manually.
+# @TODO: We plan to upgrade to a newer version of rules_nodejs that includes Node 18 and remove this manual addition in next version upgrade.
 node_repositories(
     node_repositories = {
         "18.20.8-darwin_arm64": ("node-v18.20.8-darwin-arm64.tar.gz", "node-v18.20.8-darwin-arm64", "bae4965d29d29bd32f96364eefbe3bca576a03e917ddbb70b9330d75f2cacd76"),
