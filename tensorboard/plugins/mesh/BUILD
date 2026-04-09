@@ -108,6 +108,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         ":metadata",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:tensor_util",
@@ -151,6 +152,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
     ],
 )

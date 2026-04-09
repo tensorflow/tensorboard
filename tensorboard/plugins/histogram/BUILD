@@ -106,6 +106,7 @@ py_library(
     deps = [
         ":metadata",
         "//tensorboard:expect_numpy_installed",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:lazy_tensor_creator",

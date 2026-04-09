@@ -20,6 +20,7 @@ py_library(
         "//tensorboard:expect_protobuf_installed",
         "//tensorboard:plugin_util",
         "//tensorboard/backend:http_util",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/plugins/scalar:metadata",

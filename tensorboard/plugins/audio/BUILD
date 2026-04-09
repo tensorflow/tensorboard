@@ -91,6 +91,7 @@ py_library(
     ],
     deps = [
         ":metadata",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/util:lazy_tensor_creator",
     ],
