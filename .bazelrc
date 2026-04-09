@@ -1,6 +1,7 @@
 common --noenable_bzlmod
 common --enable_platform_specific_config
 common --experimental_repo_remote_exec  # from TensorFlow
+common --incompatible_default_to_explicit_init_py
 
 # Use C++ backing implementations for Python proto parsing and deserialization,
 # which is much faster (~10x).
