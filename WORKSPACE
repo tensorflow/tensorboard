@@ -98,6 +98,10 @@ local_repository(
     path = "third_party/safe_html_types",
 )
 
+# rules_closure's Soy toolchain still expects safe-html-types classes that are
+# compatible with protobuf-java 6.x. Vendor the adjusted library locally so the
+# Bazel 7 / protobuf 6 upgrade does not depend on older transitive jars.
+
 java_import_external(
     name = "com_google_flogger_flogger",
     licenses = ["notice"],

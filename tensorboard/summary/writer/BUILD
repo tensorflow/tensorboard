@@ -15,6 +15,9 @@ py_library(
         "record_writer.py",
     ],
     srcs_version = "PY3",
+    # Keep both deps: the bare compat target provides the package-level tf/tf2
+    # exports, while :tensorflow carries the TF-or-stub runtime wiring used by
+    # those exports in Bazel 7 test and binary runfiles.
     deps = [
         "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",

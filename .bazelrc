@@ -1,7 +1,10 @@
 common --noenable_bzlmod
 common --enable_platform_specific_config
 common --experimental_repo_remote_exec  # from TensorFlow
-common --incompatible_default_to_explicit_init_py
+# Bazel 7's synthesized Python package init files can shadow TensorBoard's real
+# compat package init at test runtime; keep this test-only so pip packaging
+# still copies the intended package tree.
+test --incompatible_default_to_explicit_init_py
 
 # Use C++ backing implementations for Python proto parsing and deserialization,
 # which is much faster (~10x).
