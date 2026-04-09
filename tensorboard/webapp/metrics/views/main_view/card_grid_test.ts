@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {ScrollingModule} from '@angular/cdk/scrolling';
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -48,6 +49,7 @@ import {CardGridContainer} from './card_grid_container';
 const scrollElementHeight = 100;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-scrolling-container',
   template: `
@@ -82,7 +84,11 @@ class TestableScrollingContainer {
 /**
  * Stub 'card-view' component for ease of testing.
  */
-@Component({standalone: false, selector: 'card-view'})
+@Component({
+  changeDetection: ChangeDetectionStrategy.Default,
+  standalone: false,
+  selector: 'card-view',
+})
 class TestableCardView {
   @Output() fullHeightChanged = new EventEmitter<boolean>();
   @Output() fullWidthChanged = new EventEmitter<boolean>();

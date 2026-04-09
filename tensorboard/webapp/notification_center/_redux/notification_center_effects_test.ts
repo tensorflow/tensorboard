@@ -60,7 +60,8 @@ describe('notification center effects', () => {
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       actualActions.push(action);
     });
     effects = TestBed.inject(NotificationCenterEffects);
@@ -96,7 +97,7 @@ describe('notification center effects', () => {
 
   it('dispatches failed action when notification fetch failed', () => {
     fetchNotificationsSpy.and.returnValue(
-      throwError(new Error('Request failed'))
+      throwError(() => new Error('Request failed'))
     );
     actions$.next(TEST_ONLY.initAction());
 

@@ -1,3 +1,33 @@
+diff --git a/node_modules/@bazel/concatjs/internal/common/compilation.bzl b/node_modules/@bazel/concatjs/internal/common/compilation.bzl
+index fed787a..377915a 100755
+--- a/node_modules/@bazel/concatjs/internal/common/compilation.bzl
++++ b/node_modules/@bazel/concatjs/internal/common/compilation.bzl
+@@ -160,25 +160,11 @@ def _outputs(ctx, label, srcs_files = []):
+         closure_js_file = ctx.actions.declare_file(basename + ".mjs")
+         closure_js_files.append(closure_js_file)
+
+-        # Temporary until all imports of ngfactory/ngsummary files are removed
+-        # TODO(alexeagle): clean up after Ivy launch
+-        if getattr(ctx.attr, "use_angular_plugin", False):
+-            closure_js_files.append(ctx.actions.declare_file(basename + ".ngfactory.mjs"))
+-            closure_js_files.append(ctx.actions.declare_file(basename + ".ngsummary.mjs"))
+-
+         if not is_dts:
+             devmode_js_file = ctx.actions.declare_file(basename + ".js")
+             devmode_js_files.append(devmode_js_file)
+             transpilation_infos.append(struct(closure = closure_js_file, devmode = devmode_js_file))
+             declaration_files.append(ctx.actions.declare_file(basename + ".d.ts"))
+-
+-            # Temporary until all imports of ngfactory/ngsummary files are removed
+-            # TODO(alexeagle): clean up after Ivy launch
+-            if getattr(ctx.attr, "use_angular_plugin", False):
+-                devmode_js_files.append(ctx.actions.declare_file(basename + ".ngfactory.js"))
+-                devmode_js_files.append(ctx.actions.declare_file(basename + ".ngsummary.js"))
+-                declaration_files.append(ctx.actions.declare_file(basename + ".ngfactory.d.ts"))
+-                declaration_files.append(ctx.actions.declare_file(basename + ".ngsummary.d.ts"))
+     return struct(
+         closure_js = closure_js_files,
+         devmode_js = devmode_js_files,
 diff --git a/node_modules/@bazel/concatjs/web_test/karma.conf.js b/node_modules/@bazel/concatjs/web_test/karma.conf.js
 index 90a03ef..28778c9 100755
 --- a/node_modules/@bazel/concatjs/web_test/karma.conf.js

@@ -12,10 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Type} from '@angular/core';
+import {Type} from '@angular/core';
+import {Action} from '@ngrx/store';
 import {DeepLinkProvider} from './deep_link_provider';
 import {RouteKind, SerializableQueryParams} from './types';
-import {Action} from '@ngrx/store';
 
 export interface ConcreteRouteDef {
   routeKind: RouteKind;
@@ -26,7 +26,7 @@ export interface ConcreteRouteDef {
   // Parameter has to be denoted with ":" prefix and "/" has to precede it.
   path: string;
 
-  ngComponent: Type<Component>;
+  ngComponent: Type<unknown>;
 
   // Redirect to this `path` if current navigation does not match any known
   // routes. Only one RouteConfig can have defaultRoute = true.

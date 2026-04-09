@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {SourceFileContent, StackFrame} from '../../store/debugger_types';
 
 /**
@@ -24,6 +24,7 @@ import {SourceFileContent, StackFrame} from '../../store/debugger_types';
  * displayed by this component.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'source-files-component',
   templateUrl: './source_files_component.ng.html',

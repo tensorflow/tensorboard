@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -30,6 +30,7 @@ import {
 import {LayoutContainer} from './layout_container';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'sidebar',
   template: `sidebar content`,
@@ -37,6 +38,7 @@ import {LayoutContainer} from './layout_container';
 class Sidebar {}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'main',
   template: `main content`,
@@ -44,6 +46,7 @@ class Sidebar {}
 class Main {}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-component',
   template: `
@@ -85,7 +88,8 @@ describe('layout test', () => {
 
     dispatchedActions = [];
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
     store.overrideSelector(getSideBarWidthInPercent, 10);

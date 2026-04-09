@@ -12,7 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, NgModule, Optional} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  NgModule,
+  Optional,
+} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {CustomizationModule} from './customization_module';
 
@@ -26,6 +31,7 @@ export class CustomizableComponentType {}
  * Parent class that uses the <tb-customization> component.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'parent-component',
   template: `
@@ -55,6 +61,7 @@ export class ParentComponentModule {}
  * into the ParentComponent for some tests.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'customizable-component',
   template: ` <div>Showing Customized Text!</div> `,
@@ -69,7 +76,7 @@ export class CustomizableComponent {}
   providers: [
     {
       provide: CustomizableComponentType,
-      useClass: CustomizableComponent,
+      useValue: CustomizableComponent,
     },
   ],
 })

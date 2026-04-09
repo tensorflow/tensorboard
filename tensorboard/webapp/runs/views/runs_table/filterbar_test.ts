@@ -12,32 +12,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  NO_ERRORS_SCHEMA,
+} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {Component, NO_ERRORS_SCHEMA} from '@angular/core';
-import {FilterbarComponent} from './filterbar_component';
-import {FilterbarContainer} from './filterbar_container';
+import {MatChipRemove, MatChipsModule} from '@angular/material/chips';
+import {MatChipHarness} from '@angular/material/chips/testing';
+import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
-import {provideMockTbStore} from '../../../testing/utils';
+import {Action, Store} from '@ngrx/store';
 import {MockStore} from '@ngrx/store/testing';
 import {State} from '../../../app_state';
-import {Action, Store} from '@ngrx/store';
-import {By} from '@angular/platform-browser';
 import {
   actions as hparamsActions,
   selectors as hparamsSelectors,
 } from '../../../hparams';
+import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {provideMockTbStore} from '../../../testing/utils';
+import {CustomModal} from '../../../widgets/custom_modal/custom_modal';
+import {FilterDialog} from '../../../widgets/data_table/filter_dialog_component';
+import {FilterDialogModule} from '../../../widgets/data_table/filter_dialog_module';
 import {
+  DiscreteFilter,
   DomainType,
   IntervalFilter,
-  DiscreteFilter,
 } from '../../../widgets/data_table/types';
-import {MatChipHarness} from '@angular/material/chips/testing';
-import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
-import {MatChipRemove, MatChipsModule} from '@angular/material/chips';
-import {MatIconTestingModule} from '../../../testing/mat_icon_module';
-import {FilterDialogModule} from '../../../widgets/data_table/filter_dialog_module';
-import {FilterDialog} from '../../../widgets/data_table/filter_dialog_component';
-import {CustomModal} from '../../../widgets/custom_modal/custom_modal';
+import {FilterbarComponent} from './filterbar_component';
+import {FilterbarContainer} from './filterbar_container';
 
 const discreteFilter: DiscreteFilter = {
   type: DomainType.DISCRETE,
@@ -61,6 +65,7 @@ const fakeFilterMap = new Map<string, DiscreteFilter | IntervalFilter>([
 ]);
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-component',
   template: ` <filterbar></filterbar> `,
@@ -95,9 +100,12 @@ describe('hparam_filterbar', () => {
   function createComponent(): ComponentFixture<TestableComponent> {
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
     actualActions = [];
-    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
-      actualActions.push(action);
-    });
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+      (action: Action) => {
+        actualActions.push(action);
+      }
+    );
 
     const fixture = TestBed.createComponent(TestableComponent);
     return fixture;

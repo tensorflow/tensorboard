@@ -100,9 +100,12 @@ describe('regex_edit_dialog', () => {
     });
     store.overrideSelector(getEnableColorByExperiment, true);
     actualActions = [];
-    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
-      actualActions.push(action);
-    });
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+      (action: Action) => {
+        actualActions.push(action);
+      }
+    );
 
     return TestBed.createComponent(RegexEditDialogContainer);
   }

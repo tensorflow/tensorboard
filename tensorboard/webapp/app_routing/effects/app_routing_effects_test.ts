@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {fakeAsync, flush, TestBed, tick} from '@angular/core/testing';
 import {provideMockActions} from '@ngrx/effects/testing';
 import {Action, createAction, createSelector, props, Store} from '@ngrx/store';
@@ -48,7 +48,13 @@ import {
 } from '../types';
 import {AppRoutingEffects, TEST_ONLY} from './app_routing_effects';
 
-@Component({standalone: false, selector: 'test', template: '', jit: true})
+@Component({
+  changeDetection: ChangeDetectionStrategy.Default,
+  standalone: false,
+  selector: 'test',
+  template: '',
+  jit: true,
+})
 class TestableComponent {}
 
 const testAction = createAction('[TEST] test action');
@@ -237,7 +243,8 @@ describe('app_routing_effects', () => {
     store.overrideSelector(getRehydratedDeepLinks, []);
     actualActions = [];
 
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       actualActions.push(action);
     });
 

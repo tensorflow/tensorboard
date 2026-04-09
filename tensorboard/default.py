@@ -24,10 +24,8 @@ automatically inherit the centrally-maintained list of standard plugins,
 for less repetition.
 """
 
-
 import logging
-
-import pkg_resources
+from importlib import metadata
 
 from tensorboard.plugins.audio import audio_plugin
 from tensorboard.plugins.core import core_plugin
@@ -45,7 +43,6 @@ from tensorboard.plugins.scalar import scalars_plugin
 from tensorboard.plugins.text import text_plugin
 from tensorboard.plugins.mesh import mesh_plugin
 from tensorboard.plugins.wit_redirect import wit_redirect_plugin
-
 
 logger = logging.getLogger(__name__)
 
@@ -119,8 +116,17 @@ def get_dynamic_plugins():
     [1]: https://packaging.python.org/specifications/entry-points/
     """
     return [
-        entry_point.resolve()
-        for entry_point in pkg_resources.iter_entry_points(
-            "tensorboard_plugins"
-        )
+        entry_point.load()
+        for entry_point in _iter_entry_points("tensorboard_plugins")
     ]
+
+
+def _iter_entry_points(group):
+    """Returns entry points for a given group across Python versions."""
+    entry_points = metadata.entry_points()
+    # In newer Python versions, `metadata.entry_points()` returns an
+    # `EntryPoints` object with a `select()` method.
+    # Before "selectable" entry points existed, it would return a dictionary.
+    if hasattr(entry_points, "select"):
+        return entry_points.select(group=group)
+    return entry_points.get(group, ())

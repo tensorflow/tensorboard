@@ -13,27 +13,34 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, Input, NO_ERRORS_SCHEMA, ViewChild} from '@angular/core';
-import {TestBed} from '@angular/core/testing';
-import {RunsDataTable} from './runs_data_table';
-import {DataTableModule} from '../../../widgets/data_table/data_table_module';
-import {MatIconTestingModule} from '../../../testing/mat_icon_module';
-import {MatCheckboxModule} from '@angular/material/checkbox';
 import {
-  SortingOrder,
-  SortingInfo,
-  TableData,
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  NO_ERRORS_SCHEMA,
+  ViewChild,
+} from '@angular/core';
+import {TestBed} from '@angular/core/testing';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {By} from '@angular/platform-browser';
+import {sendKeys} from '../../../testing/dom';
+import {MatIconTestingModule} from '../../../testing/mat_icon_module';
+import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
+import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
+import {DataTableModule} from '../../../widgets/data_table/data_table_module';
+import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
+import {
   ColumnHeader,
   ColumnHeaderType,
+  SortingInfo,
+  SortingOrder,
+  TableData,
 } from '../../../widgets/data_table/types';
-import {By} from '@angular/platform-browser';
-import {HeaderCellComponent} from '../../../widgets/data_table/header_cell_component';
-import {DataTableComponent} from '../../../widgets/data_table/data_table_component';
-import {ContentCellComponent} from '../../../widgets/data_table/content_cell_component';
 import {FilterInputModule} from '../../../widgets/filter_input/filter_input_module';
-import {sendKeys} from '../../../testing/dom';
+import {RunsDataTable} from './runs_data_table';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-comp',
   template: `

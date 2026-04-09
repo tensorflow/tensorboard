@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
+  ChangeDetectionStrategy,
   Component,
   DebugElement,
   Input,
@@ -39,6 +40,7 @@ import {
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {KeyType, sendKey, sendKeys} from '../../../testing/dom';
+import {buildMockState} from '../../../testing/utils';
 import {DataLoadState} from '../../../types/data';
 import {RunColorScale} from '../../../types/ui';
 import * as actions from '../../actions';
@@ -53,25 +55,25 @@ import {CardLazyLoader, CardObserver} from '../card_renderer/card_lazy_loader';
 import {CardIdWithMetadata} from '../metrics_view_types';
 import {CardGridComponent} from './card_grid_component';
 import {CardGridContainer} from './card_grid_container';
-import {CardGroupsComponent} from './card_groups_component';
-import {CardGroupsContainer} from './card_groups_container';
 import {CardGroupToolBarComponent} from './card_group_toolbar_component';
 import {CardGroupToolBarContainer} from './card_group_toolbar_container';
+import {CardGroupsComponent} from './card_groups_component';
+import {CardGroupsContainer} from './card_groups_container';
 import * as common_selectors from './common_selectors';
 import {EmptyTagMatchMessageComponent} from './empty_tag_match_message_component';
 import {EmptyTagMatchMessageContainer} from './empty_tag_match_message_container';
 import {FilteredViewComponent} from './filtered_view_component';
 import {
-  FilteredViewContainer,
   FILTER_VIEW_DEBOUNCE_IN_MS,
+  FilteredViewContainer,
 } from './filtered_view_container';
 import {MainViewComponent, SHARE_BUTTON_COMPONENT} from './main_view_component';
 import {MainViewContainer} from './main_view_container';
 import {PinnedViewComponent} from './pinned_view_component';
 import {PinnedViewContainer} from './pinned_view_container';
-import {buildMockState} from '../../../testing/utils';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'card-view',
   template: `{{ pluginType }}: {{ cardId }}`,
@@ -83,6 +85,7 @@ class TestableCard {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'test-share-button',
   template: ``,
@@ -198,7 +201,8 @@ describe('metrics main view', () => {
 
     dispatchedActions = [];
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       dispatchedActions.push(action);
     });
     store.overrideSelector(settingsSelectors.getPageSize, 10);
@@ -1776,7 +1780,7 @@ describe('customizable share button ', () => {
       providers: [
         {
           provide: SHARE_BUTTON_COMPONENT,
-          useClass: TestShareButtonContainer,
+          useValue: TestShareButtonContainer,
         },
         provideMockStore({
           initialState: appStateFromMetricsState(buildMetricsState()),

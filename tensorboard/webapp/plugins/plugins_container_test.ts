@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
@@ -47,9 +47,9 @@ import {
   PluginId,
 } from '../types/api';
 import {DataLoadState} from '../types/data';
+import {PluginRegistryModule} from './plugin_registry_module';
 import {PluginsComponent} from './plugins_component';
 import {PluginsContainer} from './plugins_container';
-import {PluginRegistryModule} from './plugin_registry_module';
 import {ExtraDashboardModule} from './testing';
 
 function expectPluginIframe(element: HTMLElement, name: string) {
@@ -64,6 +64,7 @@ function expectPluginIframe(element: HTMLElement, name: string) {
  * the `plugins` component.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   template: `
     <ng-template #environmentFailureNotFoundTemplate>

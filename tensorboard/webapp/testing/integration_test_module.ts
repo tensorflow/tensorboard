@@ -17,7 +17,7 @@ limitations under the License.
  *
  * This module does not facilitate any screenshot testing.
  */
-import {Component, NgModule} from '@angular/core';
+import {ChangeDetectionStrategy, Component, NgModule} from '@angular/core';
 import {EffectsModule as NgrxEffectsModule} from '@ngrx/effects';
 import {StoreModule as NgrxStoreModule} from '@ngrx/store';
 import {AppRoutingModule} from '../app_routing/app_routing_module';
@@ -31,6 +31,7 @@ import {RunsModule} from '../runs/runs_module';
 import {MatIconTestingModule} from './mat_icon_module';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'test',
   template: 'hello',
