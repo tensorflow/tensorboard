@@ -1,12 +1,12 @@
-FROM ubuntu:latest
+FROM ubuntu:22.04
 
 # Install environment dependencies
 RUN apt update && apt install -y wget unzip python3 python3-pip python3-dev python-is-python3 default-jdk nodejs npm
 RUN python3 -m pip install -U pip
 
 # Setup build environment
-ENV BAZEL_VERSION='4.2.2'
-ENV BAZEL_SHA256SUM='11dea6c7cfd866ed520af19a6bb1d952f3e9f4ee60ffe84e63c0825d95cb5859'
+ENV BAZEL_VERSION='6.5.0'
+ENV BAZEL_SHA256SUM='a40ac69263440761199fcb8da47ad4e3f328cbe79ffbf4ecc14e5ba252857307'
 ENV BUILDTOOLS_VERSION='3.0.0'
 ENV BUILDIFIER_SHA256SUM='e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
 ENV BUILDOZER_SHA256SUM='3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
