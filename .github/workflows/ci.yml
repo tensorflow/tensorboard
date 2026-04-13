@@ -65,6 +65,11 @@ jobs:
         run: |
           python -m pip install -U pip
           pip install "${TENSORFLOW_VERSION}"
+          # tf-nightly currently pulls in tb-nightly as a dependency. Bazel's
+          # source-tree tests must import TensorBoard from runfiles rather than
+          # from site-packages, otherwise tests that rely on local-only modules
+          # like `tensorboard.test` resolve against the installed wheel and fail.
+          pip uninstall -y tensorboard tb-nightly || true
         if: matrix.tf_version_id != 'notf'
       - name: 'Install Python dependencies'
         run: |
