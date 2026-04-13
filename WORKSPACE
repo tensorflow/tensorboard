@@ -42,7 +42,7 @@ http_archive(
     name = "io_bazel_rules_go",
     sha256 = "278b7ff5a826f3dc10f04feaf0b70d48b68748ccd512d7f98bf442077f043fe3",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.41.0/rules_go-v0.41.0.zip",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_go/releases/download/v0.41.0/rules_go-v0.41.0.zip",
         "https://github.com/bazelbuild/rules_go/releases/download/v0.41.0/rules_go-v0.41.0.zip",
     ],
 )
@@ -57,7 +57,7 @@ http_archive(
     name = "bazel_gazelle",
     sha256 = "29218f8e0cebe583643cbf93cae6f971be8a2484cdcfa1e45057658df8d54002",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.32.0/bazel-gazelle-v0.32.0.tar.gz",
+        "http://mirror.tensorflow.org/github.com/bazelbuild/bazel-gazelle/releases/download/v0.32.0/bazel-gazelle-v0.32.0.tar.gz",
         "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.32.0/bazel-gazelle-v0.32.0.tar.gz",
     ],
 )
@@ -106,7 +106,7 @@ java_import_external(
     name = "com_google_flogger_flogger",
     jar_sha256 = "b5ecd1483e041197012786f749968a62063c1964d3ecfbf96ba92a95797bb8f5",
     jar_urls = [
-        "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/flogger/flogger/0.5.1/flogger-0.5.1.jar",
+        "http://mirror.tensorflow.org/repo1.maven.org/maven2/com/google/flogger/flogger/0.5.1/flogger-0.5.1.jar",
         "https://repo1.maven.org/maven2/com/google/flogger/flogger/0.5.1/flogger-0.5.1.jar",
     ],
     licenses = ["notice"],
@@ -116,7 +116,7 @@ java_import_external(
     name = "com_google_flogger_google_extensions",
     jar_sha256 = "8b0862cad85b9549f355fe383c6c63816d2f19529634e033ae06d0107ab110b9",
     jar_urls = [
-        "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/flogger/google-extensions/0.5.1/google-extensions-0.5.1.jar",
+        "http://mirror.tensorflow.org/repo1.maven.org/maven2/com/google/flogger/google-extensions/0.5.1/google-extensions-0.5.1.jar",
         "https://repo1.maven.org/maven2/com/google/flogger/google-extensions/0.5.1/google-extensions-0.5.1.jar",
     ],
     licenses = ["notice"],
@@ -127,7 +127,7 @@ java_import_external(
     name = "com_google_flogger_flogger_system_backend",
     jar_sha256 = "685de33b53eb313049bbeee7f4b7a80dd09e8e754e96b048a3edab2cebb36442",
     jar_urls = [
-        "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/flogger/flogger-system-backend/0.5.1/flogger-system-backend-0.5.1.jar",
+        "http://mirror.tensorflow.org/repo1.maven.org/maven2/com/google/flogger/flogger-system-backend/0.5.1/flogger-system-backend-0.5.1.jar",
         "https://repo1.maven.org/maven2/com/google/flogger/flogger-system-backend/0.5.1/flogger-system-backend-0.5.1.jar",
     ],
     licenses = ["notice"],

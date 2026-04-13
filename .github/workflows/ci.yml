@@ -73,10 +73,21 @@ jobs:
             -r ./tensorboard/pip_package/requirements.txt \
             -r ./tensorboard/pip_package/requirements_dev.txt \
             ;
-      - name: 'Install Chrome dependencies'
+      - name: 'Install system dependencies'
         run: |
+          py_abi="python${{ matrix.python_version }}"
           sudo apt-get update
-          sudo apt-get install -y libgbm-dev libxss1 libasound2
+          sudo apt-get install -y "${py_abi}-dev" libgbm-dev libxss1 libasound2
+          # Bazel's system_python repository resolves headers relative to the
+          # interpreter installed by actions/setup-python. The self-hosted
+          # ml-build container does not provide Python.h under that prefix, so
+          # point the managed interpreter include dir at the system headers.
+          sudo mkdir -p "${pythonLocation}/include"
+          if [ ! -f "${pythonLocation}/include/${py_abi}/Python.h" ]; then
+            sudo rm -rf "${pythonLocation}/include/${py_abi}"
+            sudo ln -s "/usr/include/${py_abi}" "${pythonLocation}/include/${py_abi}"
+          fi
+          test -f "${pythonLocation}/include/${py_abi}/Python.h"
       - name: 'Check Pip state'
         run: pip freeze --all
       - name: 'Bazel: fetch'
