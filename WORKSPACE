@@ -104,64 +104,38 @@ local_repository(
 
 java_import_external(
     name = "com_google_flogger_flogger",
-    licenses = ["notice"],
+    jar_sha256 = "b5ecd1483e041197012786f749968a62063c1964d3ecfbf96ba92a95797bb8f5",
     jar_urls = [
         "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/flogger/flogger/0.5.1/flogger-0.5.1.jar",
         "https://repo1.maven.org/maven2/com/google/flogger/flogger/0.5.1/flogger-0.5.1.jar",
     ],
-    jar_sha256 = "b5ecd1483e041197012786f749968a62063c1964d3ecfbf96ba92a95797bb8f5",
+    licenses = ["notice"],
 )
 
 java_import_external(
     name = "com_google_flogger_google_extensions",
-    licenses = ["notice"],
+    jar_sha256 = "8b0862cad85b9549f355fe383c6c63816d2f19529634e033ae06d0107ab110b9",
     jar_urls = [
         "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/flogger/google-extensions/0.5.1/google-extensions-0.5.1.jar",
         "https://repo1.maven.org/maven2/com/google/flogger/google-extensions/0.5.1/google-extensions-0.5.1.jar",
     ],
-    jar_sha256 = "8b0862cad85b9549f355fe383c6c63816d2f19529634e033ae06d0107ab110b9",
+    licenses = ["notice"],
     deps = ["@com_google_flogger_flogger"],
 )
 
 java_import_external(
     name = "com_google_flogger_flogger_system_backend",
-    licenses = ["notice"],
+    jar_sha256 = "685de33b53eb313049bbeee7f4b7a80dd09e8e754e96b048a3edab2cebb36442",
     jar_urls = [
         "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/flogger/flogger-system-backend/0.5.1/flogger-system-backend-0.5.1.jar",
         "https://repo1.maven.org/maven2/com/google/flogger/flogger-system-backend/0.5.1/flogger-system-backend-0.5.1.jar",
     ],
-    jar_sha256 = "685de33b53eb313049bbeee7f4b7a80dd09e8e754e96b048a3edab2cebb36442",
+    licenses = ["notice"],
     deps = ["@com_google_flogger_flogger"],
 )
 
 java_import_external(
     name = "com_google_template_soy",
-    licenses = ["notice"],
-    jar_urls = [
-        "https://repo1.maven.org/maven2/com/google/template/soy/2022-03-07/soy-2022-03-07.jar",
-    ],
-    jar_sha256 = "643440022e247ef8ad25bacb83ba099ccd2ae4b1fd078d9e9e3d3dd4af00411f",
-    deps = [
-        "@args4j",
-        "@com_google_code_findbugs_jsr305",
-        "@com_google_code_gson",
-        "@com_google_flogger_flogger",
-        "@com_google_flogger_flogger_system_backend",
-        "@com_google_flogger_google_extensions",
-        "@com_google_common_html_types",
-        "@com_google_guava",
-        "@com_google_inject_extensions_guice_assistedinject",
-        "@com_google_inject_extensions_guice_multibindings",
-        "@com_google_inject_guice",
-        "@com_google_protobuf//:protobuf_java",
-        "@com_ibm_icu_icu4j",
-        "@javax_inject",
-        "@org_json",
-        "@org_ow2_asm",
-        "@org_ow2_asm_analysis",
-        "@org_ow2_asm_commons",
-        "@org_ow2_asm_util",
-    ],
     extra_build_file_content = "\n".join([
         ("java_binary(\n" +
          "    name = \"%s\",\n" +
@@ -176,6 +150,32 @@ java_import_external(
             "SoyToPySrcCompiler",
         )
     ]),
+    jar_sha256 = "643440022e247ef8ad25bacb83ba099ccd2ae4b1fd078d9e9e3d3dd4af00411f",
+    jar_urls = [
+        "https://repo1.maven.org/maven2/com/google/template/soy/2022-03-07/soy-2022-03-07.jar",
+    ],
+    licenses = ["notice"],
+    deps = [
+        "@args4j",
+        "@com_google_code_findbugs_jsr305",
+        "@com_google_code_gson",
+        "@com_google_common_html_types",
+        "@com_google_flogger_flogger",
+        "@com_google_flogger_flogger_system_backend",
+        "@com_google_flogger_google_extensions",
+        "@com_google_guava",
+        "@com_google_inject_extensions_guice_assistedinject",
+        "@com_google_inject_extensions_guice_multibindings",
+        "@com_google_inject_guice",
+        "@com_google_protobuf//:protobuf_java",
+        "@com_ibm_icu_icu4j",
+        "@javax_inject",
+        "@org_json",
+        "@org_ow2_asm",
+        "@org_ow2_asm_analysis",
+        "@org_ow2_asm_commons",
+        "@org_ow2_asm_util",
+    ],
 )
 
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies")
@@ -205,14 +205,6 @@ load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
 yarn_install(
     name = "npm",
-    # Under Bazel 7.7.0 on this stack, invoking patch-package from the
-    # repository rule is fragile. Apply the existing git-format patches
-    # directly in yarn_install instead.
-    post_install_patches = [
-        "//patches:@angular+build-tooling+0.0.0-7d103b83a07f132629592fc9918ce17d42a5e382.patch",
-        "//patches:@bazel+concatjs+5.7.0.patch",
-    ],
-    patch_args = ["-p1"],
     # "Some rules only work by referencing labels nested inside npm packages
     # and therefore require turning off exports_directories_only."
     # This includes "ts_library".
@@ -220,6 +212,14 @@ yarn_install(
     exports_directories_only = False,
     package_json = "//:package.json",
     package_json_remove = ["scripts.postinstall"],
+    patch_args = ["-p1"],
+    # Under Bazel 7.7.0 on this stack, invoking patch-package from the
+    # repository rule is fragile. Apply the existing git-format patches
+    # directly in yarn_install instead.
+    post_install_patches = [
+        "//patches:@angular+build-tooling+0.0.0-7d103b83a07f132629592fc9918ce17d42a5e382.patch",
+        "//patches:@bazel+concatjs+5.7.0.patch",
+    ],
     yarn_lock = "//:yarn.lock",
 )
 
@@ -361,6 +361,7 @@ http_archive(
 load("@io_bazel_rules_webtesting//web:go_repositories.bzl", "go_internal_repositories", "go_repositories")
 
 go_repositories()
+
 go_internal_repositories()
 
 # Please add all new dependencies in workspace.bzl.
