@@ -97,6 +97,8 @@ extract_wheels() {
 smoke() (
   [ $# -eq 1 ]
   smoke_python="$1"
+  tb_pid=
+  pipe_path=
   py_major_version="$(
       "${smoke_python}" -c 'import sys; print(sys.version_info[0])'
   )"
@@ -146,15 +148,33 @@ smoke() (
       LC_ALL="${LC_ALL:-C.UTF-8}" \
       PATH="${smoke_venv}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
       TMPDIR="${TMPDIR:-/tmp}" \
+      TF_CPP_MIN_LOG_LEVEL="${TF_CPP_MIN_LOG_LEVEL:-1}" \
+      TF_ENABLE_ONEDNN_OPTS="${TF_ENABLE_ONEDNN_OPTS:-0}" \
+      CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-}" \
       VIRTUAL_ENV="${smoke_venv}" \
       "$@"
   }
 
+  cleanup_tensorboard() {
+    if [ -n "${tb_pid}" ]; then
+      kill "${tb_pid}" 2>/dev/null || true
+      wait "${tb_pid}" 2>/dev/null || true
+      tb_pid=
+    fi
+    if [ -n "${pipe_path}" ]; then
+      rm -f "${pipe_path}"
+      pipe_path=
+    fi
+  }
+  trap cleanup_tensorboard EXIT
+
   # Test TensorBoard application
   [ -x ./bin/tensorboard ]  # Ensure pip package included binary
-  mkfifo pipe
-  smoke_env ./bin/tensorboard --port=0 --logdir=smokedir 2>pipe &
-  perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
+  pipe_path="${PWD}/pipe"
+  mkfifo "${pipe_path}"
+  smoke_env ./bin/tensorboard --port=0 --logdir=smokedir 2>"${pipe_path}" &
+  tb_pid=$!
+  perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <"${pipe_path}" >port
   curl -fs "http://localhost:$(cat port)" >index.html
   grep '<tb-webapp' index.html
   curl -fs "http://localhost:$(cat port)/data/logdir" >logdir.json
@@ -164,10 +184,9 @@ smoke() (
   grep '\[\]' projector_runs.json
   curl -fs "http://localhost:$(cat port)/data/plugin/projector/projector_binary.html" >projector_binary.html
   grep '<vz-projector-dashboard' projector_binary.html
-  kill $!
+  cleanup_tensorboard
 
   # Test TensorBoard APIs
-  export TF_CPP_MIN_LOG_LEVEL=1  # Suppress spammy TF startup logging.
   smoke_env ./bin/python -I -c "
 import tensorboard as tb
 assert tb.__version__ == tb.version.VERSION
