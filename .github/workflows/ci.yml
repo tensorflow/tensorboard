@@ -94,7 +94,22 @@ jobs:
           sudo rm -rf "${pythonLocation}/include/${py_abi}"
           sudo mkdir -p "${pythonLocation}/include/${py_abi}"
           sudo cp -a "/usr/include/${py_abi}/." "${pythonLocation}/include/${py_abi}/"
+          includepy="$(python - <<'PY'
+          import sysconfig
+          print(sysconfig.get_config_var("INCLUDEPY"))
+          PY
+          )"
+          # upb's system_python repository rule shells out to `python3` and
+          # uses sysconfig.get_config_var("INCLUDEPY"), which under
+          # actions/setup-python inside this container points at
+          # /opt/hostedtoolcache/... rather than ${pythonLocation}. Materialize
+          # that INCLUDEPY path too so Bazel's @system_python repo can symlink
+          # real headers into external/system_python/python.
+          sudo mkdir -p "$(dirname "${includepy}")"
+          sudo rm -rf "${includepy}"
+          sudo cp -a "${pythonLocation}/include/${py_abi}" "${includepy}"
           test -f "${pythonLocation}/include/${py_abi}/Python.h"
+          test -f "${includepy}/Python.h"
       - name: 'Debug Python toolchain'
         run: |
           py_abi="python${{ matrix.python_version }}"
