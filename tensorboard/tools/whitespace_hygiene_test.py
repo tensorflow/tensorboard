@@ -25,7 +25,7 @@ import subprocess
 import sys
 
 
-# @TODO: Remove this exception when the patch file is no longer needed.
+# @TODO(@cdavalos7): Remove this exception when the patch file is no longer needed.
 # Patch files use a trailing space on blank lines to mark them as context.
 # This is required by patch-package and cannot be removed.
 exceptions = frozenset(

@@ -140,8 +140,9 @@ tf_ts_library(
 
 tf_ng_web_test_suite(
     name = "vz_projector_test",
-    # Exclude Node.js-only packages from the browser bundle.
-    # These come from @tensorflow/tfjs-core -> node-fetch.
+    # This vz_projector plugin depends on @tensorflow/tfjs library.
+    # tfjs is designed to run in the browser and in Node.js server, so it includes node-fetch for the Node.js side.
+    # When esbuild bundles everything for the browser, it tries to include node-fetch and fails because it can't resolve Node.js built-ins. The external list just tells esbuild to ignore those server only packages since they'll never be used in the browser.
     external = [
         "node-fetch",
         "stream",

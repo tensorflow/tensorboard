@@ -11,10 +11,10 @@ index 870da1b..3f1e5c5 100755
  )
  
 diff --git a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs b/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
-index 6d5ec3f..ad4b529 100755
+index 6d5ec3f..ad4217f 100755
 --- a/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
 +++ b/node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs
-@@ -86,11 +86,10 @@ export async function createEsbuildAngularOptimizePlugin(opts, additionalBabelPl
+@@ -86,11 +86,11 @@ export async function createEsbuildAngularOptimizePlugin(opts, additionalBabelPl
              devkitOptimizePlugins.adjustTypeScriptEnumsPlugin,
            );
  
@@ -23,7 +23,8 @@ index 6d5ec3f..ad4b529 100755
 -          if (opts.optimize.isSideEffectFree && opts.optimize.isSideEffectFree(args.path)) {
 -            plugins.push(devkitOptimizePlugins.pureToplevelFunctionsPlugin);
 -          }
-+          // Disabled: breaks TensorBoard by removing code that is still used.
++          // For TensorBoard: This plugin aggressively culls symbols in a way that
++          // is incompatible with TensorBoard source. Disable it. As result the binary is bigger.
 +          //if (opts.optimize.isSideEffectFree && opts.optimize.isSideEffectFree(args.path)) {
 +          //  plugins.push(devkitOptimizePlugins.pureToplevelFunctionsPlugin);
 +          //}

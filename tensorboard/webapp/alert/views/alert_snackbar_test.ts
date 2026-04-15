@@ -130,6 +130,7 @@ describe('alert snackbar', () => {
     });
   });
 
+  /* Replaced async/await with fakeAsync/flush(). Angular Material 17 no longer triggers immediate change detection when dismissing the snackbar. Since the snackbar lives in an overlay outside the test component, fixture.detectChanges() doesn't reach it. flush() forces all pending tasks to complete globally, including the overlay */
   it('closes the snackbar on click', fakeAsync(() => {
     const fixture = TestBed.createComponent(AlertSnackbarContainer);
     fixture.detectChanges();
