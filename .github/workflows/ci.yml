@@ -174,13 +174,21 @@ jobs:
         if: matrix.tf_version_id == 'notf'
       - name: 'Bazel: run Pip package test (with TensorFlow support)'
         run: |
-          bazel run //tensorboard/pip_package:test_pip_package -- \
+          # `bazel run` has been flaky under this self-hosted container runner
+          # even when the smoke test itself completes successfully. Build the
+          # launcher target, invoke the generated binary directly, then shut
+          # down the Bazel server so the step exits cleanly.
+          bazel build //tensorboard/pip_package:test_pip_package
+          ./bazel-bin/tensorboard/pip_package/test_pip_package \
             --tf-version "${TENSORFLOW_VERSION}"
+          bazel shutdown
         if: matrix.tf_version_id != 'notf'
       - name: 'Bazel: run Pip package test (non-TensorFlow only)'
         run: |
-          bazel run //tensorboard/pip_package:test_pip_package -- \
+          bazel build //tensorboard/pip_package:test_pip_package
+          ./bazel-bin/tensorboard/pip_package/test_pip_package \
             --tf-version notf
+          bazel shutdown
         if: matrix.tf_version_id == 'notf'
       - name: 'Bazel: run manual tests'
         run: |

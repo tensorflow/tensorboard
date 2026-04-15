@@ -97,8 +97,6 @@ extract_wheels() {
 smoke() (
   [ $# -eq 1 ]
   smoke_python="$1"
-  tb_pid=
-  pipe_path=
   py_major_version="$(
       "${smoke_python}" -c 'import sys; print(sys.version_info[0])'
   )"
@@ -121,17 +119,9 @@ smoke() (
   virtualenv -q -p "${smoke_python}" "${smoke_venv}"
   cd "${smoke_venv}"
 
-  export VIRTUAL_ENV="${smoke_venv}"
+  export VIRTUAL_ENV=venv
   export PATH="${smoke_venv}/bin:${PATH}"
   unset PYTHON_HOME
-  # `bazel run` and the parent shell may export Python- and runfiles-related
-  # variables that make the smoke tests import from Bazel/workspace state
-  # instead of the freshly installed wheel in this virtualenv.
-  unset PYTHONPATH PYTHONSTARTUP PYTHONSAFEPATH PYTHONNOUSERSITE PYTHONUSERBASE
-  unset BUILD_WORKSPACE_DIRECTORY BUILD_WORKING_DIRECTORY
-  unset RUNFILES RUNFILES_DIR RUNFILES_MANIFEST_FILE RUNFILES_MANIFEST_ONLY
-  unset RUNFILES_REPO_MAPPING JAVA_RUNFILES PYTHON_RUNFILES
-  unset TEST_SRCDIR TEST_WORKSPACE TEST_BINARY BAZEL_TEST
   pip install -qU pip
 
   if [ -n "${tf_version}" ]; then
@@ -141,40 +131,11 @@ smoke() (
   pip install -qU "${wheels}"/*py"${py_major_version}"*.whl
   pip freeze  # Log the results of pip installation
 
-  smoke_env() {
-    env -i \
-      HOME="${HOME}" \
-      LANG="${LANG:-C.UTF-8}" \
-      LC_ALL="${LC_ALL:-C.UTF-8}" \
-      PATH="${smoke_venv}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-      TMPDIR="${TMPDIR:-/tmp}" \
-      TF_CPP_MIN_LOG_LEVEL="${TF_CPP_MIN_LOG_LEVEL:-1}" \
-      TF_ENABLE_ONEDNN_OPTS="${TF_ENABLE_ONEDNN_OPTS:-0}" \
-      CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-}" \
-      VIRTUAL_ENV="${smoke_venv}" \
-      "$@"
-  }
-
-  cleanup_tensorboard() {
-    if [ -n "${tb_pid}" ]; then
-      kill "${tb_pid}" 2>/dev/null || true
-      wait "${tb_pid}" 2>/dev/null || true
-      tb_pid=
-    fi
-    if [ -n "${pipe_path}" ]; then
-      rm -f "${pipe_path}"
-      pipe_path=
-    fi
-  }
-  trap cleanup_tensorboard EXIT
-
   # Test TensorBoard application
   [ -x ./bin/tensorboard ]  # Ensure pip package included binary
-  pipe_path="${PWD}/pipe"
-  mkfifo "${pipe_path}"
-  smoke_env ./bin/tensorboard --port=0 --logdir=smokedir 2>"${pipe_path}" &
-  tb_pid=$!
-  perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <"${pipe_path}" >port
+  mkfifo pipe
+  tensorboard --port=0 --logdir=smokedir 2>pipe &
+  perl -ne 'print STDERR;/http:.*:(\d+)/ and print $1.v10 and exit 0' <pipe >port
   curl -fs "http://localhost:$(cat port)" >index.html
   grep '<tb-webapp' index.html
   curl -fs "http://localhost:$(cat port)/data/logdir" >logdir.json
@@ -184,10 +145,11 @@ smoke() (
   grep '\[\]' projector_runs.json
   curl -fs "http://localhost:$(cat port)/data/plugin/projector/projector_binary.html" >projector_binary.html
   grep '<vz-projector-dashboard' projector_binary.html
-  cleanup_tensorboard
+  kill $!
 
   # Test TensorBoard APIs
-  smoke_env ./bin/python -I -c "
+  export TF_CPP_MIN_LOG_LEVEL=1  # Suppress spammy TF startup logging.
+  python -c "
 import tensorboard as tb
 assert tb.__version__ == tb.version.VERSION
 assert issubclass(tb.errors.NotFoundError, tb.errors.PublicError)
@@ -198,7 +160,7 @@ hp.hparams_pb({'optimizer': 'adam', 'learning_rate': 0.02})
 "
   if [ -n "${tf_version}" ]; then
     # Only test summary scalar and mesh summary
-    smoke_env ./bin/python -I -c "
+    python -c "
 import tensorboard as tb
 tb.summary.v1.scalar_pb('test', 42)
 tb.summary.scalar('test v2', 1337)
@@ -209,7 +171,7 @@ from tensorboard.plugins.mesh import summary
   if [ -n "${tf_version}" ]; then
     test_tf_summary '.compat.v2'
     is_tf_2() {
-      smoke_env ./bin/python -I -c "import tensorflow as tf; assert tf.__version__[:2] == '2.'" \
+      python -c "import tensorflow as tf; assert tf.__version__[:2] == '2.'" \
         >/dev/null 2>&1
     }
     if is_tf_2; then
@@ -224,14 +186,12 @@ test_tf_summary() {
   import_attr="import tensorflow as tf; a = tf${1}.summary; a.write; a.scalar"
   import_as="import tensorflow${1}.summary as b; b.write; b.scalar"
   import_from="from tensorflow${1} import summary as c; c.write; c.scalar"
-  printf '%s\n' "${import_attr}" "${import_as}" "${import_from}" | smoke_env ./bin/python -I -
-  printf '%s\n' "${import_attr}" "${import_from}" "${import_as}" | smoke_env ./bin/python -I -
-  printf '%s\n' "${import_as}" "${import_attr}" "${import_from}" | smoke_env ./bin/python -I -
-  printf '%s\n' "${import_as}" "${import_from}" "${import_attr}" | smoke_env ./bin/python -I -
-  printf '%s\n' "${import_from}" "${import_attr}" "${import_as}" | smoke_env ./bin/python -I -
-  printf '%s\n' "${import_from}" "${import_as}" "${import_attr}" | smoke_env ./bin/python -I -
+  printf '%s\n' "${import_attr}" "${import_as}" "${import_from}" | python -
+  printf '%s\n' "${import_attr}" "${import_from}" "${import_as}" | python -
+  printf '%s\n' "${import_as}" "${import_attr}" "${import_from}" | python -
+  printf '%s\n' "${import_as}" "${import_from}" "${import_attr}" | python -
+  printf '%s\n' "${import_from}" "${import_attr}" "${import_as}" | python -
+  printf '%s\n' "${import_from}" "${import_as}" "${import_attr}" | python -
 }
 
 main "$@"
-
-printf >&2 'All smoke tests passed.'
