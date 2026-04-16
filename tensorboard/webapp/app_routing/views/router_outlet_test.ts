@@ -13,7 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, NO_ERRORS_SCHEMA} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  NO_ERRORS_SCHEMA,
+} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {BrowserDynamicTestingModule} from '@angular/platform-browser-dynamic/testing';
@@ -33,6 +37,7 @@ import {RouterOutletComponent} from './router_outlet_component';
 import {RouterOutletContainer} from './router_outlet_container';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'first',
   template: 'I am a test',
@@ -40,6 +45,7 @@ import {RouterOutletContainer} from './router_outlet_container';
 class FirstTestableComponent {}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'second',
   template: 'I am inevitable',

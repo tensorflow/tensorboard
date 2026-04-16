@@ -13,15 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, Input, ViewChild} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  ViewChild,
+} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {By} from '@angular/platform-browser';
-import {ColumnHeader, ColumnHeaderType} from './types';
-import {DataTableModule} from './data_table_module';
+import {MatIconTestingModule} from '../../testing/mat_icon_module';
 import {ContentCellComponent} from './content_cell_component';
+import {DataTableModule} from './data_table_module';
+import {ColumnHeader, ColumnHeaderType} from './types';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-comp',
   template: `

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 
 /**
  * A component for rendering a '/' delimited path. When text exceeds its
@@ -21,6 +21,7 @@ import {Component, Input} from '@angular/core';
  * ellipsis.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'tb-truncated-path',
   template: `

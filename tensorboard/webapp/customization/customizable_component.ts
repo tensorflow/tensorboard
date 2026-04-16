@@ -12,7 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+  Type,
+  ViewContainerRef,
+} from '@angular/core';
 
 /**
  * A Component that defines a customization point. Ideal for use for small
@@ -24,7 +31,7 @@ import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
  *
  * 1. Define a customizable Component, for example a button:
  *
- *    const CustomizableButton = new InjectionToken<Type<Component>>('Customizable Button');
+ *    const CustomizableButton = new InjectionToken<Type<unknown>>('Customizable Button');
  *
  * 2. Where the customization point is desired, use this Component to wrap some
  *    default behavior. Bind to some possibly-empty variable with the
@@ -39,7 +46,7 @@ import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
  *
  *    constructor(
  *      @Optional() @Inject(CustomizableButton)
- *      readonly customButtonIfProvided: Type<Component>)
+ *      readonly customButtonIfProvided: Type<unknown>)
  *
  * If you do not wish to customize the behavior for a certain TensorBoard
  * service (in this case, a button), you're done. The TensorBoard service
@@ -68,6 +75,7 @@ import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
  *    })
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'tb-customization',
   template: `
@@ -77,7 +85,7 @@ import {Component, Input, OnInit, Type, ViewContainerRef} from '@angular/core';
   `,
 })
 export class CustomizableComponent implements OnInit {
-  @Input() customizableComponent!: Type<Component> | undefined;
+  @Input() customizableComponent!: Type<unknown> | undefined;
 
   constructor(private readonly viewContainerRef: ViewContainerRef) {}
 

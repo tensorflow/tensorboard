@@ -12,12 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {getSettingsLoadState} from '../_redux/settings_selectors';
 import {State} from '../_redux/settings_types';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'settings-button',
   template: `

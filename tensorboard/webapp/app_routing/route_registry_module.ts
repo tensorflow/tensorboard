@@ -13,7 +13,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {
-  Component,
   Inject,
   ModuleWithProviders,
   NgModule,
@@ -28,10 +27,7 @@ import {RouteKind} from './types';
 @NgModule({})
 export class RouteRegistryModule {
   private readonly routeConfigs: RouteConfigs;
-  private readonly routeKindToNgComponent = new Map<
-    RouteKind,
-    Type<Component>
-  >();
+  private readonly routeKindToNgComponent = new Map<RouteKind, Type<unknown>>();
 
   constructor(
     @Optional() @Inject(ROUTE_CONFIGS_TOKEN) configsList: RouteDef[][]
@@ -67,7 +63,7 @@ export class RouteRegistryModule {
     return this.routeConfigs;
   }
 
-  getNgComponentByRouteKind(routeKind: RouteKind): Type<Component> | null {
+  getNgComponentByRouteKind(routeKind: RouteKind): Type<unknown> | null {
     return this.routeKindToNgComponent.get(routeKind) || null;
   }
 

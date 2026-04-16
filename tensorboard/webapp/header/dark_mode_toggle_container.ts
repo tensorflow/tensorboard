@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -23,6 +23,7 @@ import {State as FeatureFlagState} from '../feature_flag/store/feature_flag_type
 import {DarkModeOverride} from './dark_mode_toggle_component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'app-header-dark-mode-toggle',
   template: `

@@ -14,7 +14,7 @@ limitations under the License.
 ==============================================================================*/
 import {OverlayContainer, OverlayModule} from '@angular/cdk/overlay';
 import {CommonModule} from '@angular/common';
-import {Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {
@@ -38,6 +38,7 @@ interface Coord {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-comp',
   template: `

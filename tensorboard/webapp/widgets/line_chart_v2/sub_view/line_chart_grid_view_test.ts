@@ -13,7 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, DebugElement, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DebugElement,
+  Input,
+} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Extent, ScaleType} from '../lib/public_types';
@@ -21,6 +26,7 @@ import {createScale} from '../lib/scale';
 import {LineChartGridView} from './line_chart_grid_view';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-comp',
   template: `

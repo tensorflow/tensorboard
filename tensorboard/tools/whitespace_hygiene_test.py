@@ -25,7 +25,14 @@ import subprocess
 import sys
 
 
-exceptions = frozenset([])
+# @TODO(@cdavalos7): Remove this exception when the patch file is no longer needed.
+# Patch files use a trailing space on blank lines to mark them as context.
+# This is required by patch-package and cannot be removed.
+exceptions = frozenset(
+    [
+        "patches/@angular+build-tooling+0.0.0-2113cd7f66a089ac0208ea84eee672b2529f4f6c.patch",
+    ]
+)
 
 
 @dataclasses.dataclass(frozen=True)

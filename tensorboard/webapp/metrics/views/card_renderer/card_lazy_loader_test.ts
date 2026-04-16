@@ -12,7 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, NO_ERRORS_SCHEMA} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  NO_ERRORS_SCHEMA,
+} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -25,6 +30,7 @@ import {CardId} from '../../types';
 import {CardLazyLoader, CardObserver} from '../card_renderer/card_lazy_loader';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'card-view',
   template: `{{ cardId }}`,
@@ -39,6 +45,7 @@ interface TestableCardConfig {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-cards',
   template: `

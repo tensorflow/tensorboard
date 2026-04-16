@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DebugTensorValue} from '../../store/debugger_types';
 
 const basicDebugInfoStyle = `
@@ -30,6 +30,7 @@ const basicDebugInfoStyle = `
 `;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'debug-tensor-dtype',
   template: ` {{ dtype }} `,
@@ -41,6 +42,7 @@ export class DebugTensorDTypeComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'debug-tensor-rank',
   template: ` {{ rank }}D `,
@@ -52,6 +54,7 @@ export class DebugTensorRankComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'debug-tensor-shape',
   template: ` shape:{{ shapeString }} `,
@@ -75,6 +78,7 @@ export class DebugTensorShapeComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'debug-tensor-numeric-breakdown',
   template: `
@@ -209,6 +213,7 @@ export class DebugTensorNumericBreakdownComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'debug-tensor-has-inf-or-nan',
   template: `
@@ -247,6 +252,7 @@ export class DebugTensorHasInfOrNaNComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'debug-tensor-value',
   template: `

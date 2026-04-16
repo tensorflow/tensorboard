@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 import {sourceLineFocused} from '../../actions';
 import {
@@ -25,6 +25,7 @@ import {CodeLocationType, State} from '../../store/debugger_types';
 import {StackFrameForDisplay} from './stack_trace_component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'tf-debugger-v2-stack-trace',
   template: `

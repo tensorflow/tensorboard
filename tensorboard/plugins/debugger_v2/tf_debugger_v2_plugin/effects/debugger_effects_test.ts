@@ -401,9 +401,12 @@ describe('Debugger effects', () => {
     }).compileComponents();
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    dispatchSpy = spyOn(store, 'dispatch').and.callFake((action: Action) => {
-      dispatchedActions.push(action);
-    });
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    dispatchSpy = (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake(
+      (action: Action) => {
+        dispatchedActions.push(action);
+      }
+    );
     store.overrideSelector(getActivePlugin, '');
   });
 
@@ -436,6 +439,7 @@ describe('Debugger effects', () => {
     begin: number,
     end: number,
     alertsResponse: AlertsResponse,
+    // tslint:disable-next-line:enforce-name-casing
     alert_type?: string
   ) {
     if (alert_type === undefined) {
@@ -1403,6 +1407,7 @@ describe('Debugger effects', () => {
       },
       begin: 0,
       end: 2,
+      // tslint:disable-next-line:enforce-name-casing
       alert_type: AlertType.INF_NAN_ALERT,
       per_type_alert_limit: 1000,
       alerts: [alert0, alert1],
@@ -1657,7 +1662,9 @@ describe('Debugger effects', () => {
         .withArgs(runId, fileIndex)
         .and.returnValue(
           of({
+            // tslint:disable-next-line:enforce-name-casing
             host_name: hostName,
+            // tslint:disable-next-line:enforce-name-casing
             file_path: filePath,
             lines,
           })
