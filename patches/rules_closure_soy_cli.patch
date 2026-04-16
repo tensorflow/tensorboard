@@ -1,0 +1,19 @@
+diff --git a/closure/templates/closure_java_template_library.bzl b/closure/templates/closure_java_template_library.bzl
+--- a/closure/templates/closure_java_template_library.bzl
++++ b/closure/templates/closure_java_template_library.bzl
+@@ -133,7 +133,7 @@ def _soy_java_template_genrule_impl(
+         out_name = deps_flag_file_name,
+         targets = deps,
+-        flag = "--deps",
++        flag = "--depHeaders",
+         compatible_with = compatible_with,
+     )
+     native.genrule(
+@@ -145,7 +145,6 @@ def _soy_java_template_genrule_impl(
+         cmd = "$(location %s)" % soycompilerbin +
+               " --outputDirectory=$(@D)" +
+               " --javaPackage=" + java_package +
+               " --javaClassNameSource=filename" +
+-              " --allowExternalCalls=" + str(allow_external_calls) +
+               additional_flags +
+               # Include the sources and deps files as command line flags.

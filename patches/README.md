@@ -2,6 +2,11 @@
 
 We use [patch-package](https://www.npmjs.com/package/patch-package) to apply
 TensorBoard-specific patches to some of our npm/yarn dependencies.
+For this Bazel 7.7.0 branch, `WORKSPACE` applies the generated patch files via
+`yarn_install(post_install_patches = ...)` rather than invoking
+`patch-package` during the repository rule. This keeps the patch artifacts
+compatible with upstream while avoiding a brittle install-time step under our
+current Bazel setup.
 
 After creating or updating a patch, ensure there is no trailing whitespace on
 any line (CI runs `./tensorboard/tools/whitespace_hygiene_test.py`). You can

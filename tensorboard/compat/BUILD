@@ -22,8 +22,16 @@ py_library(
     srcs = ["__init__.py"],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
+    deps = ["//tensorboard:lazy"],
+)
+
+py_test(
+    name = "compat_test",
+    srcs = ["compat_test.py"],
+    srcs_version = "PY3",
     deps = [
-        "//tensorboard:lazy",
+        ":compat",
+        "//tensorboard:expect_tensorflow_installed",
     ],
 )
 
@@ -38,9 +46,13 @@ py_library(
 # as written but can be swapped out for a real dependency.
 py_library(
     name = "tensorflow",
+    srcs = ["__init__.py"],
     srcs_version = "PY3",
+    # Keep the package's real __init__.py on this target instead of depending
+    # on :compat so Bazel 7 test runfiles expose the lazy tf/tf2 exports from
+    # the actual package init rather than a synthesized empty package.
     deps = [
-        ":compat",
+        "//tensorboard:lazy",
         "//tensorboard/compat/tensorflow_stub",
     ],
 )
@@ -50,10 +62,16 @@ py_library(
 # Depend on this rule if your code should only use the TF stub.
 py_library(
     name = "no_tensorflow",
-    srcs = ["notf.py"],
+    srcs = [
+        "__init__.py",
+        "notf.py",
+    ],
     srcs_version = "PY3",
+    # Mirror :tensorflow's package layout so the no-TF variant still exposes
+    # the compat package exports while forcing the sentinel import.
     deps = [
-        ":tensorflow",
+        "//tensorboard:lazy",
+        "//tensorboard/compat/tensorflow_stub",
     ],
 )
 

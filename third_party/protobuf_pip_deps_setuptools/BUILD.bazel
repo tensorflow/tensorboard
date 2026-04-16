@@ -1,0 +1,5 @@
+filegroup(
+    name = "site_packages",
+    srcs = glob(["site-packages/**"]),
+    visibility = ["//visibility:public"],
+)

@@ -13,6 +13,7 @@ py_library(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/util:io_util",
         "//tensorboard/util:tb_logging",
@@ -38,6 +39,7 @@ py_library(
         ":data_provider",
         ":event_multiplexer",
         ":tag_types",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/data:ingester",
         "//tensorboard/plugins/audio:metadata",
@@ -104,6 +106,7 @@ py_library(
     deps = [
         ":directory_watcher",
         ":io_wrapper",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/util:tb_logging",
     ],
@@ -130,6 +133,7 @@ py_library(
     visibility = ["//visibility:public"],
     deps = [
         ":io_wrapper",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/util:io_util",
         "//tensorboard/util:tb_logging",
@@ -172,6 +176,7 @@ py_library(
     deps = [
         "//tensorboard:data_compat",
         "//tensorboard:dataclass_compat",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/util:platform_util",
@@ -354,6 +359,7 @@ py_library(
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
     ],
 )
@@ -366,6 +372,7 @@ py_library(
     deps = [
         ":event_accumulator",
         ":io_wrapper",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
     ],

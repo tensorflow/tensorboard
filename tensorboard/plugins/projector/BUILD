@@ -24,6 +24,7 @@ py_library(
         "//tensorboard:expect_protobuf_installed",
         "//tensorboard/backend:http_util",
         "//tensorboard/backend/event_processing:plugin_asset_util",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
         "//tensorboard/plugins:base_plugin",
         "//tensorboard/util:img_mime_type_detector",
@@ -41,6 +42,7 @@ py_library(
         ":metadata",
         ":protos_all_py_pb2",
         "//tensorboard:expect_protobuf_installed",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
     ],
 )

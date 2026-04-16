@@ -25,8 +25,8 @@ permissions:
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
   # in our WORKSPACE file.
-  BAZEL_VERSION: '6.5.0'
-  BAZEL_SHA256SUM: 'a40ac69263440761199fcb8da47ad4e3f328cbe79ffbf4ecc14e5ba252857307'
+  BAZEL_VERSION: '7.7.0'
+  BAZEL_SHA256SUM: 'fe7e799cbc9140f986b063e06800a3d4c790525075c877d00a7112669824acbf'
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
@@ -48,7 +48,7 @@ jobs:
       fail-fast: false
       matrix:
         tf_version_id: ['tf', 'notf']
-        python_version: ['3.9']
+        python_version: ['3.10']
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
@@ -65,6 +65,11 @@ jobs:
         run: |
           python -m pip install -U pip
           pip install "${TENSORFLOW_VERSION}"
+          # tf-nightly currently pulls in tb-nightly as a dependency. Bazel's
+          # source-tree tests must import TensorBoard from runfiles rather than
+          # from site-packages, otherwise tests that rely on local-only modules
+          # like `tensorboard.test` resolve against the installed wheel and fail.
+          pip uninstall -y tensorboard tb-nightly || true
         if: matrix.tf_version_id != 'notf'
       - name: 'Install Python dependencies'
         run: |
@@ -73,14 +78,85 @@ jobs:
             -r ./tensorboard/pip_package/requirements.txt \
             -r ./tensorboard/pip_package/requirements_dev.txt \
             ;
-      - name: 'Install Chrome dependencies'
+      - name: 'Install system dependencies'
         run: |
+          py_abi="python${{ matrix.python_version }}"
           sudo apt-get update
-          sudo apt-get install -y libgbm-dev libxss1 libasound2
+          sudo apt-get install -y "${py_abi}-dev" libgbm-dev libxss1 libasound2
+          # Bazel's system_python repository resolves headers relative to the
+          # interpreter installed by actions/setup-python. The self-hosted
+          # ml-build container does not provide Python.h under that prefix, so
+          # copy the system headers into the managed interpreter include dir.
+          # A real directory copy is more robust here than a symlink because
+          # Bazel's repository setup may materialize or traverse this path in
+          # ways that do not preserve symlink behavior.
+          sudo mkdir -p "${pythonLocation}/include"
+          sudo rm -rf "${pythonLocation}/include/${py_abi}"
+          sudo mkdir -p "${pythonLocation}/include/${py_abi}"
+          sudo cp -a "/usr/include/${py_abi}/." "${pythonLocation}/include/${py_abi}/"
+          includepy="$(python - <<'PY'
+          import sysconfig
+          print(sysconfig.get_config_var("INCLUDEPY"))
+          PY
+          )"
+          # upb's system_python repository rule shells out to `python3` and
+          # uses sysconfig.get_config_var("INCLUDEPY"), which under
+          # actions/setup-python inside this container points at
+          # /opt/hostedtoolcache/... rather than ${pythonLocation}. Materialize
+          # that INCLUDEPY path too so Bazel's @system_python repo can symlink
+          # real headers into external/system_python/python.
+          sudo mkdir -p "$(dirname "${includepy}")"
+          sudo rm -rf "${includepy}"
+          sudo cp -a "${pythonLocation}/include/${py_abi}" "${includepy}"
+          test -f "${pythonLocation}/include/${py_abi}/Python.h"
+          test -f "${includepy}/Python.h"
+      - name: 'Debug Python toolchain'
+        run: |
+          py_abi="python${{ matrix.python_version }}"
+          echo "pythonLocation=${pythonLocation}"
+          echo "PATH=${PATH}"
+          which python
+          python --version
+          command -v python3.10-config || true
+          python3.10-config --includes || true
+          python - <<'PY'
+          import os
+          import pathlib
+          import sys
+          import sysconfig
+
+          print("sys.executable =", sys.executable)
+          for key in ("include", "platinclude", "stdlib", "platstdlib", "scripts", "data"):
+              print(f"{key} =", sysconfig.get_path(key))
+          for key in ("INCLUDEPY", "CONFINCLUDEPY", "LIBDIR", "LDLIBRARY", "MULTIARCH"):
+              print(f"{key} =", sysconfig.get_config_var(key))
+          include_dir = pathlib.Path(sysconfig.get_path("include"))
+          print("include_dir exists =", include_dir.exists(), include_dir)
+          print("Python.h exists =", (include_dir / "Python.h").exists())
+          print("pythonLocation =", os.environ.get("pythonLocation"))
+          PY
+          ls -la "${pythonLocation}" || true
+          ls -la "${pythonLocation}/include" || true
+          ls -la "${pythonLocation}/include/${py_abi}" || true
       - name: 'Check Pip state'
         run: pip freeze --all
       - name: 'Bazel: fetch'
         run: bazel fetch //tensorboard/...
+      - name: 'Debug Bazel system_python repo'
+        run: |
+          output_base="$(bazel info output_base)"
+          echo "output_base=${output_base}"
+          find "${output_base}/external/system_python" -maxdepth 3 \
+            \( -name 'Python.h' -o -name 'BUILD.bazel' -o -name 'WORKSPACE' \) \
+            -print | sort || true
+          if [ -f "${output_base}/external/system_python/BUILD.bazel" ]; then
+            sed -n '1,200p' "${output_base}/external/system_python/BUILD.bazel"
+          fi
+          if [ -d "${output_base}/external/system_python/python" ]; then
+            ls -la "${output_base}/external/system_python/python"
+          else
+            echo "system_python/python directory not found"
+          fi
       - name: 'Bazel: build'
         # Note we suppress a flood of warnings from the proto compiler.
         # Googlers see b/222706811 & b/182876485 discussion and preconditions
@@ -98,13 +174,21 @@ jobs:
         if: matrix.tf_version_id == 'notf'
       - name: 'Bazel: run Pip package test (with TensorFlow support)'
         run: |
-          bazel run //tensorboard/pip_package:test_pip_package -- \
+          # `bazel run` has been flaky under this self-hosted container runner
+          # even when the smoke test itself completes successfully. Build the
+          # launcher target, invoke the generated binary directly, then shut
+          # down the Bazel server so the step exits cleanly.
+          bazel build //tensorboard/pip_package:test_pip_package
+          ./bazel-bin/tensorboard/pip_package/test_pip_package \
             --tf-version "${TENSORFLOW_VERSION}"
+          bazel shutdown
         if: matrix.tf_version_id != 'notf'
       - name: 'Bazel: run Pip package test (non-TensorFlow only)'
         run: |
-          bazel run //tensorboard/pip_package:test_pip_package -- \
+          bazel build //tensorboard/pip_package:test_pip_package
+          ./bazel-bin/tensorboard/pip_package/test_pip_package \
             --tf-version notf
+          bazel shutdown
         if: matrix.tf_version_id == 'notf'
       - name: 'Bazel: run manual tests'
         run: |

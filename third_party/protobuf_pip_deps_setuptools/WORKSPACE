@@ -1,0 +1,1 @@
+workspace(name = "protobuf_pip_deps_setuptools")

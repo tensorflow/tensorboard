@@ -32,6 +32,29 @@ from tensorboard import version
 from tensorboard.util import tb_logging
 
 
+_SUBPROCESS_ENV_DENYLIST = frozenset(
+    (
+        "BUILD_WORKING_DIRECTORY",
+        "BUILD_WORKSPACE_DIRECTORY",
+        "JAVA_RUNFILES",
+        "PYTHONHOME",
+        "PYTHONPATH",
+        "PYTHONSAFEPATH",
+        "PYTHONSTARTUP",
+        "PYTHONUSERBASE",
+        "PYTHON_RUNFILES",
+        "RUNFILES",
+        "RUNFILES_DIR",
+        "RUNFILES_MANIFEST_FILE",
+        "RUNFILES_MANIFEST_ONLY",
+        "RUNFILES_REPO_MAPPING",
+        "TEST_BINARY",
+        "TEST_SRCDIR",
+        "TEST_WORKSPACE",
+    )
+)
+
+
 @dataclasses.dataclass(frozen=True)
 class TensorBoardInfo:
     """Holds the information about a running TensorBoard instance.
@@ -385,6 +408,20 @@ class StartTimedOut:
     pid: int
 
 
+def _subprocess_environ():
+    """Create an environment for a managed TensorBoard subprocess.
+
+    TensorBoard processes launched from Bazel tests should resolve their own
+    runfiles and Python import paths. Inheriting Bazel's test-only Python and
+    runfiles variables can make the child binary execute against the parent's
+    runfiles tree instead of its own.
+    """
+    environ = os.environ.copy()
+    for key in _SUBPROCESS_ENV_DENYLIST:
+        environ.pop(key, None)
+    return environ
+
+
 def start(arguments, timeout=datetime.timedelta(seconds=60)):
     """Start a new TensorBoard instance, or reuse a compatible one.
 
@@ -427,6 +464,7 @@ def start(arguments, timeout=datetime.timedelta(seconds=60)):
     try:
         p = subprocess.Popen(
             ["tensorboard" if explicit_tb is None else explicit_tb] + arguments,
+            env=_subprocess_environ(),
             stdout=stdout_fd,
             stderr=stderr_fd,
         )

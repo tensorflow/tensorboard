@@ -1,0 +1,49 @@
+diff --git a/build_defs/java_opts.bzl b/build_defs/java_opts.bzl
+--- a/build_defs/java_opts.bzl
++++ b/build_defs/java_opts.bzl
+@@ -17,14 +17,5 @@ def protobuf_java_export(**kwargs):
+ def protobuf_java_export(**kwargs):
+     java_export(
+         javacopts = JAVA_RELEASE_OPTS,
+-        # https://github.com/bazelbuild/rules_jvm_external/issues/1245
+-        javadocopts = [
+-            "-notimestamp",
+-            "-use",
+-            "-quiet",
+-            "-Xdoclint:-missing",
+-            "-encoding",
+-            "UTF8",
+-        ],
+         **kwargs
+     )
+diff --git a/bazel/private/proto_library_rule.bzl b/bazel/private/proto_library_rule.bzl
+--- a/bazel/private/proto_library_rule.bzl
++++ b/bazel/private/proto_library_rule.bzl
+@@ -29,6 +29,9 @@ def _check_srcs_package(target_package, srcs):
+     for src in srcs:
+         if target_package != src.label.package:
+             fail("Proto source with label '%s' must be in same package as consuming rule." % src.label)
++
++def _is_normalized(path):
++    return path == "" or paths.normalize(path) == path
+ 
+ def _get_import_prefix(ctx):
+     """Gets and verifies import_prefix attribute if it is declared."""
+@@ -36,7 +39,7 @@ def _get_import_prefix(ctx):
+ 
+     import_prefix = ctx.attr.import_prefix
+ 
+-    if not paths.is_normalized(import_prefix):
++    if not _is_normalized(import_prefix):
+         fail("should be normalized (without uplevel references or '.' path segments)", attr = "import_prefix")
+     if paths.is_absolute(import_prefix):
+         fail("should be a relative path", attr = "import_prefix")
+@@ -48,7 +51,7 @@ def _get_strip_import_prefix(ctx):
+ 
+     strip_import_prefix = ctx.attr.strip_import_prefix
+ 
+-    if not paths.is_normalized(strip_import_prefix):
++    if not _is_normalized(strip_import_prefix):
+         fail("should be normalized (without uplevel references or '.' path segments)", attr = "strip_import_prefix")
+ 
+     if paths.is_absolute(strip_import_prefix):

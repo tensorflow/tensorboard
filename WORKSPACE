@@ -1,6 +1,9 @@
 workspace(name = "org_tensorflow_tensorboard")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:java.bzl", "java_import_external")
+load("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
+load("//third_party:repo.bzl", "tb_http_archive", "tb_mirror_urls")
 
 http_archive(
     name = "bazel_skylib",
@@ -18,10 +21,10 @@ versions.check(
     # Preemptively assume the next Bazel major version will break us, since historically they do,
     # and provide a clean error message in that case. Since the maximum version is inclusive rather
     # than exclusive, we set it to the 999th patch release of the current major version.
-    maximum_bazel_version = "6.999.0",
+    maximum_bazel_version = "7.999.0",
     # Keep this version in sync with:
     #  * The BAZEL environment variable defined in .github/workflows/ci.yml, which is used for CI and nightly builds.
-    minimum_bazel_version = "6.5.0",
+    minimum_bazel_version = "7.7.0",
 )
 
 http_archive(
@@ -34,6 +37,34 @@ http_archive(
 load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories")
 
 web_test_repositories(omit_bazel_skylib = True)
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "278b7ff5a826f3dc10f04feaf0b70d48b68748ccd512d7f98bf442077f043fe3",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_go/releases/download/v0.41.0/rules_go-v0.41.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.41.0/rules_go-v0.41.0.zip",
+    ],
+)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+
+go_rules_dependencies()
+
+go_register_toolchains(version = "1.20.5")
+
+http_archive(
+    name = "bazel_gazelle",
+    sha256 = "29218f8e0cebe583643cbf93cae6f971be8a2484cdcfa1e45057658df8d54002",
+    urls = [
+        "http://mirror.tensorflow.org/github.com/bazelbuild/bazel-gazelle/releases/download/v0.32.0/bazel-gazelle-v0.32.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.32.0/bazel-gazelle-v0.32.0.tar.gz",
+    ],
+)
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+
+gazelle_dependencies()
 
 # rules_python has to be placed before load("@io_bazel_rules_closure//closure:repositories.bzl")
 # in the dependencies list, otherwise we get "cannot load '@rules_python//python:py_xxx.bzl': no such file"
@@ -53,6 +84,8 @@ py_repositories()
 
 http_archive(
     name = "io_bazel_rules_closure",
+    patch_args = ["-p1"],
+    patches = ["//patches:rules_closure_soy_cli.patch"],
     sha256 = "ae060075a7c468eee42e6a08ddbb83f5a6663bdfdbd461261a465f4a3ae8598c",
     strip_prefix = "rules_closure-7f3d3351a8cc31fbaa403de7d35578683c17b447",
     urls = [
@@ -60,12 +93,99 @@ http_archive(
     ],
 )
 
+local_repository(
+    name = "com_google_common_html_types",
+    path = "third_party/safe_html_types",
+)
+
+# rules_closure's Soy toolchain still expects safe-html-types classes that are
+# compatible with protobuf-java 6.x. Vendor the adjusted library locally so the
+# Bazel 7 / protobuf 6 upgrade does not depend on older transitive jars.
+
+java_import_external(
+    name = "com_google_flogger_flogger",
+    jar_sha256 = "b5ecd1483e041197012786f749968a62063c1964d3ecfbf96ba92a95797bb8f5",
+    jar_urls = [
+        "http://mirror.tensorflow.org/repo1.maven.org/maven2/com/google/flogger/flogger/0.5.1/flogger-0.5.1.jar",
+        "https://repo1.maven.org/maven2/com/google/flogger/flogger/0.5.1/flogger-0.5.1.jar",
+    ],
+    licenses = ["notice"],
+)
+
+java_import_external(
+    name = "com_google_flogger_google_extensions",
+    jar_sha256 = "8b0862cad85b9549f355fe383c6c63816d2f19529634e033ae06d0107ab110b9",
+    jar_urls = [
+        "http://mirror.tensorflow.org/repo1.maven.org/maven2/com/google/flogger/google-extensions/0.5.1/google-extensions-0.5.1.jar",
+        "https://repo1.maven.org/maven2/com/google/flogger/google-extensions/0.5.1/google-extensions-0.5.1.jar",
+    ],
+    licenses = ["notice"],
+    deps = ["@com_google_flogger_flogger"],
+)
+
+java_import_external(
+    name = "com_google_flogger_flogger_system_backend",
+    jar_sha256 = "685de33b53eb313049bbeee7f4b7a80dd09e8e754e96b048a3edab2cebb36442",
+    jar_urls = [
+        "http://mirror.tensorflow.org/repo1.maven.org/maven2/com/google/flogger/flogger-system-backend/0.5.1/flogger-system-backend-0.5.1.jar",
+        "https://repo1.maven.org/maven2/com/google/flogger/flogger-system-backend/0.5.1/flogger-system-backend-0.5.1.jar",
+    ],
+    licenses = ["notice"],
+    deps = ["@com_google_flogger_flogger"],
+)
+
+java_import_external(
+    name = "com_google_template_soy",
+    extra_build_file_content = "\n".join([
+        ("java_binary(\n" +
+         "    name = \"%s\",\n" +
+         "    main_class = \"com.google.template.soy.%s\",\n" +
+         "    output_licenses = [\"unencumbered\"],\n" +
+         "    runtime_deps = [\":com_google_template_soy\"],\n" +
+         ")\n") % (name, name)
+        for name in (
+            "SoyParseInfoGenerator",
+            "SoyToJbcSrcCompiler",
+            "SoyToJsSrcCompiler",
+            "SoyToPySrcCompiler",
+        )
+    ]),
+    jar_sha256 = "643440022e247ef8ad25bacb83ba099ccd2ae4b1fd078d9e9e3d3dd4af00411f",
+    jar_urls = [
+        "https://repo1.maven.org/maven2/com/google/template/soy/2022-03-07/soy-2022-03-07.jar",
+    ],
+    licenses = ["notice"],
+    deps = [
+        "@args4j",
+        "@com_google_code_findbugs_jsr305",
+        "@com_google_code_gson",
+        "@com_google_common_html_types",
+        "@com_google_flogger_flogger",
+        "@com_google_flogger_flogger_system_backend",
+        "@com_google_flogger_google_extensions",
+        "@com_google_guava",
+        "@com_google_inject_extensions_guice_assistedinject",
+        "@com_google_inject_extensions_guice_multibindings",
+        "@com_google_inject_guice",
+        "@com_google_protobuf//:protobuf_java",
+        "@com_ibm_icu_icu4j",
+        "@javax_inject",
+        "@org_json",
+        "@org_ow2_asm",
+        "@org_ow2_asm_analysis",
+        "@org_ow2_asm_commons",
+        "@org_ow2_asm_util",
+    ],
+)
+
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies")
 
 rules_closure_dependencies(
     omit_bazel_skylib = True,
+    omit_com_google_common_html_types = True,
     omit_com_google_protobuf = True,
     omit_com_google_protobuf_js = True,
+    omit_com_google_template_soy = True,
 )
 
 http_archive(
@@ -98,16 +218,21 @@ node_repositories(
 
 yarn_install(
     name = "npm",
-    data = [
-        "//patches:@angular+build-tooling+0.0.0-2113cd7f66a089ac0208ea84eee672b2529f4f6c.patch",
-        "//patches:@bazel+concatjs+5.8.1.patch",
-    ],
     # "Some rules only work by referencing labels nested inside npm packages
     # and therefore require turning off exports_directories_only."
     # This includes "ts_library".
     # See: https://github.com/bazelbuild/rules_nodejs/wiki/Migrating-to-5.0#exports_directories_only
     exports_directories_only = False,
     package_json = "//:package.json",
+    package_json_remove = ["scripts.postinstall"],
+    patch_args = ["-p1"],
+    # Under Bazel 7.7.0 on this stack, invoking patch-package from the
+    # repository rule is fragile. Apply the existing git-format patches
+    # directly in yarn_install instead.
+    post_install_patches = [
+        "//patches:@angular+build-tooling+0.0.0-2113cd7f66a089ac0208ea84eee672b2529f4f6c.patch",
+        "//patches:@bazel+concatjs+5.8.1.patch",
+    ],
     yarn_lock = "//:yarn.lock",
 )
 
@@ -146,49 +271,94 @@ sass_repositories()
 # high as the version of protobuf we depend on below, and we cannot increase the
 # version below without bumping the requirements.txt version.
 #
-# TODO(#6185): Remove the TODO below once the TF constraint no longer applies.
-#
-# NOTE: This dependency currently cannot be advanced past 3.19.x. This is because
-# TF is currently unable to use a runtime any greater than 3.19.x, see details here:
-# https://github.com/tensorflow/tensorflow/blob/9d22f4a0a9499c8e10a4312503e63e0da35ccd94/tensorflow/tools/pip_package/setup.py#L100-L107
-#
-# As a result of TF's constraint and the above <= requirement, 3.19.x is the most recent
-# possible protoc we can use while remaining cross-compatible with TF. At the same time,
-# 3.19.x is the minimum possible protoc that will generate compiled proto code that *is*
-# compatible with protobuf runtimes >= 4, as discussed here:
-# https://developers.google.com/protocol-buffers/docs/news/2022-05-06
-http_archive(
-    name = "com_google_protobuf",
-    sha256 = "9a301cf94a8ddcb380b901e7aac852780b826595075577bb967004050c835056",
-    strip_prefix = "protobuf-3.19.6",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/v3.19.6.tar.gz",
-        "https://github.com/protocolbuffers/protobuf/archive/v3.19.6.tar.gz",  # 2022-09-29
-    ],
+# TensorFlow 2.21 uses protobuf 6.31.1 in its own build and pip package
+# constraints. Keep this Bazel-side protoc version aligned with that runtime
+# floor so generated Python code and the ambient `protobuf` package remain
+# compatible.
+tb_http_archive(
+    name = "tb_rules_cc",
+    patch_file = ["//patches:rules_cc_protobuf.patch"],
+    repo_mapping = {
+        "@rules_cc": "@tb_rules_cc",
+    },
+    sha256 = "4b12149a041ddfb8306a8fd0e904e39d673552ce82e4296e96fac9cbf0780e59",
+    strip_prefix = "rules_cc-0.1.0",
+    urls = tb_mirror_urls("https://github.com/bazelbuild/rules_cc/archive/refs/tags/0.1.0.tar.gz"),
 )
+
+tb_http_archive(
+    name = "tb_rules_java",
+    sha256 = "b2519fabcd360529071ade8732f208b3755489ed7668b118f8f90985c0e51324",
+    strip_prefix = "rules_java-8.6.1",
+    urls = tb_mirror_urls("https://github.com/bazelbuild/rules_java/archive/refs/tags/8.6.1.tar.gz"),
+)
+
+local_repository(
+    name = "compatibility_proxy",
+    path = "third_party/compatibility_proxy",
+)
+
+local_repository(
+    name = "protobuf_pip_deps",
+    path = "third_party/protobuf_pip_deps",
+)
+
+local_repository(
+    name = "protobuf_pip_deps_setuptools",
+    path = "third_party/protobuf_pip_deps_setuptools",
+)
+
+load("@tb_rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
+
+tb_http_archive(
+    name = "com_google_absl",
+    repo_mapping = {
+        "@rules_cc": "@tb_rules_cc",
+    },
+    sha256 = "d8ae9aa794a571ee39c77085ee69f1d4ac276212a7d99734974d95df7baa8d13",
+    strip_prefix = "abseil-cpp-9ac7062b1860d895fb5a8cbf58c3e9ef8f674b5f",
+    urls = tb_mirror_urls("https://github.com/abseil/abseil-cpp/archive/9ac7062b1860d895fb5a8cbf58c3e9ef8f674b5f.zip"),
+)
+
+tb_http_archive(
+    name = "com_google_protobuf",
+    patch_file = ["//patches:protobuf_6_31_1_java_export.patch"],
+    repo_mapping = {
+        "@abseil-cpp": "@com_google_absl",
+        "@rules_cc": "@tb_rules_cc",
+        "@rules_java": "@tb_rules_java",
+    },
+    sha256 = "6e09bbc950ba60c3a7b30280210cd285af8d7d8ed5e0a6ed101c72aff22e8d88",
+    strip_prefix = "protobuf-6.31.1",
+    urls = tb_mirror_urls("https://github.com/protocolbuffers/protobuf/archive/refs/tags/v6.31.1.zip"),
+)
+
+rules_java_dependencies()
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
 
 # gRPC.
 #
-# NOTE: The version used here must be cross-compatible with our protobuf version.
-# As 2023-01-13, 1.48.2 is the most recent gRPC release that was still using a 3.19.x
-# version of protobuf in its own builds (more recent releases move to 3.21.x).
-http_archive(
+# Keep this aligned with TensorFlow 2.21's Bazel-side gRPC dependency so the
+# grpc plugin and protobuf repository stay on a known-compatible combination.
+tb_http_archive(
     name = "com_github_grpc_grpc",
-    sha256 = "bdb8e98145469d58c69ab9f2c9e0bd838c2836a99b5760bc0ebf658623768f52",
-    strip_prefix = "grpc-1.48.2",
-    urls = [
-        "http://mirror.tensorflow.org/github.com/grpc/grpc/archive/v1.48.2.tar.gz",
-        "https://github.com/grpc/grpc/archive/v1.48.2.tar.gz",  # 2022-09-21
-    ],
+    sha256 = "dd6a2fa311ba8441bbefd2764c55b99136ff10f7ea42954be96006a2723d33fc",
+    strip_prefix = "grpc-1.74.0",
+    urls = tb_mirror_urls("https://github.com/grpc/grpc/archive/refs/tags/v1.74.0.tar.gz"),
+)
+
+tb_http_archive(
+    name = "build_bazel_rules_swift",
+    sha256 = "9919ed1d8dae509645bfd380537ae6501528d8de971caebed6d5185b9970dc4d",
+    urls = tb_mirror_urls("https://github.com/bazelbuild/rules_swift/releases/download/2.1.1/rules_swift.2.1.1.tar.gz"),
 )
 
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
 
 grpc_deps()
-
-load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
-
-grpc_extra_deps()
 
 http_archive(
     name = "rules_rust",
@@ -201,10 +371,11 @@ http_archive(
     ],
 )
 
-# WORKAROUND for rules_webtesting not declaring used com_github_gorilla_mux repo:
-load("@io_bazel_rules_webtesting//web:go_repositories.bzl", "com_github_gorilla_mux")
+load("@io_bazel_rules_webtesting//web:go_repositories.bzl", "go_internal_repositories", "go_repositories")
 
-com_github_gorilla_mux()
+go_repositories()
+
+go_internal_repositories()
 
 # Please add all new dependencies in workspace.bzl.
 load("//third_party:workspace.bzl", "tensorboard_workspace")

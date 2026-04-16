@@ -11,6 +11,7 @@ exports_files(["LICENSE"])
 py_library(
     name = "org_pocoo_werkzeug",
     srcs = glob(["werkzeug/**/*.py"]),
+    imports = ["."],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )

@@ -15,17 +15,13 @@ py_library(
         "record_writer.py",
     ],
     srcs_version = "PY3",
-    # This target depends directly on //tensorboard/compat and on the TF stub to
-    # ensure it doesn't pick up a TF build dependency, which may happen when using
-    # //tensorboard/compat:tensorflow when the code is synced internally.
-    #
-    # TODO(#4581): implement a better abstraction for filesystem layer that includes
-    #   the option to use tf.io.gfile if available, eliminating need to rely on the
-    #   overall switching logic from tensorboard.compat.tf (see also #3666).
+    # Keep both deps: the bare compat target provides the package-level tf/tf2
+    # exports, while :tensorflow carries the TF-or-stub runtime wiring used by
+    # those exports in Bazel 7 test and binary runfiles.
     deps = [
         "//tensorboard/compat",
+        "//tensorboard/compat:tensorflow",
         "//tensorboard/compat/proto:protos_all_py_pb2",
-        "//tensorboard/compat/tensorflow_stub",
     ],
 )
 

@@ -16,12 +16,21 @@
 
 
 from tensorboard.plugins.text import metadata
-from tensorboard.plugins.text import summary_v2
+
+
+def _summary_v2():
+    from tensorboard.plugins.text import summary_v2
+
+    return summary_v2
 
 
 # Export V2 versions.
-text = summary_v2.text
-text_pb = summary_v2.text_pb
+def text(*args, **kwargs):
+    return _summary_v2().text(*args, **kwargs)
+
+
+def text_pb(*args, **kwargs):
+    return _summary_v2().text_pb(*args, **kwargs)
 
 
 def op(name, data, display_name=None, description=None, collections=None):
