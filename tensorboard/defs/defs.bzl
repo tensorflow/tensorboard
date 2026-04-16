@@ -179,7 +179,8 @@ def tf_ts_library(srcs = [], strict_checks = True, **kwargs):
         **kwargs
     )
 
-def tf_ng_web_test_suite(name, deps = [], **kwargs):
+# The external list is used to exclude node-fetch from the browser bundle since it is not compatible with browsers. This allows us to use tfjs in our web application without running into issues caused by node-fetch. @tensorflow/tfjs-core is used by vz_projector plugin.
+def tf_ng_web_test_suite(name, deps = [], external = [], **kwargs):
     """TensorBoard wrapper for the rule for a Karma web test suite.
 
     This uses the Angular team's internal toolchain for bundling
@@ -218,6 +219,7 @@ def tf_ng_web_test_suite(name, deps = [], **kwargs):
         workspace_name = "org_tensorflow_tensorboard",
         run_angular_linker = False,
         platform = "browser",
+        external = external,
     )
 
     karma_web_test_suite(

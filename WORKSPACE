@@ -70,10 +70,9 @@ rules_closure_dependencies(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "c29944ba9b0b430aadcaf3bf2570fece6fc5ebfb76df145c6cdad40d65c20811",
+    sha256 = "f02557f31d4110595ca6e93660018bcd7fdfdbe7d0086089308f1b3af3a7a7ee",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_nodejs/releases/download/5.7.0/rules_nodejs-5.7.0.tar.gz",
-        "https://github.com/bazelbuild/rules_nodejs/releases/download/5.7.0/rules_nodejs-5.7.0.tar.gz",
+        "https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.1/rules_nodejs-5.8.1.tar.gz",
     ],
 )
 
@@ -81,13 +80,27 @@ load("@build_bazel_rules_nodejs//:repositories.bzl", "build_bazel_rules_nodejs_d
 
 build_bazel_rules_nodejs_dependencies()
 
-load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
+
+# Angular 17 needs Node.js 18.17 or higher. rules_nodejs 5.8.1 does not
+# include Node 18, so we add it here manually.
+# @TODO(@cdavalos7): We plan to upgrade to a newer version of rules_nodejs that includes Node 18 and remove this manual addition in next version upgrade.
+node_repositories(
+    node_repositories = {
+        "18.20.8-darwin_arm64": ("node-v18.20.8-darwin-arm64.tar.gz", "node-v18.20.8-darwin-arm64", "bae4965d29d29bd32f96364eefbe3bca576a03e917ddbb70b9330d75f2cacd76"),
+        "18.20.8-darwin_amd64": ("node-v18.20.8-darwin-x64.tar.gz", "node-v18.20.8-darwin-x64", "ed2554677188f4afc0d050ecd8bd56effb2572d6518f8da6d40321ede6698509"),
+        "18.20.8-linux_arm64": ("node-v18.20.8-linux-arm64.tar.xz", "node-v18.20.8-linux-arm64", "224e569dbe7b0ea4628ce383d9d482494b57ee040566583f1c54072c86d1116b"),
+        "18.20.8-linux_amd64": ("node-v18.20.8-linux-x64.tar.xz", "node-v18.20.8-linux-x64", "5467ee62d6af1411d46b6a10e3fb5cacc92734dbcef465fea14e7b90993001c9"),
+        "18.20.8-windows_amd64": ("node-v18.20.8-win-x64.zip", "node-v18.20.8-win-x64", "1a1e40260a6facba83636e4cd0ba01eb5bd1386896824b36645afba44857384a"),
+    },
+    node_version = "18.20.8",
+)
 
 yarn_install(
     name = "npm",
     data = [
-        "//patches:@angular+build-tooling+0.0.0-7d103b83a07f132629592fc9918ce17d42a5e382.patch",
-        "//patches:@bazel+concatjs+5.7.0.patch",
+        "//patches:@angular+build-tooling+0.0.0-2113cd7f66a089ac0208ea84eee672b2529f4f6c.patch",
+        "//patches:@bazel+concatjs+5.8.1.patch",
     ],
     # "Some rules only work by referencing labels nested inside npm packages
     # and therefore require turning off exports_directories_only."
