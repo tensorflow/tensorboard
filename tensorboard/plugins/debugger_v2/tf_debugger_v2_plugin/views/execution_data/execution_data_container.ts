@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {createSelector, select, Store} from '@ngrx/store';
 import {getFocusedExecutionData} from '../../store';
 import {Execution, State, TensorDebugMode} from '../../store/debugger_types';
@@ -21,6 +21,7 @@ import {DTYPE_ENUM_TO_NAME} from '../../tf_dtypes';
 const UNKNOWN_DTYPE_NAME = 'Unknown dtype';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'tf-debugger-v2-execution-data',
   template: `

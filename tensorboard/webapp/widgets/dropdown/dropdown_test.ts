@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
-import {Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatSelectModule} from '@angular/material/select';
 import {MatSelectHarness} from '@angular/material/select/testing';
@@ -25,6 +25,7 @@ import {DropdownComponent, DropdownOption} from './dropdown_component';
  * Test class that uses the <tb-dropdown> component.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testing-component',
   template: `

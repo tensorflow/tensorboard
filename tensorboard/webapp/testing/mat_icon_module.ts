@@ -12,7 +12,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, NgModule} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  NgModule,
+} from '@angular/core';
 import {MatIconRegistry} from '@angular/material/icon';
 import {FakeMatIconRegistry} from '@angular/material/icon/testing';
 
@@ -74,6 +79,7 @@ const KNOWN_SVG_ICON = new Set([
  * compilation time due to unknown input onto the template.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   template: '<ng-container>{{svgIcon}}</ng-container>',
   selector: 'mat-icon',

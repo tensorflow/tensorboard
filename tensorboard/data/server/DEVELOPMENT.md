@@ -150,7 +150,7 @@ When done, commit the changes to `Cargo.toml`, `Cargo.lock`, and the
 
 Test datasets are stored on Google Cloud Storage in the world-readable
 `gs://tensorboard-bench-logs` bucket, whose [bucket README] is online. To run
-against this data, use `gsutil` to copy it to your local machine.
+against this data, use `gcloud storage` to copy it to your local machine.
 
 [bucket README]: https://storage.googleapis.com/tensorboard-bench-logs/README
 

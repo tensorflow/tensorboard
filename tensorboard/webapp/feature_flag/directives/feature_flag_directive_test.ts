@@ -12,20 +12,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, DebugElement, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DebugElement,
+  Input,
+} from '@angular/core';
 import {TestBed, fakeAsync, tick} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {Store} from '@ngrx/store';
 import {MockStore} from '@ngrx/store/testing';
 
 import {provideMockTbStore} from '../../testing/utils';
-import {FEATURE_FLAGS_HEADER_NAME} from '../http/const';
 import {getFeatureFlagsToSendToServer} from '../store/feature_flag_selectors';
 import {State as FeatureFlagState} from '../store/feature_flag_types';
 
 import {FeatureFlagDirective} from './feature_flag_directive';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'test-matching-selector',
   template: `
@@ -41,6 +46,7 @@ export class TestMatchingComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'test-nonmatching-selector',
   template: `

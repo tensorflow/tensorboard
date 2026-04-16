@@ -15,7 +15,12 @@ limitations under the License.
 import {OverlayContainer, OverlayModule} from '@angular/cdk/overlay';
 import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import {CommonModule} from '@angular/common';
-import {Component, DebugElement, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DebugElement,
+  Input,
+} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {MatButtonModule} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
@@ -30,6 +35,7 @@ import {AxisUtils} from './line_chart_axis_utils';
 import {LineChartAxisComponent} from './line_chart_axis_view';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable-comp',
   template: `

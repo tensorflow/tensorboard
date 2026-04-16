@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {ExperimentAlias} from '../../experiments/types';
@@ -21,6 +21,7 @@ import {ContentWrappingInputModule} from '../content_wrapping_input/content_wrap
 import {ExperimentAliasComponent} from './experiment_alias_component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'testable',
   template: `<tb-experiment-alias

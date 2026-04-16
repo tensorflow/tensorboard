@@ -13,7 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-import {Component, DebugElement, Input, NO_ERRORS_SCHEMA} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DebugElement,
+  Input,
+  NO_ERRORS_SCHEMA,
+} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {By} from '@angular/platform-browser';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -27,6 +33,7 @@ import {LocationModule} from '../location_module';
 import {RouterLinkDirectiveContainer} from './router_link_directive_container';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'test',
   template: '<a [routerLink]="link">testable link</a>',
@@ -37,6 +44,7 @@ class TestableComponent {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'test-with-reset',
   template:
@@ -73,7 +81,8 @@ describe('router_link', () => {
       AppRootProvider
     ) as TestableAppRootProvider;
 
-    spyOn(store, 'dispatch').and.callFake((action: Action) => {
+    // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
+    (spyOn(store, 'dispatch') as jasmine.Spy).and.callFake((action: Action) => {
       actualDispatches.push(action);
     });
   });

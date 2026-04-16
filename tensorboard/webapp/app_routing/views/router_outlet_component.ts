@@ -33,14 +33,14 @@ export class RouterOutletComponent implements OnChanges {
   @ViewChild('routeContainer', {static: true, read: ViewContainerRef})
   private readonly routeContainer!: ViewContainerRef;
 
-  @Input() activeNgComponent!: Type<Component> | null;
+  @Input() activeNgComponent!: Type<unknown> | null;
 
   ngOnChanges(changes: SimpleChanges) {
     const activeComponentChange = changes['activeNgComponent'];
     if (activeComponentChange) {
       this.routeContainer.clear();
       const componentType =
-        activeComponentChange.currentValue as Type<Component> | null;
+        activeComponentChange.currentValue as Type<unknown> | null;
       if (componentType) {
         this.routeContainer.createComponent(componentType);
       }

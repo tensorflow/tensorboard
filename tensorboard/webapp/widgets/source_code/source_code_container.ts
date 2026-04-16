@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {from, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {MonacoShim} from './load_monaco_shim';
@@ -30,6 +30,7 @@ import {MonacoShim} from './load_monaco_shim';
  * time.
  */
 @Component({
+  changeDetection: ChangeDetectionStrategy.Default,
   standalone: false,
   selector: 'source-code',
   template: `
