@@ -27,7 +27,7 @@ from tensorboard.compat.tensorflow_stub.io import gfile
 from tensorboard.compat.tensorflow_stub.pywrap_tensorflow import (
     PyRecordReader_New,
 )
-from moto import mock_s3
+from moto import mock_aws
 from tensorboard import test as tb_test
 
 # Placeholder values to make sure any local keys are overridden
@@ -64,7 +64,7 @@ def s3_join(*args):
 
 class EventFileWriterTest(tb_test.TestCase):
     @unittest.skipIf(USING_REAL_TF, "Test only passes when using stub TF")
-    @mock_s3
+    @mock_aws
     def test_event_file_writer_roundtrip(self):
         _TAGNAME = "dummy"
         _DUMMY_VALUE = 42
@@ -84,7 +84,7 @@ class EventFileWriterTest(tb_test.TestCase):
         self.assertEqual(fakeevent.SerializeToString(), r.record())
 
     @unittest.skipIf(USING_REAL_TF, "Test only passes when using stub TF")
-    @mock_s3
+    @mock_aws
     def test_setting_filename_suffix_works(self):
         logdir = s3_temp_dir()
 
