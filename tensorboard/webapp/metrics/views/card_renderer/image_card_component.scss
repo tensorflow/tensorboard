@@ -155,7 +155,7 @@ $_title-to-heading-gap: 12px;
 }
 
 :host ::ng-deep .mat-slider-min-value .mat-slider-thumb {
-  background-color: matm2.get-color-from-palette($tb-primary);
+  background-color: matm2.m2-get-color-from-palette($tb-primary);
 }
 
 :host ::ng-deep .hide-slider.mat-slider-horizontal .mat-slider-track-wrapper {
