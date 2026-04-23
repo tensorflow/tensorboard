@@ -23,7 +23,7 @@ limitations under the License.
   width: max-content;
 
   &:focus-within .container {
-    border-color: matm2.get-color-from-palette($tb-primary, 700);
+    border-color: matm2.m2-get-color-from-palette($tb-primary, 700);
   }
 
   &.default {
@@ -34,7 +34,7 @@ limitations under the License.
 
   &.error .container,
   .container:not(.is-valid) {
-    $_error-color: matm2.get-color-from-palette($tb-warn, 200);
+    $_error-color: matm2.m2-get-color-from-palette($tb-warn, 200);
     border-color: $_error-color;
 
     &:hover,
@@ -44,10 +44,10 @@ limitations under the License.
   }
 
   &.high-contrast .container {
-    border-color: matm2.get-color-from-palette(matm2var.$grey-palette, 400);
+    border-color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 400);
 
     &:hover {
-      border-color: matm2.get-color-from-palette(matm2var.$grey-palette, 600);
+      border-color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 600);
     }
   }
 }

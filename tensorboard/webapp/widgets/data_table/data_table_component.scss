@@ -17,7 +17,7 @@ limitations under the License.
 @use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_theme';
 
-$_accent: map-get(matm2.get-color-config($tb-theme), accent);
+$_accent: map-get(matm2.m2-get-color-config($tb-theme), accent);
 
 .data-table-wrapper {
   display: flex;
@@ -40,7 +40,7 @@ $_accent: map-get(matm2.get-color-config($tb-theme), accent);
   width: 100%;
 
   .header {
-    background-color: matm2.get-color-from-palette($tb-background, background);
+    background-color: matm2.m2-get-color-from-palette($tb-background, background);
     display: table-row;
     font-weight: bold;
     position: sticky;
@@ -74,7 +74,7 @@ $_accent: map-get(matm2.get-color-config($tb-theme), accent);
 }
 
 .right-section {
-  background-color: matm2.get-color-from-palette($tb-background, background);
+  background-color: matm2.m2-get-color-from-palette($tb-background, background);
   position: sticky;
   right: -1px; // Prevent fractional width from creating a gap.
   z-index: 1;
