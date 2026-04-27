@@ -40,7 +40,10 @@ $_accent: map-get(matm2.m2-get-color-config($tb-theme), accent);
   width: 100%;
 
   .header {
-    background-color: matm2.m2-get-color-from-palette($tb-background, background);
+    background-color: matm2.m2-get-color-from-palette(
+      $tb-background,
+      background
+    );
     display: table-row;
     font-weight: bold;
     position: sticky;

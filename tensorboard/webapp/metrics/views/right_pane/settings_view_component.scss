@@ -131,7 +131,10 @@ mat-slider {
   }
 
   &.toggle-opened {
-    background-color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 200);
+    background-color: matm2.m2-get-color-from-palette(
+      matm2var.$m2-grey-palette,
+      200
+    );
 
     @include tb-dark-theme {
       background-color: matm2.m2-get-color-from-palette(

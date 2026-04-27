@@ -164,7 +164,10 @@ mat-button-toggle-group.filter-view {
 
   &.checked {
     @include tb-theme-background-prop(background-color, selected-button);
-    border-color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 300);
+    border-color: matm2.m2-get-color-from-palette(
+      matm2var.$m2-grey-palette,
+      300
+    );
   }
 
   ::ng-deep .mat-button-wrapper {

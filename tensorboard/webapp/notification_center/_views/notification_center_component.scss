@@ -23,7 +23,10 @@ limitations under the License.
 
 .red-dot {
   $_dim: 10px;
-  background-color: matm2.m2-get-color-from-palette(matm2var.$m2-red-palette, 700);
+  background-color: matm2.m2-get-color-from-palette(
+    matm2var.$m2-red-palette,
+    700
+  );
   border-radius: $_dim * 0.5;
   height: $_dim;
   position: absolute;

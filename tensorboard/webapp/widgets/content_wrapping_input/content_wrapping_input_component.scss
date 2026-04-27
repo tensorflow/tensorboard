@@ -44,10 +44,16 @@ limitations under the License.
   }
 
   &.high-contrast .container {
-    border-color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 400);
+    border-color: matm2.m2-get-color-from-palette(
+      matm2var.$m2-grey-palette,
+      400
+    );
 
     &:hover {
-      border-color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 600);
+      border-color: matm2.m2-get-color-from-palette(
+        matm2var.$m2-grey-palette,
+        600
+      );
     }
   }
 }
