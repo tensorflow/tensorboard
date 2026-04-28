@@ -60,7 +60,7 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
 
   .slider-input {
     background-color: inherit;
-    border: 1px solid matm2.get-color-from-palette($tf-slate, 500);
+    border: 1px solid matm2.m2-get-color-from-palette($tf-slate, 500);
     border-radius: 2px;
     box-sizing: border-box;
     color: inherit;
@@ -69,7 +69,7 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
     padding: 0 4px;
 
     @include tb-dark-theme {
-      border-color: matm2.get-color-from-palette($tf-slate, 700);
+      border-color: matm2.m2-get-color-from-palette($tf-slate, 700);
     }
   }
 }
@@ -131,11 +131,14 @@ mat-slider {
   }
 
   &.toggle-opened {
-    background-color: matm2.get-color-from-palette(matm2var.$grey-palette, 200);
+    background-color: matm2.m2-get-color-from-palette(
+      matm2var.$m2-grey-palette,
+      200
+    );
 
     @include tb-dark-theme {
-      background-color: matm2.get-color-from-palette(
-        matm2var.$grey-palette,
+      background-color: matm2.m2-get-color-from-palette(
+        matm2var.$m2-grey-palette,
         800
       );
     }

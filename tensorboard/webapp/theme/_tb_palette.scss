@@ -45,15 +45,15 @@ $tf-slate: (
    several orange values, but only one of them (--tb-orange-strong) is used
    widely. */
 $tf-orange: (
-  100: matm2.get-color-from-palette(matm2var.$orange-palette, 100),
-  200: matm2.get-color-from-palette(matm2var.$orange-palette, 200),
-  300: matm2.get-color-from-palette(matm2var.$orange-palette, 300),
-  400: matm2.get-color-from-palette(matm2var.$orange-palette, 400),
-  500: matm2.get-color-from-palette(matm2var.$orange-palette, 500),
-  600: matm2.get-color-from-palette(matm2var.$orange-palette, 600),
-  700: matm2.get-color-from-palette(matm2var.$orange-palette, 700),
-  800: matm2.get-color-from-palette(matm2var.$orange-palette, 800),
-  900: matm2.get-color-from-palette(matm2var.$orange-palette, 900),
+  100: matm2.m2-get-color-from-palette(matm2var.$m2-orange-palette, 100),
+  200: matm2.m2-get-color-from-palette(matm2var.$m2-orange-palette, 200),
+  300: matm2.m2-get-color-from-palette(matm2var.$m2-orange-palette, 300),
+  400: matm2.m2-get-color-from-palette(matm2var.$m2-orange-palette, 400),
+  500: matm2.m2-get-color-from-palette(matm2var.$m2-orange-palette, 500),
+  600: matm2.m2-get-color-from-palette(matm2var.$m2-orange-palette, 600),
+  700: matm2.m2-get-color-from-palette(matm2var.$m2-orange-palette, 700),
+  800: matm2.m2-get-color-from-palette(matm2var.$m2-orange-palette, 800),
+  900: matm2.m2-get-color-from-palette(matm2var.$m2-orange-palette, 900),
   contrast: (
     100: rgba(black, 0.87),
     200: rgba(black, 0.87),
