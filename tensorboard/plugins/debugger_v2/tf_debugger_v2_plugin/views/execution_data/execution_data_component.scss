@@ -47,7 +47,10 @@ limitations under the License.
 }
 
 .focus-execution-container {
-  background-color: matm2.get-color-from-palette(matm2var.$orange-palette, 200);
+  background-color: matm2.m2-get-color-from-palette(
+    matm2var.$m2-orange-palette,
+    200
+  );
   border-radius: 4px;
   font-size: 12px;
   height: 120px;
@@ -55,8 +58,8 @@ limitations under the License.
   width: 360px;
 
   @include tb-dark-theme {
-    background-color: matm2.get-color-from-palette(
-      matm2var.$orange-palette,
+    background-color: matm2.m2-get-color-from-palette(
+      matm2var.$m2-orange-palette,
       900
     );
   }

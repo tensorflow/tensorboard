@@ -33,7 +33,7 @@ limitations under the License.
   padding: 2px 6px;
   text-align: right;
   width: 200px;
-  $grey-600: matm2.get-color-from-palette(matm2var.$grey-palette, 600);
+  $grey-600: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 600);
 
   @include tb-dark-theme {
     box-shadow: 1px 3px $grey-600;
