@@ -11,6 +11,8 @@ exports_files(["LICENSE"])
 py_library(
     name = "org_pocoo_werkzeug",
     srcs = glob(["werkzeug/**/*.py"]),
+    # Expose the extracted root as an import path so `import werkzeug...`
+    # resolves from the vendored package layout under Bazel.
     imports = ["."],
     srcs_version = "PY3",
     visibility = ["//visibility:public"],

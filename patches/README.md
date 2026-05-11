@@ -1,12 +1,13 @@
 # TensorBoard patches using patch-package.
 
-We use [patch-package](https://www.npmjs.com/package/patch-package) to apply
+We use [patch-package](https://www.npmjs.com/package/patch-package) to author
 TensorBoard-specific patches to some of our npm/yarn dependencies.
-For this Bazel 7.7.0 branch, `WORKSPACE` applies the generated patch files via
-`yarn_install(post_install_patches = ...)` rather than invoking
-`patch-package` during the repository rule. This keeps the patch artifacts
-compatible with upstream while avoiding a brittle install-time step under our
-current Bazel setup.
+
+At build time, `WORKSPACE` applies the generated patch artifacts via
+`yarn_install(post_install_patches = ...)` instead of invoking
+`patch-package` inside the repository rule. In this PR's Bazel/CI setup, that
+install-time invocation was less reliable than applying the generated patch
+files directly.
 
 After creating or updating a patch, ensure there is no trailing whitespace on
 any line (CI runs `./tensorboard/tools/whitespace_hygiene_test.py`). You can
@@ -49,3 +50,39 @@ To regenerate:
 * make edits
 * `yarn patch-package "@angular/build-tooling"`
 * update the WORKSPACE file with the name of the new patch file
+
+
+## `protobuf_6_31_1_java_export.patch`
+
+**Modified files:**
+- `build_defs/java_opts.bzl`
+- `bazel/private/proto_library_rule.bzl`
+
+**What it does:**
+- Drops the older javadocopts workaround from protobuf's Java export helper on
+  this branch's rules_java/protobuf stack.
+- Relaxes the import-prefix normalization check so empty-but-normalized values
+  continue to work under the newer path handling used here.
+
+
+## `rules_cc_protobuf.patch`
+
+**Modified files:**
+- `cc/defs.bzl`
+
+**What it does:**
+- Re-exports `cc_proto_library` from protobuf's Bazel definitions so callers on
+  this branch can keep loading the symbol through `rules_cc` while using the
+  protobuf 6.31.1 repository layout.
+
+
+## `rules_closure_soy_cli.patch`
+
+**Modified files:**
+- `closure/templates/closure_java_template_library.bzl`
+
+**What it does:**
+- Updates rules_closure's Soy invocation for the compiler/jar combination used
+  on this branch.
+- Switches to the `--depHeaders` flag expected by this compiler and drops the
+  older `--allowExternalCalls` flag that is not accepted here.

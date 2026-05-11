@@ -93,14 +93,14 @@ http_archive(
     ],
 )
 
+# rules_closure's Soy toolchain still expects safe-html-types classes that are
+# compatible with protobuf-java 6.x. We use a local repository here because
+# this branch needs a protobuf-6-compatible adjusted copy of those classes,
+# not just any upstream safe-html-types release.
 local_repository(
     name = "com_google_common_html_types",
     path = "third_party/safe_html_types",
 )
-
-# rules_closure's Soy toolchain still expects safe-html-types classes that are
-# compatible with protobuf-java 6.x. Vendor the adjusted library locally so the
-# Bazel 7 / protobuf 6 upgrade does not depend on older transitive jars.
 
 java_import_external(
     name = "com_google_flogger_flogger",
@@ -134,6 +134,9 @@ java_import_external(
     deps = ["@com_google_flogger_flogger"],
 )
 
+# rules_closure's Java/Soy path still needs an explicit Soy compiler jar and
+# its runtime deps. We wire those here so Closure/Soy keeps working while using
+# our protobuf-6-compatible safe-html-types and protobuf-java dependencies.
 java_import_external(
     name = "com_google_template_soy",
     extra_build_file_content = "\n".join([
@@ -180,6 +183,9 @@ java_import_external(
 
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies")
 
+# Omit the Closure-provided copies of these repositories so that rules_closure
+# uses the adjusted/local versions declared above instead of re-introducing
+# older transitive Java deps that conflict with protobuf 6.x on this branch.
 rules_closure_dependencies(
     omit_bazel_skylib = True,
     omit_com_google_common_html_types = True,
@@ -226,9 +232,10 @@ yarn_install(
     package_json = "//:package.json",
     package_json_remove = ["scripts.postinstall"],
     patch_args = ["-p1"],
-    # Under Bazel 7.7.0 on this stack, invoking patch-package from the
-    # repository rule is fragile. Apply the existing git-format patches
-    # directly in yarn_install instead.
+    # We still author these npm patches with patch-package, but applying them
+    # by invoking patch-package inside the repository rule proved unreliable in
+    # this Bazel/CI setup. Apply the generated patch artifacts directly during
+    # yarn_install instead.
     post_install_patches = [
         "//patches:@angular+build-tooling+0.0.0-2113cd7f66a089ac0208ea84eee672b2529f4f6c.patch",
         "//patches:@bazel+concatjs+5.8.1.patch",

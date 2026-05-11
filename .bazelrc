@@ -1,7 +1,9 @@
 common --noenable_bzlmod
+# Let the OS-specific sections below (`common:linux`, `common:macos`, etc.)
+# take effect so one `.bazelrc` can carry the required per-platform C++ flags.
 common --enable_platform_specific_config
 common --experimental_repo_remote_exec  # from TensorFlow
-# Bazel 7's synthesized Python package init files can shadow TensorBoard's real
+# Bazel-generated Python package init files can shadow TensorBoard's real
 # compat package init at test runtime; keep this test-only so pip packaging
 # still copies the intended package tree.
 test --incompatible_default_to_explicit_init_py
@@ -10,8 +12,8 @@ test --incompatible_default_to_explicit_init_py
 # which is much faster (~10x).
 build --define=use_fast_cpp_protos=true
 
-# TensorFlow 2.21 builds with C++17 across supported platforms, and protobuf
-# 6.31.1 requires that language level.
+# Protobuf 6.31.1 requires C++17 in this build. Keep the host and target
+# language level aligned across supported platforms.
 common:linux --cxxopt=-std=c++17
 common:linux --host_cxxopt=-std=c++17
 common:macos --cxxopt=-std=c++17
