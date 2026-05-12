@@ -32,24 +32,14 @@ data that it stores to disk will be supported forever.
 import numpy as np
 
 from tensorboard.plugins.histogram import metadata
+from tensorboard.plugins.histogram import summary_v2
 
-
-def _summary_v2():
-    from tensorboard.plugins.histogram import summary_v2
-
-    return summary_v2
-
-
-DEFAULT_BUCKET_COUNT = 30
+DEFAULT_BUCKET_COUNT = summary_v2.DEFAULT_BUCKET_COUNT
 
 
 # Export V3 versions.
-def histogram(*args, **kwargs):
-    return _summary_v2().histogram(*args, **kwargs)
-
-
-def histogram_pb(*args, **kwargs):
-    return _summary_v2().histogram_pb(*args, **kwargs)
+histogram = summary_v2.histogram
+histogram_pb = summary_v2.histogram_pb
 
 
 def _buckets(data, bucket_count=None):
@@ -67,7 +57,7 @@ def _buckets(data, bucket_count=None):
     import tensorflow.compat.v1 as tf
 
     if bucket_count is None:
-        bucket_count = DEFAULT_BUCKET_COUNT
+        bucket_count = summary_v2.DEFAULT_BUCKET_COUNT
     with tf.name_scope(
         "buckets", values=[data, bucket_count]
     ), tf.control_dependencies(

@@ -25,18 +25,12 @@ data that it stores to disk will be supported forever.
 import numpy as np
 
 from tensorboard.plugins.image import metadata
+from tensorboard.plugins.image import summary_v2
 from tensorboard.util import encoder
 
 
-def _summary_v2():
-    from tensorboard.plugins.image import summary_v2
-
-    return summary_v2
-
-
 # Export V2 versions.
-def image(*args, **kwargs):
-    return _summary_v2().image(*args, **kwargs)
+image = summary_v2.image
 
 
 def op(

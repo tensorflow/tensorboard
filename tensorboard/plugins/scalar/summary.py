@@ -22,21 +22,12 @@ tensor.
 import numpy as np
 
 from tensorboard.plugins.scalar import metadata
-
-
-def _summary_v2():
-    from tensorboard.plugins.scalar import summary_v2
-
-    return summary_v2
+from tensorboard.plugins.scalar import summary_v2
 
 
 # Export V2 versions.
-def scalar(*args, **kwargs):
-    return _summary_v2().scalar(*args, **kwargs)
-
-
-def scalar_pb(*args, **kwargs):
-    return _summary_v2().scalar_pb(*args, **kwargs)
+scalar = summary_v2.scalar
+scalar_pb = summary_v2.scalar_pb
 
 
 def op(name, data, display_name=None, description=None, collections=None):
