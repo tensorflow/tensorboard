@@ -14,7 +14,9 @@
 """External-only delegates for various BUILD rules."""
 
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
-load("@io_bazel_rules_sass//:defs.bzl", "npm_sass_library", "sass_binary", "sass_library")
+# TODO(@cdavalos7): upgrade rules_sass to >=1.86 + sass >=1.71 to use `pkg:` package importer
+# and drop the per-target `include_paths = ["external/npm/node_modules"]`.
+load("@io_bazel_rules_sass//:defs.bzl", "npm_sass_library", "sass_library")
 load("@npm//@angular/build-tooling/bazel/app-bundling:index.bzl", "app_bundle")
 load("@npm//@angular/build-tooling/bazel/spec-bundling:index.bzl", "spec_bundle")
 load("@npm//@angular/build-tooling/bazel:extract_js_module_output.bzl", "extract_js_module_output")

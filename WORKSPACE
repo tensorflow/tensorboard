@@ -120,7 +120,7 @@ esbuild_repositories(npm_repository = "npm")
 # rules_sass release information is difficult to find but it does seem to
 # regularly release with same cadence and version as core sass.
 # We typically upgrade this library whenever we upgrade rules_nodejs.
-# The version used here is the most recent release as of 2023-07-11, which is the same version used by rules_nodejs 5.8.1.
+# This rules_sass version is the compatible with rules_nodejs 5.8.1
 #
 # rules_sass: https://github.com/bazelbuild/rules_sass/tags
 http_archive(
