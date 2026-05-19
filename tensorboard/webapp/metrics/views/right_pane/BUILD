@@ -8,7 +8,7 @@ sass_binary(
     src = "settings_view_component.scss",
     include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )
@@ -18,7 +18,7 @@ sass_binary(
     src = "saving_pins_checkbox_component.scss",
     include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )

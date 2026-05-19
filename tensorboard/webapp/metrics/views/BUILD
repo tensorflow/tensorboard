@@ -15,7 +15,7 @@ sass_binary(
     src = "metrics_container.scss",
     include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )

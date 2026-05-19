@@ -11,7 +11,7 @@ sass_library(
         "_tb_theme.scss",
     ],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
     ],
 )
 

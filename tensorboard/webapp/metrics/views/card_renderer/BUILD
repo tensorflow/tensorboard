@@ -133,7 +133,7 @@ sass_binary(
     src = "image_card_component.scss",
     include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
         "//tensorboard/webapp/theme",
     ],
@@ -211,7 +211,7 @@ sass_binary(
     src = "vis_linked_time_selection_warning_component.scss",
     include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )
@@ -263,7 +263,7 @@ sass_binary(
     src = "scalar_card_component.scss",
     include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/metrics/views:metrics_common_styles",
         "//tensorboard/webapp/theme",
     ],
