@@ -122,7 +122,7 @@ esbuild_repositories(npm_repository = "npm")
 # We typically upgrade this library whenever we upgrade rules_nodejs.
 # This rules_sass version is the compatible with rules_nodejs 5.8.1
 #
-# rules_sass: https://github.com/bazelbuild/rules_sass/tags
+# rules_sass: https://github.com/bazelbuild/rules_sass/releases/tag/1.69.5
 http_archive(
     name = "io_bazel_rules_sass",
     sha256 = "4285781b24dfd07cb01fcc2324faec87818d0f2174b02e0ed9038f6f809de80a",
