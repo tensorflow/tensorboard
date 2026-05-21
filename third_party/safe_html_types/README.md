@@ -25,20 +25,20 @@ What is special about this copy:
 - It is intended to satisfy the Closure / Soy Java dependency graph during the
   migration, not to change TensorBoard's Python/runtime behavior directly.
 - Some files in this tree were adjusted so the Java code works with the newer
-  protobuf APIs expected by this branch's toolchain.
+  protobuf APIs expected by TensorBoard's current toolchain.
 
 Why this is safe:
 
 - this code participates in the Bazel Java/Soy build path, not TensorBoard's
   Python runtime or wheel behavior directly
-- the branch uses it to replace an older transitive Java dependency with a
+- TensorBoard uses it to replace an older transitive Java dependency with a
   protobuf-6-compatible copy
 - the functional TensorBoard changes in this PR live elsewhere; this directory
   is primarily a compatibility dependency for the existing build toolchain
 
 Why this is a local repository instead of an `http_archive` here:
 
-- this branch needs an adjusted protobuf-6-compatible copy of the classes
+- TensorBoard needs an adjusted protobuf-6-compatible copy of the classes
 - the current PR does not yet identify an exact upstream source archive that
   works unchanged with the rest of the Closure/Soy dependency stack
 - using a local repository keeps the dependency explicit and reviewable while

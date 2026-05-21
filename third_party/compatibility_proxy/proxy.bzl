@@ -1,6 +1,6 @@
 """Compatibility proxy for rules_java under Bazel 7.
 
-This file re-exports the small subset of Java rules/providers that this branch
+This file re-exports the small subset of Java rules/providers that TensorBoard
 needs through stable names expected by older call sites. It keeps the Bazel 7
 rules_java transition localized to one place instead of rewriting every user.
 """

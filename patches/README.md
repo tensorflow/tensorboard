@@ -5,7 +5,7 @@ TensorBoard-specific patches to some of our npm/yarn dependencies.
 
 At build time, `WORKSPACE` applies the generated patch artifacts via
 `yarn_install(post_install_patches = ...)` instead of invoking
-`patch-package` inside the repository rule. In this PR's Bazel/CI setup, that
+`patch-package` inside the repository rule. In the current Bazel/CI setup, that
 install-time invocation was less reliable than applying the generated patch
 files directly.
 
@@ -60,7 +60,7 @@ To regenerate:
 
 **What it does:**
 - Drops the older javadocopts workaround from protobuf's Java export helper on
-  this branch's rules_java/protobuf stack.
+  the current rules_java/protobuf stack.
 - Relaxes the import-prefix normalization check so empty-but-normalized values
   continue to work under the newer path handling used here.
 
@@ -72,7 +72,7 @@ To regenerate:
 
 **What it does:**
 - Re-exports `cc_proto_library` from protobuf's Bazel definitions so callers on
-  this branch can keep loading the symbol through `rules_cc` while using the
+  this repository can keep loading the symbol through `rules_cc` while using the
   protobuf 6.31.1 repository layout.
 
 
@@ -83,6 +83,6 @@ To regenerate:
 
 **What it does:**
 - Updates rules_closure's Soy invocation for the compiler/jar combination used
-  on this branch.
+  here.
 - Switches to the `--depHeaders` flag expected by this compiler and drops the
   older `--allowExternalCalls` flag that is not accepted here.

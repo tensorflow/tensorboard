@@ -53,7 +53,7 @@ def _tb_http_archive_impl(ctx):
         if patch_file:
             ctx.patch(patch_file, strip = 1)
 
-    # Link in any branch-local BUILD/link files after extraction and patching.
+    # Link in any repository-local BUILD/link files after extraction and patching.
     for dst, src in link_dict.items():
         ctx.delete(dst)
         ctx.symlink(src, dst)

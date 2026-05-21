@@ -2,12 +2,12 @@
 
 Protobuf's Bazel macros load a pip-style requirements helper that provides
 `requirement()` and `install_deps()`. TensorBoard only needs a very small
-subset of that surface on this branch, so this file supplies just the labels
+subset of that surface here, so this file supplies just the labels
 protobuf actually asks for here.
 """
 
 def requirement(name):
-    """Returns the Bazel label for a protobuf pip dependency used on this branch."""
+    """Returns the Bazel label for a protobuf pip dependency used here."""
     if name == "numpy":
         return "@org_tensorflow_tensorboard//tensorboard:expect_numpy_installed"
     if name == "setuptools":

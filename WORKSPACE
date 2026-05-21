@@ -95,7 +95,7 @@ http_archive(
 
 # rules_closure's Soy toolchain still expects safe-html-types classes that are
 # compatible with protobuf-java 6.x. We use a local repository here because
-# this branch needs a protobuf-6-compatible adjusted copy of those classes,
+# TensorBoard needs a protobuf-6-compatible adjusted copy of those classes,
 # not just any upstream safe-html-types release.
 local_repository(
     name = "com_google_common_html_types",
@@ -185,7 +185,7 @@ load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_depende
 
 # Omit the Closure-provided copies of these repositories so that rules_closure
 # uses the adjusted/local versions declared above instead of re-introducing
-# older transitive Java deps that conflict with protobuf 6.x on this branch.
+# older transitive Java deps that conflict with protobuf 6.x in this setup.
 rules_closure_dependencies(
     omit_bazel_skylib = True,
     omit_com_google_common_html_types = True,
@@ -372,7 +372,7 @@ http_archive(
     sha256 = "08109dccfa5bbf674ff4dba82b15d40d85b07436b02e62ab27e0b894f45bb4a3",
     strip_prefix = "rules_rust-d5ab4143245af8b33d1947813d411a6cae838409",
     urls = [
-        # Master branch as of 2022-01-31
+        # Pinned to this upstream commit as of 2022-01-31
         "http://mirror.tensorflow.org/github.com/bazelbuild/rules_rust/archive/d5ab4143245af8b33d1947813d411a6cae838409.tar.gz",
         "https://github.com/bazelbuild/rules_rust/archive/d5ab4143245af8b33d1947813d411a6cae838409.tar.gz",
     ],
