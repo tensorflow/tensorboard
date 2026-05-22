@@ -1,4 +1,5 @@
-load("//tensorboard/defs:defs.bzl", "tf_external_sass_libray", "tf_ng_module", "tf_ng_prod_js_binary", "tf_ng_web_test_suite", "tf_sass_binary", "tf_svg_bundle", "tf_ts_library")
+load("@io_bazel_rules_sass//:defs.bzl", "sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ng_prod_js_binary", "tf_ng_web_test_suite", "tf_svg_bundle", "tf_ts_library")
 load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")
 
@@ -86,9 +87,10 @@ tf_ts_library(
     ],
 )
 
-tf_sass_binary(
+sass_binary(
     name = "app_styles",
     src = "app_container.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = ["//tensorboard/webapp/theme"],
 )
 
@@ -379,13 +381,9 @@ tf_svg_bundle(
     out = "icon_bundle.svg",
 )
 
-tf_external_sass_libray(
-    name = "angular_material_sass_deps",
-    deps = ["@npm//@angular/material"],
-)
-
-tf_sass_binary(
+sass_binary(
     name = "styles",
     src = "styles.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = ["//tensorboard/webapp/theme"],
 )

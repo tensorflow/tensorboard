@@ -1,12 +1,14 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
+load("@io_bazel_rules_sass//:defs.bzl", "sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-tf_sass_binary(
+sass_binary(
     name = "line_chart_styles",
     src = "line_chart_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = ["//tensorboard/webapp/theme"],
 )
 

@@ -1,58 +1,66 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
+load("@io_bazel_rules_sass//:defs.bzl", "sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-tf_sass_binary(
+sass_binary(
     name = "data_table_styles",
     src = "data_table_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )
 
-tf_sass_binary(
+sass_binary(
     name = "header_cell_styles",
     src = "header_cell_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )
 
-tf_sass_binary(
+sass_binary(
     name = "content_cell_styles",
     src = "content_cell_component.scss",
+    include_paths = ["external/npm/node_modules"],
 )
 
-tf_sass_binary(
+sass_binary(
     name = "data_table_header_styles",
     src = "data_table_header_component.scss",
+    include_paths = ["external/npm/node_modules"],
 )
 
-tf_sass_binary(
+sass_binary(
     name = "column_selector_component_styles",
     src = "column_selector_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )
 
-tf_sass_binary(
+sass_binary(
     name = "context_menu_component_styles",
     src = "context_menu_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )
 
-tf_sass_binary(
+sass_binary(
     name = "filter_dialog_styles",
     src = "filter_dialog_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )

@@ -1,12 +1,14 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
+load("@io_bazel_rules_sass//:defs.bzl", "sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-tf_sass_binary(
+sass_binary(
     name = "source_files_component_style",
     src = "source_files_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = ["//tensorboard/webapp/theme"],
 )
 
