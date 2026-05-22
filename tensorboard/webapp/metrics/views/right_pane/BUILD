@@ -1,21 +1,24 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
+load("@io_bazel_rules_sass//:defs.bzl", "sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
-tf_sass_binary(
+sass_binary(
     name = "settings_view_styles",
     src = "settings_view_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )
 
-tf_sass_binary(
+sass_binary(
     name = "saving_pins_checkbox_styles",
     src = "saving_pins_checkbox_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = [
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )

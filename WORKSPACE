@@ -120,15 +120,15 @@ esbuild_repositories(npm_repository = "npm")
 # rules_sass release information is difficult to find but it does seem to
 # regularly release with same cadence and version as core sass.
 # We typically upgrade this library whenever we upgrade rules_nodejs.
+# This rules_sass version is the compatible with rules_nodejs 5.8.1
 #
-# rules_sass 1.55.0: https://github.com/bazelbuild/rules_sass/tree/1.55.0
+# rules_sass: https://github.com/bazelbuild/rules_sass/releases/tag/1.69.5
 http_archive(
     name = "io_bazel_rules_sass",
-    sha256 = "1ea0103fa6adcb7d43ff26373b5082efe1d4b2e09c4f34f8a8f8b351e9a8a9b0",
-    strip_prefix = "rules_sass-1.55.0",
+    sha256 = "4285781b24dfd07cb01fcc2324faec87818d0f2174b02e0ed9038f6f809de80a",
+    strip_prefix = "rules_sass-1.69.5",
     urls = [
-        "http://mirror.tensorflow.org/github.com/bazelbuild/rules_sass/archive/1.55.0.zip",
-        "https://github.com/bazelbuild/rules_sass/archive/1.55.0.zip",
+        "https://github.com/bazelbuild/rules_sass/archive/refs/tags/1.69.5.tar.gz",
     ],
 )
 

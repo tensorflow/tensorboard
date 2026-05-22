@@ -1,24 +1,27 @@
-load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_sass_binary", "tf_ts_library")
+load("@io_bazel_rules_sass//:defs.bzl", "sass_binary")
+load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
-tf_sass_binary(
+sass_binary(
     name = "graph_styles",
     src = "graph_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/common:style_lib",
         "//tensorboard/webapp/theme",
     ],
 )
 
-tf_sass_binary(
+sass_binary(
     name = "graph_op_styles",
     src = "graph_op_component.scss",
+    include_paths = ["external/npm/node_modules"],
     deps = [
         "//tensorboard/plugins/debugger_v2/tf_debugger_v2_plugin/views/common:style_lib",
-        "//tensorboard/webapp:angular_material_sass_deps",
+        "//tensorboard/webapp/angular_components:material_sass",
         "//tensorboard/webapp/theme",
     ],
 )
