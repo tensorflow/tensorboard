@@ -25,8 +25,8 @@ permissions:
 env:
   # Keep this Bazel version in sync with the `versions.check` directive
   # in our WORKSPACE file.
-  BAZEL_VERSION: '6.5.0'
-  BAZEL_SHA256SUM: 'a40ac69263440761199fcb8da47ad4e3f328cbe79ffbf4ecc14e5ba252857307'
+  BAZEL_VERSION: '7.7.0'
+  BAZEL_SHA256SUM: 'fe7e799cbc9140f986b063e06800a3d4c790525075c877d00a7112669824acbf'
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
@@ -48,13 +48,42 @@ jobs:
       fail-fast: false
       matrix:
         tf_version_id: ['tf', 'notf']
-        python_version: ['3.9']
+        python_version: ['3.10']
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - uses: actions/setup-python@13ae5bb136fac2878aff31522b9efb785519f984 # v4.3.0
-        with:
-          python-version: ${{ matrix.python_version }}
-          architecture: 'x64'
+      # The self-hosted ml-build container already has the system packages we
+      # need; installing Python inside the container keeps Bazel's
+      # @system_python repo pointed at a normal interpreter/header layout and
+      # avoids the hosted-toolcache header-copy workaround that was previously
+      # needed with actions/setup-python.
+      - name: 'Set up Python and system dependencies'
+        run: |
+          py_abi="python${{ matrix.python_version }}"
+          sudo apt-get update
+          sudo apt-get install -y \
+            "${py_abi}" \
+            "${py_abi}-dev" \
+            "${py_abi}-venv" \
+            libgbm-dev \
+            libxss1 \
+            libasound2
+          "/usr/bin/${py_abi}" -m venv /tmp/tb-build-venv
+          echo "/tmp/tb-build-venv/bin" >> "${GITHUB_PATH}"
+          echo "VIRTUAL_ENV=/tmp/tb-build-venv" >> "${GITHUB_ENV}"
+          /tmp/tb-build-venv/bin/python -m pip install -U pip setuptools wheel virtualenv
+      - name: 'Check Python toolchain'
+        run: |
+          python --version
+          python - <<'PY'
+          import pathlib
+          import sys
+          import sysconfig
+
+          print("sys.executable =", sys.executable)
+          include_dir = pathlib.Path(sysconfig.get_config_var("INCLUDEPY"))
+          print("INCLUDEPY =", include_dir)
+          print("Python.h exists =", (include_dir / "Python.h").exists())
+          PY
       - name: 'Set up Bazel'
         run: |
           ci/download_bazel.sh "${BAZEL_VERSION}" "${BAZEL_SHA256SUM}" ~/bazel
@@ -65,6 +94,11 @@ jobs:
         run: |
           python -m pip install -U pip
           pip install "${TENSORFLOW_VERSION}"
+          # tf-nightly currently pulls in tb-nightly as a dependency. Bazel's
+          # source-tree tests must import TensorBoard from runfiles rather than
+          # from site-packages, otherwise tests that rely on local-only modules
+          # like `tensorboard.test` resolve against the installed wheel and fail.
+          pip uninstall -y tensorboard tb-nightly || true
         if: matrix.tf_version_id != 'notf'
       - name: 'Install Python dependencies'
         run: |
@@ -73,10 +107,6 @@ jobs:
             -r ./tensorboard/pip_package/requirements.txt \
             -r ./tensorboard/pip_package/requirements_dev.txt \
             ;
-      - name: 'Install Chrome dependencies'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgbm-dev libxss1 libasound2
       - name: 'Check Pip state'
         run: pip freeze --all
       - name: 'Bazel: fetch'
@@ -98,13 +128,21 @@ jobs:
         if: matrix.tf_version_id == 'notf'
       - name: 'Bazel: run Pip package test (with TensorFlow support)'
         run: |
-          bazel run //tensorboard/pip_package:test_pip_package -- \
+          # `bazel run` has been flaky under this self-hosted container runner
+          # even when the smoke test itself completes successfully. Build the
+          # launcher target, invoke the generated binary directly, then shut
+          # down the Bazel server so the step exits cleanly.
+          bazel build //tensorboard/pip_package:test_pip_package
+          ./bazel-bin/tensorboard/pip_package/test_pip_package \
             --tf-version "${TENSORFLOW_VERSION}"
+          bazel shutdown
         if: matrix.tf_version_id != 'notf'
       - name: 'Bazel: run Pip package test (non-TensorFlow only)'
         run: |
-          bazel run //tensorboard/pip_package:test_pip_package -- \
+          bazel build //tensorboard/pip_package:test_pip_package
+          ./bazel-bin/tensorboard/pip_package/test_pip_package \
             --tf-version notf
+           bazel shutdown
         if: matrix.tf_version_id == 'notf'
       - name: 'Bazel: run manual tests'
         run: |
