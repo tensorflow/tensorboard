@@ -1,3 +1,6 @@
+# Protobuf's python/dist wheel genrule exports this exact external repo path on
+# PYTHONPATH, so preserve the repo/target shape even though TensorBoard only
+# needs an empty placeholder tree here.
 filegroup(
     name = "site_packages",
     srcs = glob(["site-packages/**"]),

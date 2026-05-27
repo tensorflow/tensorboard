@@ -1,0 +1,376 @@
+root@2b01f9a66562:/workspace/tensorboard# bazel test //tensorboard/plugins/debugger_v2:debugger_v2_plugin_test
+INFO: Analyzed target //tensorboard/plugins/debugger_v2:debugger_v2_plugin_test (0 packages loaded, 764 targets configured).
+FAIL: //tensorboard/plugins/debugger_v2:debugger_v2_plugin_test (see /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/execroot/org_tensorflow_tensorboard/bazel-out/k8-fastbuild/testlogs/tensorboard/plugins/debugger_v2/debugger_v2_plugin_test/test.log)
+INFO: From Testing //tensorboard/plugins/debugger_v2:debugger_v2_plugin_test:
+==================== Test output for //tensorboard/plugins/debugger_v2:debugger_v2_plugin_test:
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1779911455.634696  108212 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+I0000 00:00:1779911455.699457  108212 cpu_feature_guard.cc:227] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1779911457.950215  108212 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+WARNING:tensorflow:From /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/bazel-out/k8-fastbuild/bin/tensorboard/plugins/debugger_v2/debugger_v2_plugin_test.runfiles/org_tensorflow_tensorboard/tensorboard/plugins/debugger_v2/debugger_v2_plugin_test.py:108: is_gpu_available (from tensorflow.python.framework.test_util) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.config.list_physical_devices('GPU')` instead.
+E0000 00:00:1779911459.029403  108212 cuda_platform.cc:52] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: UNKNOWN ERROR (303)
+Running tests under Python 3.10.12: /opt/tb-venv/bin/python3
+[ RUN      ] DebuggerV2PluginTest.testAlertsWhenNoAlertExists
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm7xpbz_4, tensor debug mode: NO_TENSOR)
+I0527 19:50:59.050358 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm7xpbz_4, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm7xpbz_4)
+I0527 19:50:59.508057 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm7xpbz_4)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testAlertsWhenNoAlertExists): 0.53s
+I0527 19:50:59.567592 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testAlertsWhenNoAlertExists): 0.53s
+[       OK ] DebuggerV2PluginTest.testAlertsWhenNoAlertExists
+[ RUN      ] DebuggerV2PluginTest.testConcurrentCallsToPluginIsActiveWhenNotActive
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testConcurrentCallsToPluginIsActiveWhenNotActive): 0.0s
+I0527 19:50:59.569757 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testConcurrentCallsToPluginIsActiveWhenNotActive): 0.0s
+[       OK ] DebuggerV2PluginTest.testConcurrentCallsToPluginIsActiveWhenNotActive
+[ RUN      ] DebuggerV2PluginTest.testConcurrentServeRunsWithExistingRuns
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpjuv8eejm, tensor debug mode: NO_TENSOR)
+I0527 19:50:59.572003 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpjuv8eejm, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpjuv8eejm)
+I0527 19:50:59.819934 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpjuv8eejm)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testConcurrentServeRunsWithExistingRuns): 0.31s
+I0527 19:50:59.878184 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testConcurrentServeRunsWithExistingRuns): 0.31s
+[       OK ] DebuggerV2PluginTest.testConcurrentServeRunsWithExistingRuns
+[ RUN      ] DebuggerV2PluginTest.testConcurrentServeRunsWithoutExistingRuns
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testConcurrentServeRunsWithoutExistingRuns): 0.01s
+I0527 19:50:59.885472 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testConcurrentServeRunsWithoutExistingRuns): 0.01s
+[       OK ] DebuggerV2PluginTest.testConcurrentServeRunsWithoutExistingRuns
+[ RUN      ] DebuggerV2PluginTest.testGetAlertNumberOnlyWhenAlertExistsCurtHealthMode
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm4n3lr15, tensor debug mode: CURT_HEALTH)
+I0527 19:50:59.887475 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm4n3lr15, tensor debug mode: CURT_HEALTH)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm4n3lr15)
+I0527 19:51:00.116264 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm4n3lr15)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testGetAlertNumberOnlyWhenAlertExistsCurtHealthMode): 0.27s
+I0527 19:51:00.154257 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testGetAlertNumberOnlyWhenAlertExistsCurtHealthMode): 0.27s
+[       OK ] DebuggerV2PluginTest.testGetAlertNumberOnlyWhenAlertExistsCurtHealthMode
+[ RUN      ] DebuggerV2PluginTest.testGetAlertsContentWhenAlertExistsConciseHealthMode
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3zpw09in, tensor debug mode: CONCISE_HEALTH)
+I0527 19:51:00.156388 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3zpw09in, tensor debug mode: CONCISE_HEALTH)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3zpw09in)
+I0527 19:51:00.386891 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3zpw09in)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testGetAlertsContentWhenAlertExistsConciseHealthMode): 0.27s
+I0527 19:51:00.428197 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testGetAlertsContentWhenAlertExistsConciseHealthMode): 0.27s
+[       OK ] DebuggerV2PluginTest.testGetAlertsContentWhenAlertExistsConciseHealthMode
+[ RUN      ] DebuggerV2PluginTest.testGetAlertsWithAlertType
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpc9qstoyb, tensor debug mode: CONCISE_HEALTH)
+I0527 19:51:00.430365 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpc9qstoyb, tensor debug mode: CONCISE_HEALTH)
+WARNING:tensorflow:5 out of the last 13 calls to <function _generate_tfdbg_v2_data.<locals>.my_function at 0x7fbd70656680> triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to (1) creating @tf.function repeatedly in a loop, (2) passing tensors with different shapes, (3) passing Python objects instead of tensors. For (1), please define your @tf.function outside of the loop. For (2), @tf.function has reduce_retracing=True option that can avoid unnecessary retracing. For (3), please refer to https://www.tensorflow.org/guide/function#controlling_retracing and https://www.tensorflow.org/api_docs/python/tf/function for  more details.
+W0527 19:51:00.646522 140453463441408 polymorphic_function.py:157] 5 out of the last 13 calls to <function _generate_tfdbg_v2_data.<locals>.my_function at 0x7fbd70656680> triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to (1) creating @tf.function repeatedly in a loop, (2) passing tensors with different shapes, (3) passing Python objects instead of tensors. For (1), please define your @tf.function outside of the loop. For (2), @tf.function has reduce_retracing=True option that can avoid unnecessary retracing. For (3), please refer to https://www.tensorflow.org/guide/function#controlling_retracing and https://www.tensorflow.org/api_docs/python/tf/function for  more details.
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpc9qstoyb)
+I0527 19:51:00.655415 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpc9qstoyb)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testGetAlertsWithAlertType): 0.27s
+I0527 19:51:00.694456 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testGetAlertsWithAlertType): 0.27s
+[       OK ] DebuggerV2PluginTest.testGetAlertsWithAlertType
+[ RUN      ] DebuggerV2PluginTest.testGetAlertsWithInvalidBeginOrEndWhenAlertExistsCurtHealthMode
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpi619a9j9, tensor debug mode: CURT_HEALTH)
+I0527 19:51:00.696570 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpi619a9j9, tensor debug mode: CURT_HEALTH)
+WARNING:tensorflow:5 out of the last 13 calls to <function _generate_tfdbg_v2_data.<locals>.my_function at 0x7fbd70434280> triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to (1) creating @tf.function repeatedly in a loop, (2) passing tensors with different shapes, (3) passing Python objects instead of tensors. For (1), please define your @tf.function outside of the loop. For (2), @tf.function has reduce_retracing=True option that can avoid unnecessary retracing. For (3), please refer to https://www.tensorflow.org/guide/function#controlling_retracing and https://www.tensorflow.org/api_docs/python/tf/function for  more details.
+W0527 19:51:00.913538 140453463441408 polymorphic_function.py:157] 5 out of the last 13 calls to <function _generate_tfdbg_v2_data.<locals>.my_function at 0x7fbd70434280> triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to (1) creating @tf.function repeatedly in a loop, (2) passing tensors with different shapes, (3) passing Python objects instead of tensors. For (1), please define your @tf.function outside of the loop. For (2), @tf.function has reduce_retracing=True option that can avoid unnecessary retracing. For (3), please refer to https://www.tensorflow.org/guide/function#controlling_retracing and https://www.tensorflow.org/api_docs/python/tf/function for  more details.
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpi619a9j9)
+I0527 19:51:00.922324 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpi619a9j9)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testGetAlertsWithInvalidBeginOrEndWhenAlertExistsCurtHealthMode): 0.27s
+I0527 19:51:00.962029 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testGetAlertsWithInvalidBeginOrEndWhenAlertExistsCurtHealthMode): 0.27s
+[       OK ] DebuggerV2PluginTest.testGetAlertsWithInvalidBeginOrEndWhenAlertExistsCurtHealthMode
+[ RUN      ] DebuggerV2PluginTest.testGetAlertsWithNonexistentTypeFilterWhenAlertsExist
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpov2czlrx, tensor debug mode: CURT_HEALTH)
+I0527 19:51:00.964058 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpov2czlrx, tensor debug mode: CURT_HEALTH)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpov2czlrx)
+I0527 19:51:01.194415 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpov2czlrx)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testGetAlertsWithNonexistentTypeFilterWhenAlertsExist): 0.27s
+I0527 19:51:01.231671 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testGetAlertsWithNonexistentTypeFilterWhenAlertsExist): 0.27s
+[       OK ] DebuggerV2PluginTest.testGetAlertsWithNonexistentTypeFilterWhenAlertsExist
+[ RUN      ] DebuggerV2PluginTest.testGetAlertsWithTypeFilterAndInvalidBeginOrEndWhenAlertsExist
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3jtls51k, tensor debug mode: CURT_HEALTH)
+I0527 19:51:01.233743 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3jtls51k, tensor debug mode: CURT_HEALTH)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3jtls51k)
+I0527 19:51:01.462361 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3jtls51k)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testGetAlertsWithTypeFilterAndInvalidBeginOrEndWhenAlertsExist): 0.27s
+I0527 19:51:01.503460 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testGetAlertsWithTypeFilterAndInvalidBeginOrEndWhenAlertsExist): 0.27s
+[       OK ] DebuggerV2PluginTest.testGetAlertsWithTypeFilterAndInvalidBeginOrEndWhenAlertsExist
+[ RUN      ] DebuggerV2PluginTest.testPluginIsActiveWithDataExists
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmph21xkrjm, tensor debug mode: NO_TENSOR)
+I0527 19:51:01.505524 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmph21xkrjm, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmph21xkrjm)
+I0527 19:51:01.750357 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmph21xkrjm)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testPluginIsActiveWithDataExists): 0.25s
+I0527 19:51:01.750978 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testPluginIsActiveWithDataExists): 0.25s
+[       OK ] DebuggerV2PluginTest.testPluginIsActiveWithDataExists
+[ RUN      ] DebuggerV2PluginTest.testPluginIsNotActiveByDefault
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testPluginIsNotActiveByDefault): 0.0s
+I0527 19:51:01.752129 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testPluginIsNotActiveByDefault): 0.0s
+[       OK ] DebuggerV2PluginTest.testPluginIsNotActiveByDefault
+[ RUN      ] DebuggerV2PluginTest.testServeASingleExecutionDataObject
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmps3wj17t2, tensor debug mode: CONCISE_HEALTH)
+I0527 19:51:01.753943 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmps3wj17t2, tensor debug mode: CONCISE_HEALTH)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmps3wj17t2)
+I0527 19:51:02.010353 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmps3wj17t2)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeASingleExecutionDataObject): 0.3s
+I0527 19:51:02.050915 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeASingleExecutionDataObject): 0.3s
+[       OK ] DebuggerV2PluginTest.testServeASingleExecutionDataObject
+[ RUN      ] DebuggerV2PluginTest.testServeASingleGraphExecutionDataObject
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmptuy428ck, tensor debug mode: CONCISE_HEALTH)
+I0527 19:51:02.053189 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmptuy428ck, tensor debug mode: CONCISE_HEALTH)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmptuy428ck)
+I0527 19:51:02.304880 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmptuy428ck)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeASingleGraphExecutionDataObject): 0.29s
+I0527 19:51:02.346109 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeASingleGraphExecutionDataObject): 0.29s
+[       OK ] DebuggerV2PluginTest.testServeASingleGraphExecutionDataObject
+[ RUN      ] DebuggerV2PluginTest.testServeExecutionDataObjectsOutOfBoundsError
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpfa5zx2wh, tensor debug mode: NO_TENSOR)
+I0527 19:51:02.348743 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpfa5zx2wh, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpfa5zx2wh)
+I0527 19:51:02.629688 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpfa5zx2wh)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeExecutionDataObjectsOutOfBoundsError): 0.34s
+I0527 19:51:02.690350 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeExecutionDataObjectsOutOfBoundsError): 0.34s
+[       OK ] DebuggerV2PluginTest.testServeExecutionDataObjectsOutOfBoundsError
+[ RUN      ] DebuggerV2PluginTest.testServeExecutionDigestOutOfBoundsError
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpgk2_07tl, tensor debug mode: NO_TENSOR)
+I0527 19:51:02.692775 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpgk2_07tl, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpgk2_07tl)
+I0527 19:51:02.963606 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpgk2_07tl)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeExecutionDigestOutOfBoundsError): 0.34s
+I0527 19:51:03.027880 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeExecutionDigestOutOfBoundsError): 0.34s
+[       OK ] DebuggerV2PluginTest.testServeExecutionDigestOutOfBoundsError
+[ RUN      ] DebuggerV2PluginTest.testServeExecutionDigests400ResponseIfRunParamIsNotSpecified
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeExecutionDigests400ResponseIfRunParamIsNotSpecified): 0.0s
+I0527 19:51:03.029630 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeExecutionDigests400ResponseIfRunParamIsNotSpecified): 0.0s
+[       OK ] DebuggerV2PluginTest.testServeExecutionDigests400ResponseIfRunParamIsNotSpecified
+[ RUN      ] DebuggerV2PluginTest.testServeExecutionDigestsWithEndGreaterThanBeginFullRange
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3zoowmvp, tensor debug mode: NO_TENSOR)
+I0527 19:51:03.031636 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3zoowmvp, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3zoowmvp)
+I0527 19:51:03.308205 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp3zoowmvp)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeExecutionDigestsWithEndGreaterThanBeginFullRange): 0.34s
+I0527 19:51:03.368503 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeExecutionDigestsWithEndGreaterThanBeginFullRange): 0.34s
+[       OK ] DebuggerV2PluginTest.testServeExecutionDigestsWithEndGreaterThanBeginFullRange
+[ RUN      ] DebuggerV2PluginTest.testServeExecutionDigestsWithEndGreaterThanBeginPartialRange
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp5d90zfeq, tensor debug mode: NO_TENSOR)
+I0527 19:51:03.370641 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp5d90zfeq, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp5d90zfeq)
+I0527 19:51:03.648030 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp5d90zfeq)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeExecutionDigestsWithEndGreaterThanBeginPartialRange): 0.34s
+I0527 19:51:03.707231 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeExecutionDigestsWithEndGreaterThanBeginPartialRange): 0.34s
+[       OK ] DebuggerV2PluginTest.testServeExecutionDigestsWithEndGreaterThanBeginPartialRange
+[ RUN      ] DebuggerV2PluginTest.testServeExecutionDigestsWithEqualBeginAndEnd
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpqt5rg8uu, tensor debug mode: NO_TENSOR)
+I0527 19:51:03.709477 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpqt5rg8uu, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpqt5rg8uu)
+I0527 19:51:03.974455 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpqt5rg8uu)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeExecutionDigestsWithEqualBeginAndEnd): 0.33s
+I0527 19:51:04.037410 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeExecutionDigestsWithEqualBeginAndEnd): 0.33s
+[       OK ] DebuggerV2PluginTest.testServeExecutionDigestsWithEqualBeginAndEnd
+[ RUN      ] DebuggerV2PluginTest.testServeExecutionDigestsWithImplicitFullRange
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpcaajjup3, tensor debug mode: NO_TENSOR)
+I0527 19:51:04.039659 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpcaajjup3, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpcaajjup3)
+I0527 19:51:04.315560 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpcaajjup3)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeExecutionDigestsWithImplicitFullRange): 0.34s
+I0527 19:51:04.375603 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeExecutionDigestsWithImplicitFullRange): 0.34s
+[       OK ] DebuggerV2PluginTest.testServeExecutionDigestsWithImplicitFullRange
+[ RUN      ] DebuggerV2PluginTest.testServeGraphExecutionDataObjectsOutOfBoundsError
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpe1obftoz, tensor debug mode: NO_TENSOR)
+I0527 19:51:04.377870 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpe1obftoz, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpe1obftoz)
+I0527 19:51:04.661463 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpe1obftoz)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphExecutionDataObjectsOutOfBoundsError): 0.34s
+I0527 19:51:04.719127 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphExecutionDataObjectsOutOfBoundsError): 0.34s
+[       OK ] DebuggerV2PluginTest.testServeGraphExecutionDataObjectsOutOfBoundsError
+[ RUN      ] DebuggerV2PluginTest.testServeGraphExecutionDigestOutOfBoundsError
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpvpjhtm3s, tensor debug mode: NO_TENSOR)
+I0527 19:51:04.721290 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpvpjhtm3s, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpvpjhtm3s)
+I0527 19:51:04.984382 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpvpjhtm3s)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphExecutionDigestOutOfBoundsError): 0.33s
+I0527 19:51:05.044855 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphExecutionDigestOutOfBoundsError): 0.33s
+[       OK ] DebuggerV2PluginTest.testServeGraphExecutionDigestOutOfBoundsError
+[ RUN      ] DebuggerV2PluginTest.testServeGraphExecutionDigestsImplicitFullRange
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpe933t9h2, tensor debug mode: NO_TENSOR)
+I0527 19:51:05.046968 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpe933t9h2, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpe933t9h2)
+I0527 19:51:05.318266 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpe933t9h2)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphExecutionDigestsImplicitFullRange): 0.33s
+I0527 19:51:05.373925 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphExecutionDigestsImplicitFullRange): 0.33s
+[       OK ] DebuggerV2PluginTest.testServeGraphExecutionDigestsImplicitFullRange
+[ RUN      ] DebuggerV2PluginTest.testServeGraphExecutionDigestsPartialRange
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpdicf4brl, tensor debug mode: NO_TENSOR)
+I0527 19:51:05.376024 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpdicf4brl, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpdicf4brl)
+I0527 19:51:05.618487 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpdicf4brl)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphExecutionDigestsPartialRange): 0.3s
+I0527 19:51:05.676255 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphExecutionDigestsPartialRange): 0.3s
+[       OK ] DebuggerV2PluginTest.testServeGraphExecutionDigestsPartialRange
+[ RUN      ] DebuggerV2PluginTest.testServeGraphInfo
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp9xkpchll, tensor debug mode: NO_TENSOR)
+I0527 19:51:05.678586 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp9xkpchll, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp9xkpchll)
+I0527 19:51:05.931443 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp9xkpchll)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphInfo): 0.31s
+I0527 19:51:05.990161 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphInfo): 0.31s
+[       OK ] DebuggerV2PluginTest.testServeGraphInfo
+[ RUN      ] DebuggerV2PluginTest.testServeGraphInfoRaisesErrorForInvalidGraphId
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpptx0cdqf, tensor debug mode: NO_TENSOR)
+I0527 19:51:05.992224 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpptx0cdqf, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpptx0cdqf)
+I0527 19:51:06.237119 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpptx0cdqf)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphInfoRaisesErrorForInvalidGraphId): 0.3s
+I0527 19:51:06.295603 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphInfoRaisesErrorForInvalidGraphId): 0.3s
+[       OK ] DebuggerV2PluginTest.testServeGraphInfoRaisesErrorForInvalidGraphId
+[ RUN      ] DebuggerV2PluginTest.testServeGraphOpInfoForOpWithInputsAndConsumers
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp8by4sxuy, tensor debug mode: NO_TENSOR)
+I0527 19:51:06.297663 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp8by4sxuy, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp8by4sxuy)
+I0527 19:51:06.540887 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp8by4sxuy)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoForOpWithInputsAndConsumers): 0.42s
+I0527 19:51:06.714912 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoForOpWithInputsAndConsumers): 0.42s
+[       OK ] DebuggerV2PluginTest.testServeGraphOpInfoForOpWithInputsAndConsumers
+[ RUN      ] DebuggerV2PluginTest.testServeGraphOpInfoForOpWithNoConsumers
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpcew4296b, tensor debug mode: NO_TENSOR)
+I0527 19:51:06.717138 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpcew4296b, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpcew4296b)
+I0527 19:51:06.974804 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpcew4296b)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoForOpWithNoConsumers): 0.32s
+I0527 19:51:07.033357 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoForOpWithNoConsumers): 0.32s
+[       OK ] DebuggerV2PluginTest.testServeGraphOpInfoForOpWithNoConsumers
+[ RUN      ] DebuggerV2PluginTest.testServeGraphOpInfoForOpWithNoInputs
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp07n5h1r5, tensor debug mode: NO_TENSOR)
+I0527 19:51:07.035374 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp07n5h1r5, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp07n5h1r5)
+I0527 19:51:07.291477 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp07n5h1r5)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoForOpWithNoInputs): 0.32s
+I0527 19:51:07.352570 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoForOpWithNoInputs): 0.32s
+[       OK ] DebuggerV2PluginTest.testServeGraphOpInfoForOpWithNoInputs
+[ RUN      ] DebuggerV2PluginTest.testServeGraphOpInfoRespondsWithErrorForInvalidGraphId
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpy02_ttim, tensor debug mode: NO_TENSOR)
+I0527 19:51:07.354585 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpy02_ttim, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpy02_ttim)
+I0527 19:51:07.611873 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpy02_ttim)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoRespondsWithErrorForInvalidGraphId): 0.32s
+I0527 19:51:07.669094 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoRespondsWithErrorForInvalidGraphId): 0.32s
+[       OK ] DebuggerV2PluginTest.testServeGraphOpInfoRespondsWithErrorForInvalidGraphId
+[ RUN      ] DebuggerV2PluginTest.testServeGraphOpInfoRespondsWithErrorForInvalidOpName
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp747hwjas, tensor debug mode: NO_TENSOR)
+I0527 19:51:07.671261 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp747hwjas, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp747hwjas)
+I0527 19:51:07.921003 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp747hwjas)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoRespondsWithErrorForInvalidOpName): 0.31s
+I0527 19:51:07.979571 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoRespondsWithErrorForInvalidOpName): 0.31s
+[       OK ] DebuggerV2PluginTest.testServeGraphOpInfoRespondsWithErrorForInvalidOpName
+[ RUN      ] DebuggerV2PluginTest.testServeGraphOpInfoWithInputsAndConsumerLookupFailures
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpyhhfzwno, tensor debug mode: NO_TENSOR)
+I0527 19:51:07.981681 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpyhhfzwno, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpyhhfzwno)
+I0527 19:51:08.232564 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpyhhfzwno)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoWithInputsAndConsumerLookupFailures): 0.31s
+I0527 19:51:08.291163 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeGraphOpInfoWithInputsAndConsumerLookupFailures): 0.31s
+[       OK ] DebuggerV2PluginTest.testServeGraphOpInfoWithInputsAndConsumerLookupFailures
+[ RUN      ] DebuggerV2PluginTest.testServeMultipleExecutionDataObject
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpdimy_sqm, tensor debug mode: CURT_HEALTH)
+I0527 19:51:08.293340 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpdimy_sqm, tensor debug mode: CURT_HEALTH)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpdimy_sqm)
+I0527 19:51:08.513775 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpdimy_sqm)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeMultipleExecutionDataObject): 0.26s
+I0527 19:51:08.552756 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeMultipleExecutionDataObject): 0.26s
+[       OK ] DebuggerV2PluginTest.testServeMultipleExecutionDataObject
+[ RUN      ] DebuggerV2PluginTest.testServeMultipleGraphExecutionDataObjects
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp0lowxmmx, tensor debug mode: CONCISE_HEALTH)
+I0527 19:51:08.554792 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp0lowxmmx, tensor debug mode: CONCISE_HEALTH)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp0lowxmmx)
+I0527 19:51:08.775190 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp0lowxmmx)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeMultipleGraphExecutionDataObjects): 0.26s
+I0527 19:51:08.814118 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeMultipleGraphExecutionDataObjects): 0.26s
+[       OK ] DebuggerV2PluginTest.testServeMultipleGraphExecutionDataObjects
+[ RUN      ] DebuggerV2PluginTest.testServeRunsWithExistingRuns
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpifbg8opd, tensor debug mode: NO_TENSOR)
+I0527 19:51:08.816315 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpifbg8opd, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpifbg8opd)
+I0527 19:51:09.063899 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpifbg8opd)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeRunsWithExistingRuns): 0.31s
+I0527 19:51:09.122407 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeRunsWithExistingRuns): 0.31s
+[       OK ] DebuggerV2PluginTest.testServeRunsWithExistingRuns
+[ RUN      ] DebuggerV2PluginTest.testServeRunsWithoutExistingRuns
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeRunsWithoutExistingRuns): 0.0s
+I0527 19:51:09.124935 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeRunsWithoutExistingRuns): 0.0s
+[       OK ] DebuggerV2PluginTest.testServeRunsWithoutExistingRuns
+[ RUN      ] DebuggerV2PluginTest.testServeSourceFileContentOfThisTestFile
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm2db0zbl, tensor debug mode: NO_TENSOR)
+I0527 19:51:09.126784 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm2db0zbl, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm2db0zbl)
+I0527 19:51:09.377451 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpm2db0zbl)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeSourceFileContentOfThisTestFile): 1.48s
+I0527 19:51:10.608166 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeSourceFileContentOfThisTestFile): 1.48s
+[  FAILED  ] DebuggerV2PluginTest.testServeSourceFileContentOfThisTestFile
+[ RUN      ] DebuggerV2PluginTest.testServeSourceFileListIncludesThisTestFile
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmprthbgbrz, tensor debug mode: NO_TENSOR)
+I0527 19:51:10.615722 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmprthbgbrz, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmprthbgbrz)
+I0527 19:51:10.857734 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmprthbgbrz)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeSourceFileListIncludesThisTestFile): 0.3s
+I0527 19:51:10.913286 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeSourceFileListIncludesThisTestFile): 0.3s
+[       OK ] DebuggerV2PluginTest.testServeSourceFileListIncludesThisTestFile
+[ RUN      ] DebuggerV2PluginTest.testServeSourceFileListWithoutRunParamErrors
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeSourceFileListWithoutRunParamErrors): 0.0s
+I0527 19:51:10.914827 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeSourceFileListWithoutRunParamErrors): 0.0s
+[       OK ] DebuggerV2PluginTest.testServeSourceFileListWithoutRunParamErrors
+[ RUN      ] DebuggerV2PluginTest.testServeSourceFileWithOutOfBoundIndexErrors
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp1tojpkhs, tensor debug mode: NO_TENSOR)
+I0527 19:51:10.916626 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp1tojpkhs, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp1tojpkhs)
+I0527 19:51:11.173439 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmp1tojpkhs)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeSourceFileWithOutOfBoundIndexErrors): 0.32s
+I0527 19:51:11.230994 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeSourceFileWithOutOfBoundIndexErrors): 0.32s
+[       OK ] DebuggerV2PluginTest.testServeSourceFileWithOutOfBoundIndexErrors
+[ RUN      ] DebuggerV2PluginTest.testServeSourceFileWithoutRunErrors
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeSourceFileWithoutRunErrors): 0.01s
+I0527 19:51:11.242104 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeSourceFileWithoutRunErrors): 0.01s
+[       OK ] DebuggerV2PluginTest.testServeSourceFileWithoutRunErrors
+[ RUN      ] DebuggerV2PluginTest.testServeStackFrames
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpgmkhzktx, tensor debug mode: NO_TENSOR)
+I0527 19:51:11.244005 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpgmkhzktx, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpgmkhzktx)
+I0527 19:51:11.490884 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpgmkhzktx)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeStackFrames): 0.31s
+I0527 19:51:11.549313 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeStackFrames): 0.31s
+[       OK ] DebuggerV2PluginTest.testServeStackFrames
+[ RUN      ] DebuggerV2PluginTest.testServeStackFramesWithMissingStackFrameIdParamErrors
+INFO:tensorflow:Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpka8h0vdw, tensor debug mode: NO_TENSOR)
+I0527 19:51:11.551497 140453463441408 dumping_callback.py:852] Enabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpka8h0vdw, tensor debug mode: NO_TENSOR)
+INFO:tensorflow:Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpka8h0vdw)
+I0527 19:51:11.796221 140453463441408 dumping_callback.py:885] Disabled dumping callback in thread MainThread (dump root: /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/_tmp/cad3d6dd49e787f66a4b70df61365832r3bwia_l/tmpka8h0vdw)
+INFO:tensorflow:time(__main__.DebuggerV2PluginTest.testServeStackFramesWithMissingStackFrameIdParamErrors): 0.3s
+I0527 19:51:11.852198 140453463441408 test_util.py:2634] time(__main__.DebuggerV2PluginTest.testServeStackFramesWithMissingStackFrameIdParamErrors): 0.3s
+[       OK ] DebuggerV2PluginTest.testServeStackFramesWithMissingStackFrameIdParamErrors
+[ RUN      ] DebuggerV2PluginTest.test_session
+[  SKIPPED ] DebuggerV2PluginTest.test_session - Not a test.
+======================================================================
+FAIL: testServeSourceFileContentOfThisTestFile (__main__.DebuggerV2PluginTest)
+DebuggerV2PluginTest.testServeSourceFileContentOfThisTestFile
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/sandbox/processwrapper-sandbox/3752/execroot/org_tensorflow_tensorboard/bazel-out/k8-fastbuild/bin/tensorboard/plugins/debugger_v2/debugger_v2_plugin_test.runfiles/org_tensorflow_tensorboard/tensorboard/plugins/debugger_v2/debugger_v2_plugin_test.py", line 1499, in testServeSourceFileContentOfThisTestFile
+    self.assertEqual(data["lines"], lines)
+AssertionError: Lists differ: ['# C[53 chars]rved.\r', '#\r', '# Licensed under the Apache [73737 chars], ''] != ['# C[53 chars]rved.', '#', '# Licensed under the Apache Lice[70449 chars], '']
+
+First differing element 0:
+'# Copyright 2019 The TensorFlow Authors. All Rights Reserved.\r'
+'# Copyright 2019 The TensorFlow Authors. All Rights Reserved.'
+
+Diff is 225626 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 45 tests in 12.820s
+
+FAILED (failures=1, skipped=1)
+================================================================================
+INFO: Found 1 test target...
+Target //tensorboard/plugins/debugger_v2:debugger_v2_plugin_test up-to-date:
+  bazel-bin/tensorboard/plugins/debugger_v2/debugger_v2_plugin_test
+INFO: Elapsed time: 18.306s, Critical Path: 17.37s
+INFO: 2 processes: 1 internal, 1 processwrapper-sandbox.
+INFO: Build completed, 1 test FAILED, 2 total actions
+//tensorboard/plugins/debugger_v2:debugger_v2_plugin_test                FAILED in 17.3s
+  /root/.cache/bazel/_bazel_root/988f07a2de21c48fd6c1836c06aba219/execroot/org_tensorflow_tensorboard/bazel-out/k8-fastbuild/testlogs/tensorboard/plugins/debugger_v2/debugger_v2_plugin_test/test.log
+
+Executed 1 out of 1 test: 1 fails locally.
