@@ -16,7 +16,7 @@
 # Dependencies of TensorBoard used only for testing or development.
 
 # For tests
-grpcio-testing==1.24.3
+grpcio-testing>=1.48.2
 pandas~=2.0
 # For gfile S3 test
 boto3==1.9.86
