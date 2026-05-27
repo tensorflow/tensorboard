@@ -51,6 +51,7 @@ export interface RunsDataNamespacedState {
   groupKeyToColorId: Map<string, number>;
   // Hex color string user has picked for a run.
   runColorOverrideForGroupBy: Map<RunId, string>;
+  groupColorOverride: Map<string, string>;
   initialGroupBy: GroupBy;
   userSetGroupByKey: GroupByKey | null;
   colorGroupRegexString: string;
