@@ -44,7 +44,7 @@ const KNN_GPU_MSG_ID = 'knn-gpu';
  * @param k Number of nearest neighbors to find.
  * @param accessor A method that returns the vector, given the data point.
  */
-export function findKNNGPUCosDistNorm<T>(
+export function findKNNGPUCosDist<T>(
   dataPoints: T[],
   k: number,
   accessor: (dataPoint: T) => Float32Array
@@ -61,6 +61,10 @@ export function findKNNGPUCosDistNorm<T>(
   // pair of points, which we sort using KMin data structure to obtain the
   // K nearest neighbors for each point.
   const nearest: NearestEntry[][] = new Array(N);
+  const dpNorm: number[] = new Array(N);
+  for (let i = 0; i < N; i++) {
+    dpNorm[i] = Math.sqrt(vector.norm2(accessor(dataPoints[i])));
+  }
   let numPieces = Math.ceil(N / OPTIMAL_GPU_BLOCK_SIZE);
   const actualPieceSize = Math.floor(N / numPieces);
   const modulo = N % actualPieceSize;
@@ -120,10 +124,9 @@ export function findKNNGPUCosDistNorm<T>(
               // Access i * N's row at `j` column.
               // Reach row has N entries and j-th index has cosine distance
               // between iReal vs. j-th vectors.
-              const cosDist = partial[i * N + j];
-              if (cosDist >= 0) {
-                kMin.add(cosDist, {index: j, dist: cosDist});
-              }
+              const cosDist =
+                1 - (1 - partial[i * N + j]) / (dpNorm[i] * dpNorm[j]);
+              kMin.add(cosDist, {index: j, dist: cosDist});
             }
             nearest[iReal] = kMin.getMinKItems();
           }
@@ -151,7 +154,7 @@ export function findKNNGPUCosDistNorm<T>(
         (error) => {
           // GPU failed. Reverting back to CPU.
           logging.setModalMessage(null!, KNN_GPU_MSG_ID);
-          let distFunc = (a, b, limit) => vector.cosDistNorm(a, b);
+          let distFunc = (a, b, limit) => vector.cosDist(a, b);
           findKNN(dataPoints, k, accessor, distFunc).then((nearest) => {
             resolve(nearest);
           });
