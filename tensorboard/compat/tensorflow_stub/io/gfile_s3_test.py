@@ -17,7 +17,7 @@
 import boto3
 import os
 import unittest
-from moto import mock_s3
+from moto import mock_aws
 
 from tensorboard.compat.tensorflow_stub import errors
 from tensorboard.compat.tensorflow_stub.io import gfile
@@ -29,14 +29,14 @@ os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "foobar_secret")
 
 
 class GFileTest(unittest.TestCase):
-    @mock_s3
+    @mock_aws
     def testExists(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = self._PathJoin(temp_dir, "model.ckpt")
         self.assertTrue(gfile.exists(temp_dir))
         self.assertTrue(gfile.exists(ckpt_path))
 
-    @mock_s3
+    @mock_aws
     def testGlob(self):
         temp_dir = self._CreateDeepS3Structure()
         # S3 glob includes subdirectory content, which standard
@@ -65,12 +65,12 @@ class GFileTest(unittest.TestCase):
             % (expected_listing, gotten_listing),
         )
 
-    @mock_s3
+    @mock_aws
     def testIsdir(self):
         temp_dir = self._CreateDeepS3Structure()
         self.assertTrue(gfile.isdir(temp_dir))
 
-    @mock_s3
+    @mock_aws
     def testListdir(self):
         temp_dir = self._CreateDeepS3Structure()
         self._CreateDeepS3Structure(temp_dir)
@@ -86,20 +86,20 @@ class GFileTest(unittest.TestCase):
         gotten_files = gfile.listdir(temp_dir)
         self.assertCountEqual(expected_files, gotten_files)
 
-    @mock_s3
+    @mock_aws
     def testMakeDirs(self):
         temp_dir = self._CreateDeepS3Structure()
         new_dir = self._PathJoin(temp_dir, "newdir", "subdir", "subsubdir")
         gfile.makedirs(new_dir)
         self.assertTrue(gfile.isdir(new_dir))
 
-    @mock_s3
+    @mock_aws
     def testMakeDirsAlreadyExists(self):
         temp_dir = self._CreateDeepS3Structure()
         new_dir = self._PathJoin(temp_dir, "bar", "baz")
         gfile.makedirs(new_dir)
 
-    @mock_s3
+    @mock_aws
     def testWalk(self):
         temp_dir = self._CreateDeepS3Structure()
         self._CreateDeepS3Structure(temp_dir)
@@ -173,7 +173,7 @@ class GFileTest(unittest.TestCase):
         gotten = gfile.walk(temp_dir)
         self._CompareFilesPerSubdirectory(expected, gotten)
 
-    @mock_s3
+    @mock_aws
     def testStat(self):
         ckpt_content = "asdfasdfasdffoobarbuzz"
         temp_dir = self._CreateDeepS3Structure(ckpt_content=ckpt_content)
@@ -184,7 +184,7 @@ class GFileTest(unittest.TestCase):
         with self.assertRaises(errors.NotFoundError):
             gfile.stat(bad_ckpt_path)
 
-    @mock_s3
+    @mock_aws
     def testRead(self):
         ckpt_content = "asdfasdfasdffoobarbuzz"
         temp_dir = self._CreateDeepS3Structure(ckpt_content=ckpt_content)
@@ -194,7 +194,7 @@ class GFileTest(unittest.TestCase):
             ckpt_read = f.read()
             self.assertEqual(ckpt_content, ckpt_read)
 
-    @mock_s3
+    @mock_aws
     def testReadLines(self):
         ckpt_lines = ["\n"] + ["line {}\n".format(i) for i in range(10)] + [" "]
         ckpt_content = "".join(ckpt_lines)
@@ -205,7 +205,7 @@ class GFileTest(unittest.TestCase):
             ckpt_read_lines = list(f)
             self.assertEqual(ckpt_lines, ckpt_read_lines)
 
-    @mock_s3
+    @mock_aws
     def testReadWithOffset(self):
         ckpt_content = "asdfasdfasdffoobarbuzz"
         ckpt_b_content = b"asdfasdfasdffoobarbuzz"
@@ -227,7 +227,7 @@ class GFileTest(unittest.TestCase):
             ckpt_read = f.read()
             self.assertEqual(ckpt_b_content, ckpt_read)
 
-    @mock_s3
+    @mock_aws
     def testWrite(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
@@ -238,7 +238,7 @@ class GFileTest(unittest.TestCase):
             ckpt_read = f.read()
             self.assertEqual(ckpt_content, ckpt_read)
 
-    @mock_s3
+    @mock_aws
     def testOverwrite(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
@@ -251,7 +251,7 @@ class GFileTest(unittest.TestCase):
             ckpt_read = f.read()
             self.assertEqual(ckpt_content, ckpt_read)
 
-    @mock_s3
+    @mock_aws
     def testWriteMultiple(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
@@ -266,7 +266,7 @@ class GFileTest(unittest.TestCase):
             ckpt_read = f.read()
             self.assertEqual(ckpt_content, ckpt_read)
 
-    @mock_s3
+    @mock_aws
     def testWriteEmpty(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
@@ -277,7 +277,7 @@ class GFileTest(unittest.TestCase):
             ckpt_read = f.read()
             self.assertEqual(ckpt_content, ckpt_read)
 
-    @mock_s3
+    @mock_aws
     def testWriteBinary(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model.ckpt")
@@ -288,7 +288,7 @@ class GFileTest(unittest.TestCase):
             ckpt_read = f.read()
             self.assertEqual(ckpt_content, ckpt_read)
 
-    @mock_s3
+    @mock_aws
     def testWriteMultipleBinary(self):
         temp_dir = self._CreateDeepS3Structure()
         ckpt_path = os.path.join(temp_dir, "model2.ckpt")
