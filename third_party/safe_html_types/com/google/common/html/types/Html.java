@@ -16,32 +16,32 @@ public final class Html {
   }
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_webutil_html_types_SafeHtmlProto_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_webutil_html_types_SafeHtmlProto_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_webutil_html_types_SafeUrlProto_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_webutil_html_types_SafeUrlProto_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_webutil_html_types_TrustedResourceUrlProto_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_webutil_html_types_TrustedResourceUrlProto_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_webutil_html_types_SafeStyleProto_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_webutil_html_types_SafeStyleProto_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_webutil_html_types_SafeScriptProto_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_webutil_html_types_SafeScriptProto_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_webutil_html_types_SafeStyleSheetProto_descriptor;
-  static final 
+  static final
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_webutil_html_types_SafeStyleSheetProto_fieldAccessorTable;
 

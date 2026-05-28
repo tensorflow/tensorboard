@@ -378,7 +378,7 @@ public final class SafeStyleBuilder {
     properties.put("border-color", sanitizeRegularValue(value));
     return this;
   }
-  
+
   /**
    * Sets {@code value} as the {@code border-collapse} property.
    *

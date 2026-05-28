@@ -114,7 +114,7 @@ public  final class SafeHtmlProto extends
     if (ref instanceof java.lang.String) {
       return (java.lang.String) ref;
     } else {
-      com.google.protobuf.ByteString bs = 
+      com.google.protobuf.ByteString bs =
           (com.google.protobuf.ByteString) ref;
       java.lang.String s = bs.toStringUtf8();
       if (bs.isValidUtf8()) {
@@ -136,7 +136,7 @@ public  final class SafeHtmlProto extends
       getPrivateDoNotAccessOrElseSafeHtmlWrappedValueBytes() {
     java.lang.Object ref = privateDoNotAccessOrElseSafeHtmlWrappedValue_;
     if (ref instanceof java.lang.String) {
-      com.google.protobuf.ByteString b = 
+      com.google.protobuf.ByteString b =
           com.google.protobuf.ByteString.copyFromUtf8(
               (java.lang.String) ref);
       privateDoNotAccessOrElseSafeHtmlWrappedValue_ = b;
@@ -502,7 +502,7 @@ public  final class SafeHtmlProto extends
         getPrivateDoNotAccessOrElseSafeHtmlWrappedValueBytes() {
       java.lang.Object ref = privateDoNotAccessOrElseSafeHtmlWrappedValue_;
       if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
+        com.google.protobuf.ByteString b =
             com.google.protobuf.ByteString.copyFromUtf8(
                 (java.lang.String) ref);
         privateDoNotAccessOrElseSafeHtmlWrappedValue_ = b;
