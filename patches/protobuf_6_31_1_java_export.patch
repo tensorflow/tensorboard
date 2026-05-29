@@ -24,9 +24,9 @@ diff --git a/bazel/private/proto_library_rule.bzl b/bazel/private/proto_library_
          if target_package != src.label.package:
              fail("Proto source with label '%s' must be in same package as consuming rule." % src.label)
 +
-def _is_normalized(path):
-    return path == "" or paths.normalize(path) == path
-
++def _is_normalized(path):
++    return path == "" or paths.normalize(path) == path
+ 
  def _get_import_prefix(ctx):
      """Gets and verifies import_prefix attribute if it is declared."""
 @@ -36,7 +39,7 @@ def _get_import_prefix(ctx):
@@ -46,4 +46,4 @@ def _is_normalized(path):
 +    if not _is_normalized(strip_import_prefix):
          fail("should be normalized (without uplevel references or '.' path segments)", attr = "strip_import_prefix")
 
-    if paths.is_absolute(strip_import_prefix):
+     if paths.is_absolute(strip_import_prefix):
