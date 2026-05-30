@@ -1,1 +1,10 @@
+* text=auto
+*.bzl text eol=lf
+*.sh text eol=lf
+.bazel* text eol=lf
+BUILD text eol=lf
+BUILD.bazel text eol=lf
+WORKSPACE text eol=lf
+MODULE.bazel text eol=lf
+
 third_party/rust/** -diff -merge linguist-generated=true

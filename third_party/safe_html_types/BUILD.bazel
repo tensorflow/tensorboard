@@ -1,0 +1,16 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "com_google_common_html_types",
+    srcs = glob(["com/google/common/html/types/*.java"]),
+    deps = [
+        "@com_google_code_findbugs_jsr305",
+        "@com_google_errorprone_error_prone_annotations",
+        "@com_google_guava",
+        "@com_google_jsinterop_annotations",
+        "@com_google_protobuf//:protobuf_java",
+        "@javax_annotation_jsr250_api",
+    ],
+)

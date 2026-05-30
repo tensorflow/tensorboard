@@ -233,6 +233,30 @@ class CacheKeyTest(tb_test.TestCase):
         self.assertEqual(with_list, with_tuple)
 
 
+class SubprocessEnvironTest(tb_test.TestCase):
+    def test_strips_bazel_and_python_path_state(self):
+        with mock.patch.dict(
+            os.environ,
+            {
+                "PATH": "/bin:/usr/bin",
+                "TMPDIR": "/tmp/tb",
+                "PYTHONPATH": "/tmp/runfiles",
+                "RUNFILES_DIR": "/tmp/runfiles",
+                "TEST_BINARY": "/tmp/test_binary",
+                "BUILD_WORKSPACE_DIRECTORY": "/tmp/workspace",
+            },
+            clear=True,
+        ):
+            actual = manager._subprocess_environ()
+
+        self.assertEqual(actual["PATH"], "/bin:/usr/bin")
+        self.assertEqual(actual["TMPDIR"], "/tmp/tb")
+        self.assertNotIn("PYTHONPATH", actual)
+        self.assertNotIn("RUNFILES_DIR", actual)
+        self.assertNotIn("TEST_BINARY", actual)
+        self.assertNotIn("BUILD_WORKSPACE_DIRECTORY", actual)
+
+
 class TensorBoardInfoIoTest(tb_test.TestCase):
     """Tests for `write_info_file`, `remove_info_file`, and `get_all`."""
 

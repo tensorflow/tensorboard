@@ -1,5 +1,33 @@
+common --noenable_bzlmod
+# Let the OS-specific sections below (`common:linux`, `common:macos`, etc.)
+# take effect so one `.bazelrc` can carry the required per-platform C++ flags.
+common --enable_platform_specific_config
 common --experimental_repo_remote_exec  # from TensorFlow
+# Bazel-generated Python package init files can shadow TensorBoard's real
+# compat package init at test runtime; keep this test-only so pip packaging
+# still copies the intended package tree.
+test --incompatible_default_to_explicit_init_py
 
 # Use C++ backing implementations for Python proto parsing and deserialization,
 # which is much faster (~10x).
 build --define=use_fast_cpp_protos=true
+
+# Protobuf 6.31.1 requires C++17 in this build. Keep the host and target
+# language level aligned across supported platforms.
+common:linux --cxxopt=-std=c++17
+common:linux --host_cxxopt=-std=c++17
+common:macos --cxxopt=-std=c++17
+common:macos --host_cxxopt=-std=c++17
+common:windows --cxxopt=/std:c++17
+common:windows --host_cxxopt=/std:c++17
+
+# Local shells and virtualenvs can leak Python import state into Bazel tests,
+# which then import from the wrong environment instead of the test runfiles.
+test --test_env=PYTHONPATH=
+test --test_env=PYTHONHOME=
+test --test_env=PYTHONSTARTUP=
+test --test_env=PYTHONSAFEPATH=
+test --test_env=PYTHONNOUSERSITE=1
+test --test_env=PYTHONUSERBASE=
+test --test_env=BUILD_WORKSPACE_DIRECTORY=
+test --test_env=BUILD_WORKING_DIRECTORY=

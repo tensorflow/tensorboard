@@ -45,6 +45,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_absl_logging_installed",
+        "//tensorboard/compat",
         "//tensorboard/compat:tensorflow",
     ],
 )

@@ -194,4 +194,6 @@ test_tf_summary() {
   printf '%s\n' "${import_from}" "${import_as}" "${import_attr}" | python -
 }
 
+printf >&2 'All smoke tests passed.'
+
 main "$@"

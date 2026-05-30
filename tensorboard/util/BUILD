@@ -69,6 +69,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         "//tensorboard/compat",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 

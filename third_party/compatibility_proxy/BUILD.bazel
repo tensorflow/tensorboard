@@ -1,0 +1,16 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+
+exports_files(
+    ["proxy.bzl"],
+    visibility = ["@tb_rules_java//test:__pkg__"],
+)
+
+bzl_library(
+    name = "proxy_bzl",
+    srcs = ["proxy.bzl"],
+    deps = [
+        "@bazel_tools//tools:bzl_srcs",
+        "@tb_rules_java//java/private:native_bzl",
+    ],
+    visibility = ["//visibility:public"],
+)

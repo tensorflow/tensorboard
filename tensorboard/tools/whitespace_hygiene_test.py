@@ -31,6 +31,7 @@ import sys
 exceptions = frozenset(
     [
         "patches/@angular+build-tooling+0.0.0-2113cd7f66a089ac0208ea84eee672b2529f4f6c.patch",
+        "patches/protobuf_6_31_1_java_export.patch",
     ]
 )
 
