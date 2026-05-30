@@ -34,8 +34,6 @@ import numpy as np
 from tensorboard.plugins.histogram import metadata
 from tensorboard.plugins.histogram import summary_v2
 
-DEFAULT_BUCKET_COUNT = 30
-
 
 # Export V3 versions.
 histogram = summary_v2.histogram
@@ -57,7 +55,7 @@ def _buckets(data, bucket_count=None):
     import tensorflow.compat.v1 as tf
 
     if bucket_count is None:
-        bucket_count = DEFAULT_BUCKET_COUNT
+        bucket_count = summary_v2.DEFAULT_BUCKET_COUNT
     with tf.name_scope(
         "buckets", values=[data, bucket_count]
     ), tf.control_dependencies(
@@ -188,7 +186,7 @@ def pb(name, data, bucket_count=None, display_name=None, description=None):
     import tensorflow.compat.v1 as tf
 
     if bucket_count is None:
-        bucket_count = DEFAULT_BUCKET_COUNT
+        bucket_count = summary_v2.DEFAULT_BUCKET_COUNT
     data = np.array(data).flatten().astype(float)
     if data.size == 0:
         buckets = np.array([]).reshape((0, 3))

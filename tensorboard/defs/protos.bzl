@@ -16,7 +16,6 @@ load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 load("@com_github_grpc_grpc//bazel:protobuf.bzl", "well_known_proto_libs")
 load("@com_github_grpc_grpc//bazel:python_rules.bzl", "py_grpc_library")
 
-# TODO(#6185): try to reduce the complexity in this rule.
 def tb_proto_library(
         name,
         srcs = None,

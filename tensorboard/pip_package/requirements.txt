@@ -20,9 +20,6 @@ absl-py >= 0.4
 grpcio >= 1.74.0, < 2.0
 markdown >= 2.6.8
 numpy >= 1.12.0
-# NOTE: The packaging dependency was introduced in order to compare installed
-# package versions and conditionally use different supported kwargs
-# (specifically the protobuf dependency).
 packaging
 pillow
 # NOTE: this version must be >= the protoc version in our WORKSPACE file.
