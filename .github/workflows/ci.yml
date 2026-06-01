@@ -51,11 +51,9 @@ jobs:
         python_version: ['3.10']
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      # The self-hosted ml-build container already has the system packages we
-      # need; installing Python inside the container keeps Bazel's
-      # @system_python repo pointed at a normal interpreter/header layout and
-      # avoids the hosted-toolcache header-copy workaround that was previously
-      # needed with actions/setup-python.
+      # Use the container's system Python installation path instead of
+      # actions/setup-python so Bazel's @system_python repo sees a standard
+      # interpreter/header layout.
       - name: 'Set up Python and system dependencies'
         run: |
           py_abi="python${{ matrix.python_version }}"
