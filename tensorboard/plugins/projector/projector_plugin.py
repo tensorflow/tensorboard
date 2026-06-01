@@ -210,10 +210,22 @@ def _parse_positive_int_param(request, param_name):
 
 
 def _rel_to_abs_asset_path(fpath, config_fpath):
-    fpath = os.path.expanduser(fpath)
-    if not os.path.isabs(fpath):
-        return os.path.join(os.path.dirname(config_fpath), fpath)
-    return fpath
+    config_dir = os.path.realpath(
+        os.path.dirname(os.path.expanduser(config_fpath))
+    )
+    candidate = os.path.expanduser(fpath)
+    if not os.path.isabs(candidate):
+        candidate = os.path.join(config_dir, candidate)
+    candidate = os.path.realpath(candidate)
+    try:
+        if os.path.commonpath([config_dir, candidate]) != config_dir:
+            raise ValueError()
+    except ValueError as e:
+        raise ValueError(
+            'Asset path "%s" resolves outside the config directory'
+            % fpath
+        ) from e
+    return candidate
 
 
 def _using_tf():
@@ -363,9 +375,18 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                     embedding.tensor_name = embedding.tensor_name[:-2]
                 # Find the size of embeddings associated with a tensors file.
                 if embedding.tensor_path:
-                    fpath = _rel_to_abs_asset_path(
-                        embedding.tensor_path, self.config_fpaths[run]
-                    )
+                    try:
+                        fpath = _rel_to_abs_asset_path(
+                            embedding.tensor_path, self.config_fpaths[run]
+                        )
+                    except ValueError as e:
+                        logger.warning(
+                            'Skipping tensor path "%s" for run "%s": %s',
+                            embedding.tensor_path,
+                            run,
+                            e,
+                        )
+                        continue
                     tensor = self.tensor_cache.get((run, embedding.tensor_name))
                     if tensor is None:
                         try:
@@ -594,7 +615,10 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 "text/plain",
                 400,
             )
-        fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
+        try:
+            fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
+        except ValueError as e:
+            return Respond(request, str(e), "text/plain", 400)
         if not tf.io.gfile.exists(fpath) or tf.io.gfile.isdir(fpath):
             return Respond(
                 request,
@@ -651,9 +675,12 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             embedding = self._get_embedding(name, config)
 
             if embedding and embedding.tensor_path:
-                fpath = _rel_to_abs_asset_path(
-                    embedding.tensor_path, self.config_fpaths[run]
-                )
+                try:
+                    fpath = _rel_to_abs_asset_path(
+                        embedding.tensor_path, self.config_fpaths[run]
+                    )
+                except ValueError as e:
+                    return Respond(request, str(e), "text/plain", 400)
                 if not tf.io.gfile.exists(fpath):
                     return Respond(
                         request,
@@ -720,7 +747,10 @@ class ProjectorPlugin(base_plugin.TBPlugin):
                 "text/plain",
                 400,
             )
-        fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
+        try:
+            fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
+        except ValueError as e:
+            return Respond(request, str(e), "text/plain", 400)
         if not tf.io.gfile.exists(fpath) or tf.io.gfile.isdir(fpath):
             return Respond(
                 request,
@@ -766,7 +796,10 @@ class ProjectorPlugin(base_plugin.TBPlugin):
             )
 
         fpath = os.path.expanduser(embedding_info.sprite.image_path)
-        fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
+        try:
+            fpath = _rel_to_abs_asset_path(fpath, self.config_fpaths[run])
+        except ValueError as e:
+            return Respond(request, str(e), "text/plain", 400)
         if not tf.io.gfile.exists(fpath) or tf.io.gfile.isdir(fpath):
             return Respond(
                 request,
