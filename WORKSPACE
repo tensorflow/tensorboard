@@ -293,7 +293,7 @@ tb_http_archive(
     urls = tb_mirror_urls("https://github.com/bazelbuild/rules_cc/archive/refs/tags/0.1.0.tar.gz"),
 )
 
-tb_http_archive(
+http_archive(
     name = "tb_rules_java",
     sha256 = "b2519fabcd360529071ade8732f208b3755489ed7668b118f8f90985c0e51324",
     strip_prefix = "rules_java-8.6.1",
@@ -305,11 +305,17 @@ local_repository(
     path = "third_party/compatibility_proxy",
 )
 
+# Protobuf 6.31.1 still expects a pip-style requirements helper repo from its
+# WORKSPACE macros. TensorBoard only needs the narrow `install_deps()` /
+# `requirement()` surface that protobuf actually loads in this configuration.
 local_repository(
     name = "protobuf_pip_deps",
     path = "third_party/protobuf_pip_deps",
 )
 
+# Protobuf's python/dist BUILD also shells against
+# `external/protobuf_pip_deps_setuptools/site-packages`, so keep this separate
+# repo shape even though it only vendors an empty placeholder tree here.
 local_repository(
     name = "protobuf_pip_deps_setuptools",
     path = "third_party/protobuf_pip_deps_setuptools",
@@ -350,14 +356,14 @@ protobuf_deps()
 #
 # Keep this aligned with TensorFlow 2.21's Bazel-side gRPC dependency so the
 # grpc plugin and protobuf repository stay on a known-compatible combination.
-tb_http_archive(
+http_archive(
     name = "com_github_grpc_grpc",
     sha256 = "dd6a2fa311ba8441bbefd2764c55b99136ff10f7ea42954be96006a2723d33fc",
     strip_prefix = "grpc-1.74.0",
     urls = tb_mirror_urls("https://github.com/grpc/grpc/archive/refs/tags/v1.74.0.tar.gz"),
 )
 
-tb_http_archive(
+http_archive(
     name = "build_bazel_rules_swift",
     sha256 = "9919ed1d8dae509645bfd380537ae6501528d8de971caebed6d5185b9970dc4d",
     urls = tb_mirror_urls("https://github.com/bazelbuild/rules_swift/releases/download/2.1.1/rules_swift.2.1.1.tar.gz"),

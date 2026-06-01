@@ -23,17 +23,8 @@ def tb_mirror_urls(url):
         url,
     ]
 
-def _get_link_dict(ctx, link_files, build_file):
-    """Builds the destination->source map for files linked into a repo rule."""
-    link_dict = {ctx.path(v): ctx.path(Label(k)) for k, v in link_files.items()}
-    if build_file:
-        link_dict[ctx.path("BUILD.bazel")] = ctx.path(Label(build_file))
-    return link_dict
-
 def _tb_http_archive_impl(ctx):
-    """Repository-rule implementation with optional patching and linked files."""
-    link_dict = _get_link_dict(ctx, ctx.attr.link_files, ctx.attr.build_file)
-
+    """Repository-rule implementation with optional patching."""
     patch_files = ctx.attr.patch_file
     # Resolve patch labels up front so Bazel reports missing patch inputs before
     # download/extract work has completed.
@@ -53,11 +44,6 @@ def _tb_http_archive_impl(ctx):
         if patch_file:
             ctx.patch(patch_file, strip = 1)
 
-    # Link in any repository-local BUILD/link files after extraction and patching.
-    for dst, src in link_dict.items():
-        ctx.delete(dst)
-        ctx.symlink(src, dst)
-
 _tb_http_archive = repository_rule(
     implementation = _tb_http_archive_impl,
     attrs = {
@@ -66,13 +52,11 @@ _tb_http_archive = repository_rule(
         "strip_prefix": attr.string(),
         "type": attr.string(),
         "patch_file": attr.string_list(),
-        "build_file": attr.string(),
-        "link_files": attr.string_dict(),
     },
 )
 
 def tb_http_archive(name, sha256, urls, **kwargs):
-    """Downloads a mirrored archive and creates a TensorBoard external repo."""
+    """Downloads a mirrored archive for TensorBoard-specific repo wiring."""
     if len(urls) < 2:
         fail("tb_http_archive(urls) must have redundant URLs.")
 
