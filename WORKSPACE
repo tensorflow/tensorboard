@@ -313,7 +313,7 @@ local_repository(
     path = "third_party/protobuf_pip_deps",
 )
 
-# Protobuf's python/dist BUILD also shells against
+# Protobuf's python/dist BUILD also references
 # `external/protobuf_pip_deps_setuptools/site-packages`, so keep this separate
 # repo shape even though it only vendors an empty placeholder tree here.
 local_repository(
