@@ -219,7 +219,9 @@ class ProjectorAppTest(tf.test.TestCase):
         self._GenerateProjectorAssetsTestData(tensor_path=outside_tensor_path)
         self._SetupWSGIApp()
 
-        response = self._Get("/data/plugin/projector/tensor?run=.&name=embedding")
+        response = self._Get(
+            "/data/plugin/projector/tensor?run=.&name=embedding"
+        )
         self._AssertOutsideConfigDirResponse(response)
 
     def testBookmarksRejectAbsolutePathOutsideLogdir(self):
@@ -269,9 +271,7 @@ class ProjectorAppTest(tf.test.TestCase):
 
     def _AssertOutsideConfigDirResponse(self, response):
         self.assertEqual(response.status_code, 400)
-        self.assertIn(
-            b"resolves outside the config directory", response.data
-        )
+        self.assertIn(b"resolves outside the config directory", response.data)
 
     # TODO(#2007): Cleanly separate out projector tests that require real TF
     @unittest.skipUnless(USING_REAL_TF, "Test only passes when using real TF")
@@ -403,9 +403,7 @@ class ProjectorAppTest(tf.test.TestCase):
         bookmarks_path=None,
         sprite_image_path=None,
     ):
-        self._WriteTextFile(
-            self._ResolveAssetPath(tensor_path), "1.0\t2.0\n"
-        )
+        self._WriteTextFile(self._ResolveAssetPath(tensor_path), "1.0\t2.0\n")
 
         config = projector_config_pb2.ProjectorConfig()
         embedding = config.embeddings.add()

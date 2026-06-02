@@ -222,8 +222,7 @@ def _rel_to_abs_asset_path(fpath, config_fpath):
             raise ValueError()
     except ValueError as e:
         raise ValueError(
-            'Asset path "%s" resolves outside the config directory'
-            % fpath
+            'Asset path "%s" resolves outside the config directory' % fpath
         ) from e
     return candidate
 
