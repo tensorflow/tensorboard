@@ -3,7 +3,11 @@
 Protobuf's Bazel macros load a pip-style requirements helper that provides
 `requirement()` and `install_deps()`. TensorBoard only needs a very small
 subset of that surface here, so this file supplies just the labels
-protobuf actually asks for here.
+protobuf 6.31.1 actually asks for here:
+
+* `install_deps()` from protobuf's WORKSPACE setup
+* `requirement("setuptools")` from `python/dist/BUILD.bazel`
+* `requirement("numpy")` from protobuf's numpy test target
 """
 
 def requirement(name):
@@ -15,5 +19,5 @@ def requirement(name):
     fail("Unsupported protobuf pip dependency: %s" % name)
 
 def install_deps():
-    """Compatibility no-op for callers that expect an install_deps symbol."""
+    """Compatibility no-op for protobuf's WORKSPACE dependency hook."""
     return None

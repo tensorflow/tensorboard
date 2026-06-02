@@ -1494,7 +1494,7 @@ class DebuggerV2PluginTest(tf.test.TestCase):
         data = json.loads(response.get_data())
         self.assertEqual(data["host_name"], _HOST_NAME)
         self.assertEqual(data["file_path"], _CURRENT_FILE_FULL_PATH)
-        with open(__file__, "r") as f:
+        with open(__file__, "r", newline="") as f:
             lines = f.read().split("\n")
         self.assertEqual(data["lines"], lines)
 
