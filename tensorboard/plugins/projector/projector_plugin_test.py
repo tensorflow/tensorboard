@@ -55,7 +55,11 @@ class ProjectorAppTest(tf.test.TestCase):
         self.server = None
 
     def setUp(self):
-        self.log_dir = self.get_temp_dir()
+        self.test_dir = self.get_temp_dir()
+        self.log_dir = os.path.join(self.test_dir, "log_dir")
+        self.restricted_dir = os.path.join(self.test_dir, "restricted_dir")
+        tf.io.gfile.makedirs(self.log_dir)
+        tf.io.gfile.makedirs(self.restricted_dir)
 
     def testRunsWithValidCheckpoint(self):
         self._GenerateProjectorTestData()
@@ -197,6 +201,93 @@ class ProjectorAppTest(tf.test.TestCase):
         bookmark = self._GetJson(url)
         self.assertEqual(bookmark, {"a": "b"})
 
+    def testMetadataServesRelativeFileWithinLogdir(self):
+        self._GenerateProjectorAssetsTestData(metadata_path="metadata.tsv")
+        self._WriteTextFile(
+            os.path.join(self.log_dir, "metadata.tsv"), "label\nvalue\n"
+        )
+        self._SetupWSGIApp()
+
+        response = self._Get(
+            "/data/plugin/projector/metadata?run=.&name=embedding"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, b"label\nvalue\n")
+
+    def testMetadataRejectsTraversalOutsideLogdir(self):
+        outside_metadata_path = os.path.join(
+            self.restricted_dir, "outside_metadata.tsv"
+        )
+        traversal_path = "../restricted_dir/outside_metadata.tsv"
+        self._WriteTextFile(outside_metadata_path, "secret\n")
+        self._GenerateProjectorAssetsTestData(metadata_path=traversal_path)
+        self._SetupWSGIApp()
+
+        response = self._Get(
+            "/data/plugin/projector/metadata?run=.&name=embedding"
+        )
+        self._AssertOutsideConfigDirResponse(response)
+
+    def testMetadataRejectsSymlinkOutsideLogdir(self):
+        outside_metadata_path = os.path.join(
+            self.restricted_dir, "outside_metadata.tsv"
+        )
+        symlink_path = os.path.join(self.log_dir, "metadata-link.tsv")
+        self._WriteTextFile(outside_metadata_path, "secret\n")
+        try:
+            os.symlink(outside_metadata_path, symlink_path)
+        except (AttributeError, NotImplementedError, OSError) as e:
+            self.skipTest("symlinks unavailable: %s" % e)
+        self._GenerateProjectorAssetsTestData(metadata_path="metadata-link.tsv")
+        self._SetupWSGIApp()
+
+        response = self._Get(
+            "/data/plugin/projector/metadata?run=.&name=embedding"
+        )
+        self._AssertOutsideConfigDirResponse(response)
+
+    def testTensorRejectsAbsolutePathOutsideLogdir(self):
+        outside_tensor_path = os.path.join(
+            self.restricted_dir, "outside_tensor.tsv"
+        )
+        self._WriteTextFile(outside_tensor_path, "1.0\t2.0\n")
+        self._GenerateProjectorAssetsTestData(tensor_path=outside_tensor_path)
+        self._SetupWSGIApp()
+
+        response = self._Get(
+            "/data/plugin/projector/tensor?run=.&name=embedding"
+        )
+        self._AssertOutsideConfigDirResponse(response)
+
+    def testBookmarksRejectAbsolutePathOutsideLogdir(self):
+        outside_bookmarks_path = os.path.join(
+            self.restricted_dir, "outside_bookmarks.json"
+        )
+        self._WriteTextFile(outside_bookmarks_path, '{"label": "secret"}')
+        self._GenerateProjectorAssetsTestData(
+            bookmarks_path=outside_bookmarks_path
+        )
+        self._SetupWSGIApp()
+
+        response = self._Get(
+            "/data/plugin/projector/bookmarks?run=.&name=embedding"
+        )
+        self._AssertOutsideConfigDirResponse(response)
+
+    def testSpriteImageRejectsTraversalOutsideLogdir(self):
+        outside_sprite_path = os.path.join(
+            self.restricted_dir, "outside_sprite.png"
+        )
+        traversal_path = "../restricted_dir/outside_sprite.png"
+        self._WriteTextFile(outside_sprite_path, "not-an-image")
+        self._GenerateProjectorAssetsTestData(sprite_image_path=traversal_path)
+        self._SetupWSGIApp()
+
+        response = self._Get(
+            "/data/plugin/projector/sprite_image?run=.&name=embedding"
+        )
+        self._AssertOutsideConfigDirResponse(response)
+
     def testEndpointsNoAssets(self):
         g = tf.Graph()
 
@@ -212,6 +303,10 @@ class ProjectorAppTest(tf.test.TestCase):
             np.frombuffer(tensor_bytes, dtype=np.float32), expected_tensor.shape
         )
         self.assertTrue(np.array_equal(tensor, expected_tensor))
+
+    def _AssertOutsideConfigDirResponse(self, response):
+        self.assertEqual(response.status_code, 400)
+        self.assertIn(b"resolves outside the config directory", response.data)
 
     # TODO(#2007): Cleanly separate out projector tests that require real TF
     @unittest.skipUnless(USING_REAL_TF, "Test only passes when using real TF")
@@ -335,6 +430,44 @@ class ProjectorAppTest(tf.test.TestCase):
                 write_version=tf.compat.v1.train.SaverDef.V1
             )
             saver.save(sess, checkpoint_path)
+
+    def _GenerateProjectorAssetsTestData(
+        self,
+        tensor_path="tensor.tsv",
+        metadata_path=None,
+        bookmarks_path=None,
+        sprite_image_path=None,
+    ):
+        self._WriteTextFile(self._ResolveAssetPath(tensor_path), "1.0\t2.0\n")
+
+        config = projector_config_pb2.ProjectorConfig()
+        embedding = config.embeddings.add()
+        embedding.tensor_name = "embedding"
+        embedding.tensor_path = tensor_path
+        if metadata_path is not None:
+            embedding.metadata_path = metadata_path
+        if bookmarks_path is not None:
+            embedding.bookmarks_path = bookmarks_path
+        if sprite_image_path is not None:
+            embedding.sprite.image_path = sprite_image_path
+
+        with tf.io.gfile.GFile(
+            os.path.join(self.log_dir, "projector_config.pbtxt"), "w"
+        ) as f:
+            f.write(text_format.MessageToString(config))
+
+    def _ResolveAssetPath(self, path):
+        path = os.path.expanduser(path)
+        if os.path.isabs(path):
+            return os.path.realpath(path)
+        return os.path.realpath(os.path.join(self.log_dir, path))
+
+    def _WriteTextFile(self, path, contents):
+        parent = os.path.dirname(path)
+        if parent:
+            tf.io.gfile.makedirs(parent)
+        with tf.io.gfile.GFile(path, "w") as f:
+            f.write(contents)
 
 
 class MetadataColumnsTest(tf.test.TestCase):
