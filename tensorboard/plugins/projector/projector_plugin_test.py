@@ -55,7 +55,11 @@ class ProjectorAppTest(tf.test.TestCase):
         self.server = None
 
     def setUp(self):
-        self.log_dir = self.get_temp_dir()
+        self.test_dir = self.get_temp_dir()
+        self.log_dir = os.path.join(self.test_dir, "log_dir")
+        self.restricted_dir = os.path.join(self.test_dir, "restricted_dir")
+        tf.io.gfile.makedirs(self.log_dir)
+        tf.io.gfile.makedirs(self.restricted_dir)
 
     def testRunsWithValidCheckpoint(self):
         self._GenerateProjectorTestData()
@@ -197,11 +201,24 @@ class ProjectorAppTest(tf.test.TestCase):
         bookmark = self._GetJson(url)
         self.assertEqual(bookmark, {"a": "b"})
 
+    def testMetadataServesRelativeFileWithinLogdir(self):
+        self._GenerateProjectorAssetsTestData(metadata_path="metadata.tsv")
+        self._WriteTextFile(
+            os.path.join(self.log_dir, "metadata.tsv"), "label\nvalue\n"
+        )
+        self._SetupWSGIApp()
+
+        response = self._Get(
+            "/data/plugin/projector/metadata?run=.&name=embedding"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, b"label\nvalue\n")
+
     def testMetadataRejectsTraversalOutsideLogdir(self):
         outside_metadata_path = os.path.join(
-            os.path.dirname(self.log_dir), "outside_metadata.tsv"
+            self.restricted_dir, "outside_metadata.tsv"
         )
-        traversal_path = os.path.relpath(outside_metadata_path, self.log_dir)
+        traversal_path = "../restricted_dir/outside_metadata.tsv"
         self._WriteTextFile(outside_metadata_path, "secret\n")
         self._GenerateProjectorAssetsTestData(metadata_path=traversal_path)
         self._SetupWSGIApp()
@@ -211,9 +228,27 @@ class ProjectorAppTest(tf.test.TestCase):
         )
         self._AssertOutsideConfigDirResponse(response)
 
+    def testMetadataRejectsSymlinkOutsideLogdir(self):
+        outside_metadata_path = os.path.join(
+            self.restricted_dir, "outside_metadata.tsv"
+        )
+        symlink_path = os.path.join(self.log_dir, "metadata-link.tsv")
+        self._WriteTextFile(outside_metadata_path, "secret\n")
+        try:
+            os.symlink(outside_metadata_path, symlink_path)
+        except (AttributeError, NotImplementedError, OSError) as e:
+            self.skipTest("symlinks unavailable: %s" % e)
+        self._GenerateProjectorAssetsTestData(metadata_path="metadata-link.tsv")
+        self._SetupWSGIApp()
+
+        response = self._Get(
+            "/data/plugin/projector/metadata?run=.&name=embedding"
+        )
+        self._AssertOutsideConfigDirResponse(response)
+
     def testTensorRejectsAbsolutePathOutsideLogdir(self):
         outside_tensor_path = os.path.join(
-            os.path.dirname(self.log_dir), "outside_tensor.tsv"
+            self.restricted_dir, "outside_tensor.tsv"
         )
         self._WriteTextFile(outside_tensor_path, "1.0\t2.0\n")
         self._GenerateProjectorAssetsTestData(tensor_path=outside_tensor_path)
@@ -226,7 +261,7 @@ class ProjectorAppTest(tf.test.TestCase):
 
     def testBookmarksRejectAbsolutePathOutsideLogdir(self):
         outside_bookmarks_path = os.path.join(
-            os.path.dirname(self.log_dir), "outside_bookmarks.json"
+            self.restricted_dir, "outside_bookmarks.json"
         )
         self._WriteTextFile(outside_bookmarks_path, '{"label": "secret"}')
         self._GenerateProjectorAssetsTestData(
@@ -241,9 +276,9 @@ class ProjectorAppTest(tf.test.TestCase):
 
     def testSpriteImageRejectsTraversalOutsideLogdir(self):
         outside_sprite_path = os.path.join(
-            os.path.dirname(self.log_dir), "outside_sprite.png"
+            self.restricted_dir, "outside_sprite.png"
         )
-        traversal_path = os.path.relpath(outside_sprite_path, self.log_dir)
+        traversal_path = "../restricted_dir/outside_sprite.png"
         self._WriteTextFile(outside_sprite_path, "not-an-image")
         self._GenerateProjectorAssetsTestData(sprite_image_path=traversal_path)
         self._SetupWSGIApp()

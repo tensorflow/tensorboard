@@ -217,13 +217,15 @@ def _rel_to_abs_asset_path(fpath, config_fpath):
     if not os.path.isabs(candidate):
         candidate = os.path.join(config_dir, candidate)
     candidate = os.path.realpath(candidate)
+    error_message = 'Asset path "%s" resolves outside the config directory' % (
+        fpath
+    )
     try:
-        if os.path.commonpath([config_dir, candidate]) != config_dir:
-            raise ValueError()
+        common_path = os.path.commonpath([config_dir, candidate])
     except ValueError as e:
-        raise ValueError(
-            'Asset path "%s" resolves outside the config directory' % fpath
-        ) from e
+        raise ValueError(error_message) from e
+    if common_path != config_dir:
+        raise ValueError(error_message)
     return candidate
 
 
