@@ -207,10 +207,13 @@ $_data_table_initial_height: 100px;
   align-items: center;
 
   .expand-button {
-    color: matm2.get-color-from-palette($tb-foreground, secondary-text);
+    color: matm2.m2-get-color-from-palette($tb-foreground, secondary-text);
 
     @include tb-dark-theme {
-      color: matm2.get-color-from-palette($tb-dark-foreground, secondary-text);
+      color: matm2.m2-get-color-from-palette(
+        $tb-dark-foreground,
+        secondary-text
+      );
       background-color: map-get($tb-dark-background, background);
     }
   }

@@ -17,8 +17,8 @@ limitations under the License.
 @use '@angular/material' as matm2var;
 
 @mixin debugger-op-type {
-  background-color: matm2.get-color-from-palette(
-    matm2var.$blue-grey-palette,
+  background-color: matm2.m2-get-color-from-palette(
+    matm2var.$m2-blue-grey-palette,
     50
   );
   @include tb-theme-foreground-prop(border, border, 1px solid);
@@ -31,8 +31,8 @@ limitations under the License.
   width: max-content;
 
   @include tb-dark-theme {
-    background-color: matm2.get-color-from-palette(
-      matm2var.$blue-grey-palette,
+    background-color: matm2.m2-get-color-from-palette(
+      matm2var.$m2-blue-grey-palette,
       700
     );
   }
@@ -42,8 +42,8 @@ limitations under the License.
   background-color: #fff099;
 
   @include tb-dark-theme {
-    background-color: matm2.get-color-from-palette(
-      matm2var.$orange-palette,
+    background-color: matm2.m2-get-color-from-palette(
+      matm2var.$m2-orange-palette,
       900
     );
   }

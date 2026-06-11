@@ -18,8 +18,8 @@ limitations under the License.
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
-  color: matm2.get-color-from-palette(
-    map-get(matm2.get-color-config($tb-theme), warn),
+  color: matm2.m2-get-color-from-palette(
+    map-get(matm2.m2-get-color-config($tb-theme), warn),
     700
   );
   height: 1em;
@@ -27,8 +27,8 @@ limitations under the License.
   display: inline-flex;
 
   @include tb-dark-theme {
-    color: matm2.get-color-from-palette(
-      map-get(matm2.get-color-config($tb-dark-theme), warn),
+    color: matm2.m2-get-color-from-palette(
+      map-get(matm2.m2-get-color-config($tb-dark-theme), warn),
       700
     );
   }

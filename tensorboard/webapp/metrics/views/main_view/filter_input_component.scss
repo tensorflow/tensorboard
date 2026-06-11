@@ -30,7 +30,7 @@ tb-filter-input {
   @include tb-theme-foreground-prop(color, text);
 
   &:not(.valid) {
-    $_error-color: matm2.get-color-from-palette($tb-warn, 800);
+    $_error-color: matm2.m2-get-color-from-palette($tb-warn, 800);
 
     color: $_error-color;
 

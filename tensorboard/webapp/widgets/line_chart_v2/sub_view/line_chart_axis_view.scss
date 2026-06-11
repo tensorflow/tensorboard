@@ -185,7 +185,7 @@ text {
   }
 }
 
-$border: matm2.get-color-from-palette(matm2var.$grey-palette, 500);
+$border: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 500);
 $_border-style: 1px solid $border;
 
 .x-axis .major-label {

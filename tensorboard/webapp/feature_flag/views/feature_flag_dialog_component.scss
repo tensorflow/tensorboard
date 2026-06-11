@@ -19,14 +19,14 @@ limitations under the License.
 
 .message {
   .warning {
-    color: matm2.get-color-from-palette($tb-warn);
+    color: matm2.m2-get-color-from-palette($tb-warn);
   }
 
   margin-bottom: 16px;
 }
 
 .note-1 {
-  color: matm2.get-color-from-palette($tb-accent);
+  color: matm2.m2-get-color-from-palette($tb-accent);
 }
 
 .scrolling-page {
