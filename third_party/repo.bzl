@@ -57,7 +57,7 @@ _tb_http_archive = repository_rule(
 
 def tb_http_archive(name, sha256, urls, **kwargs):
     """Downloads a mirrored archive for TensorBoard-specific repo wiring.
-    
+
     Args:
       name: The name of the repository.
       sha256: The expected SHA-256 hash of the downloaded file.
