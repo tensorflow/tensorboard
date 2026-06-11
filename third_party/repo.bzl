@@ -56,7 +56,14 @@ _tb_http_archive = repository_rule(
 )
 
 def tb_http_archive(name, sha256, urls, **kwargs):
-    """Downloads a mirrored archive for TensorBoard-specific repo wiring."""
+    """Downloads a mirrored archive for TensorBoard-specific repo wiring.
+    
+    Args:
+      name: The name of the repository.
+      sha256: The expected SHA-256 hash of the downloaded file.
+      urls: A list of URLs where the file can be downloaded.
+      **kwargs: Additional arguments passed to the underlying rule.
+    """
     if len(urls) < 2:
         fail("tb_http_archive(urls) must have redundant URLs.")
 
@@ -68,6 +75,7 @@ def tb_http_archive(name, sha256, urls, **kwargs):
         fail("The first entry of tb_http_archive(urls) must be a mirror URL.")
 
     if native.existing_rule(name):
+        # buildifier: disable=print
         print("\n\033[1;33mWarning:\033[0m skipping import of repository '" +
               name + "' because it already exists.\n")
         return
