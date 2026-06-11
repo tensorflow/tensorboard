@@ -25,7 +25,13 @@ import subprocess
 import sys
 
 
-exceptions = frozenset()
+# Patch files use a trailing space on blank lines to mark them as context.
+# This is required by patch format and cannot be removed.
+exceptions = frozenset(
+    [
+        "patches/protobuf_6_31_1_java_export.patch",
+    ]
+)
 
 
 @dataclasses.dataclass(frozen=True)

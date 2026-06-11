@@ -13,6 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 // INTERNAL-ONLY: Import of deprecated legacy Angular Material styles
+// Note: `mat` is unused inside this file, but `_variable.scss` is concatenated
+// into `_tb_theme.scss` by the //tensorboard/webapp/theme:inline_palette
+// genrule, where `_tb_theme.template.scss` calls `mat.core()` (and other
+// `mat.*` symbols). Removing this line breaks `_tb_theme.scss` compilation.
+@use '@angular/material' as mat;
 @use '@angular/material' as matm2;
 @use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_palette';
