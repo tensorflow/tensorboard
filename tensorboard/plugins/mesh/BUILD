@@ -163,11 +163,11 @@ py_test(
     srcs = ["demo_utils_test.py"],
     data = [
         ":test_data",
-        "//tensorboard/compat:tensorflow",
     ],
     srcs_version = "PY3",
     deps = [
         ":demo_utils",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
