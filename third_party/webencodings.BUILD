@@ -15,6 +15,5 @@ py_library(
         "webencodings/mklabels.py",
         "webencodings/x_user_defined.py",
     ],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )

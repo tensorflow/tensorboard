@@ -14,7 +14,6 @@ licenses(["notice"])
 py_library(
     name = "text_plugin",
     srcs = ["text_plugin.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         "//tensorboard:plugin_util",
@@ -31,7 +30,6 @@ py_test(
     size = "small",
     srcs = ["text_plugin_test.py"],
     main = "text_plugin_test.py",
-    srcs_version = "PY3",
     deps = [
         ":text_plugin",
         "//tensorboard:context",
@@ -51,7 +49,6 @@ py_test(
     size = "small",
     srcs = ["text_plugin_test.py"],
     main = "text_plugin_test.py",
-    srcs_version = "PY3",
     deps = [
         ":text_plugin",
         "//tensorboard:context",
@@ -69,7 +66,6 @@ py_test(
 py_binary(
     name = "text_demo",
     srcs = ["text_demo.py"],
-    srcs_version = "PY3",
     deps = [
         ":summary_v2",
         "//tensorboard:expect_absl_logging_installed",
@@ -80,7 +76,6 @@ py_binary(
 py_library(
     name = "summary",
     srcs = ["summary.py"],
-    srcs_version = "PY3",
     visibility = [
         "//visibility:public",
     ],
@@ -94,7 +89,6 @@ py_library(
 py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
-    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -111,7 +105,6 @@ py_test(
     name = "summary_test",
     size = "small",
     srcs = ["summary_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":summary",
@@ -125,7 +118,6 @@ py_test(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],

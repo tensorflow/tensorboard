@@ -11,8 +11,6 @@ licenses(["notice"])
 py_binary(
     name = "inline_images",
     srcs = ["inline_images.py"],
-    python_version = "PY3",
-    srcs_version = "PY3",
 )
 
 py_test(

@@ -10,7 +10,6 @@ licenses(["notice"])
 py_library(
     name = "wit_redirect_plugin",
     srcs = ["wit_redirect_plugin.py"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard/plugins:base_plugin",
     ],
@@ -19,7 +18,6 @@ py_library(
 py_test(
     name = "wit_redirect_plugin_test",
     srcs = ["wit_redirect_plugin_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":wit_redirect_plugin",
         "//tensorboard:test",
