@@ -25,7 +25,6 @@ py_library(
 py_library(
     name = "summary_minimal",
     srcs = ["__init__.py"],
-    srcs_version = "PY3",
     deps = [
         ":writer",
     ],
@@ -36,7 +35,6 @@ py_library(
     srcs = [
         "_writer.py",
     ],
-    srcs_version = "PY3",
     deps = [
         ":output",
         "//tensorboard:expect_numpy_installed",
@@ -48,7 +46,6 @@ py_test(
     name = "writer_test",
     srcs = ["_writer_test.py"],
     main = "_writer_test.py",
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":test_util",
@@ -65,7 +62,6 @@ py_library(
     srcs = [
         "_output.py",
     ],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/summary/writer",
@@ -77,7 +73,6 @@ py_test(
     name = "output_test",
     srcs = ["_output_test.py"],
     main = "_output_test.py",
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":output",
@@ -94,7 +89,6 @@ py_library(
     srcs = [
         "v1.py",
     ],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":summary_minimal",
@@ -113,7 +107,6 @@ py_library(
     srcs = [
         "v2.py",
     ],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":summary_minimal",
@@ -129,7 +122,6 @@ py_test(
     name = "summary_test",
     size = "small",
     srcs = ["summary_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":summary",
@@ -142,7 +134,6 @@ py_library(
     name = "test_util",
     testonly = 1,
     srcs = ["_test_util.py"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/compat/tensorflow_stub",
@@ -163,7 +154,6 @@ py_library(
         "_tf/__init__.py",
         "_tf/summary/__init__.py",
     ],
-    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -176,7 +166,6 @@ py_test(
     name = "tf_summary_test",
     size = "small",
     srcs = ["tf_summary_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":tf_summary",
         "//tensorboard:expect_tensorflow_installed",
