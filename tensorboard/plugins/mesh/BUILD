@@ -152,10 +152,10 @@ py_test(
     srcs = ["demo_utils_test.py"],
     data = [
         ":test_data",
-        "//tensorboard/compat:tensorflow",
     ],
     deps = [
         ":demo_utils",
+        "//tensorboard/compat:tensorflow",
     ],
 )
 
