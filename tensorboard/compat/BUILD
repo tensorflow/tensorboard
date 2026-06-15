@@ -21,7 +21,6 @@ licenses(["notice"])
 py_library(
     name = "compat",
     srcs = ["__init__.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = ["//tensorboard:lazy"],
 )
@@ -29,7 +28,6 @@ py_library(
 py_test(
     name = "compat_test",
     srcs = ["compat_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":compat",
         "//tensorboard:expect_tensorflow_installed",
@@ -48,7 +46,6 @@ py_test(
 py_library(
     name = "tensorflow",
     srcs = ["__init__.py"],
-    srcs_version = "PY3",
     # Keep the package's real __init__.py on this target instead of depending
     # on :compat so Bazel test/binary runfiles expose the lazy tf/tf2 exports from
     # the actual package init rather than a synthesized empty package.
@@ -67,7 +64,6 @@ py_library(
         "__init__.py",
         "notf.py",
     ],
-    srcs_version = "PY3",
     # Mirror :tensorflow's package layout so the no-TF variant still exposes
     # the compat package exports while forcing the sentinel import.
     deps = [

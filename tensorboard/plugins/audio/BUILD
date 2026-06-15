@@ -17,7 +17,6 @@ filegroup(
 py_library(
     name = "audio_plugin",
     srcs = ["audio_plugin.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         "//tensorboard:errors",
@@ -33,7 +32,6 @@ py_test(
     name = "audio_plugin_test",
     size = "small",
     srcs = ["audio_plugin_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":audio_plugin",
         ":summary",
@@ -54,7 +52,6 @@ py_test(
     size = "small",
     srcs = ["audio_plugin_test.py"],
     main = "audio_plugin_test.py",
-    srcs_version = "PY3",
     deps = [
         ":audio_plugin",
         ":summary",
@@ -73,7 +70,6 @@ py_test(
 py_library(
     name = "summary",
     srcs = ["summary.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":summary_v2",
@@ -85,7 +81,6 @@ py_library(
 py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
-    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -101,7 +96,6 @@ py_test(
     name = "summary_test",
     size = "medium",
     srcs = ["summary_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":summary",
@@ -115,7 +109,6 @@ py_test(
 py_binary(
     name = "audio_demo",
     srcs = ["audio_demo.py"],
-    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -125,7 +118,6 @@ py_binary(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],

@@ -9,6 +9,5 @@ licenses(["notice"])
 py_library(
     name = "plugin",
     srcs = ["plugin.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
 )

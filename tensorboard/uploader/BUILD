@@ -11,13 +11,11 @@ licenses(["notice"])
 py_library(
     name = "upload_tracker",
     srcs = ["upload_tracker.py"],
-    srcs_version = "PY3",
 )
 
 py_test(
     name = "upload_tracker_test",
     srcs = ["upload_tracker_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":upload_tracker",
         "//tensorboard:test",
@@ -27,7 +25,6 @@ py_test(
 py_library(
     name = "logdir_loader",
     srcs = ["logdir_loader.py"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard/backend/event_processing:directory_watcher",
         "//tensorboard/backend/event_processing:io_wrapper",
@@ -51,7 +48,6 @@ py_test(
 py_library(
     name = "util",
     srcs = ["util.py"],
-    srcs_version = "PY3",
 )
 
 py_test(

@@ -17,7 +17,6 @@ py_test(
     name = "proto_test",
     size = "small",
     srcs = ["proto_test.py"],
-    srcs_version = "PY3",
     tags = [
         "manual",
         "notap",

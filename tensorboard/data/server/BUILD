@@ -134,8 +134,6 @@ py_binary(
     name = "rustboard_core_doc_server",
     srcs = ["rustboard_core_doc_server.py"],
     data = [":rustboard_core_doc.zip"],
-    python_version = "PY3",
-    srcs_version = "PY3",
     tags = ["manual"],  # https://github.com/bazelbuild/rules_rust/issues/689
     deps = [
         "@org_pocoo_werkzeug",
@@ -202,8 +200,6 @@ py_binary(
     srcs = ["update_protos.py"],
     args = ["--update"] + _proto_packages + ["descriptor.bin"],
     data = _genproto_files + [_generated_file_descriptor_set],
-    python_version = "PY3",
-    srcs_version = "PY3",
 )
 
 py_test(
@@ -215,6 +211,4 @@ py_test(
         _checked_in_file_descriptor_set,
     ],
     main = "update_protos.py",
-    python_version = "PY3",
-    srcs_version = "PY3",
 )

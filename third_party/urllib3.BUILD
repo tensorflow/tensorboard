@@ -12,5 +12,4 @@ exports_files(["LICENSE.md"])
 py_library(
     name = "org_pythonhosted_urllib3",
     srcs = glob(["urllib3/**/*.py"]),
-    srcs_version = "PY3",
 )

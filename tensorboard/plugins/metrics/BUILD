@@ -14,7 +14,6 @@ py_library(
         "metadata.py",
         "metrics_plugin.py",
     ],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard:errors",
         "//tensorboard:plugin_util",
@@ -32,7 +31,6 @@ py_library(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY3",
 )
 
 py_test(
@@ -40,8 +38,6 @@ py_test(
     size = "medium",
     srcs = ["metrics_plugin_test.py"],
     main = "metrics_plugin_test.py",
-    python_version = "PY3",
-    srcs_version = "PY3",
     deps = [
         ":metrics_plugin",
         "//tensorboard:context",
