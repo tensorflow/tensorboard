@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@use '@angular/material' as matm2;
-@use '@angular/material' as matm2var;
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 :host {
@@ -22,10 +21,7 @@ limitations under the License.
 
 .fob {
   display: inline-flex;
-  background-color: matm2.m2-get-color-from-palette(
-    matm2var.$m2-grey-palette,
-    300
-  );
+  background-color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 300);
   border-radius: 25px;
   padding: 2px 2px 2px 4px;
   font-size: 11px;
@@ -55,8 +51,7 @@ limitations under the License.
   &.prospective {
     align-items: center;
     box-sizing: border-box;
-    border: 1px dashed
-      matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 500);
+    border: 1px dashed mat.m2-get-color-from-palette(mat.$m2-grey-palette, 500);
     font-weight: bold;
     height: 17px;
   }
@@ -67,7 +62,7 @@ span {
   display: inline-block;
 
   @include tb-dark-theme {
-    color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 700);
+    color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 700);
   }
 }
 
@@ -91,23 +86,17 @@ button {
   }
 
   @include tb-dark-theme {
-    color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 700);
+    color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 700);
   }
 }
 
 button:hover {
-  background-color: matm2.m2-get-color-from-palette(
-    matm2var.$m2-grey-palette,
-    500
-  );
-  color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 200);
+  background-color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 500);
+  color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 200);
   cursor: pointer;
 
   @include tb-dark-theme {
-    background-color: matm2.m2-get-color-from-palette(
-      matm2var.$m2-grey-palette,
-      700
-    );
-    color: matm2.m2-get-color-from-palette(matm2var.$m2-grey-palette, 300);
+    background-color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 700);
+    color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 300);
   }
 }

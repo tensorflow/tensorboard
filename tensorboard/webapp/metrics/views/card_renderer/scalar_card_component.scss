@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@use '@angular/material' as matm2;
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
@@ -205,13 +205,10 @@ $_data_table_initial_height: 100px;
   align-items: center;
 
   .expand-button {
-    color: matm2.m2-get-color-from-palette($tb-foreground, secondary-text);
+    color: mat.m2-get-color-from-palette($tb-foreground, secondary-text);
 
     @include tb-dark-theme {
-      color: matm2.m2-get-color-from-palette(
-        $tb-dark-foreground,
-        secondary-text
-      );
+      color: mat.m2-get-color-from-palette($tb-dark-foreground, secondary-text);
       background-color: map-get($tb-dark-background, background);
     }
   }

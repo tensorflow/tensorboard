@@ -12,19 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-// INTERNAL-ONLY: Import of deprecated legacy Angular Material styles
-// Note: `mat` is unused inside this file, but `_variable.scss` is concatenated
-// into `_tb_theme.scss` by the //tensorboard/webapp/theme:inline_palette
-// genrule, where `_tb_theme.template.scss` calls `mat.core()` (and other
-// `mat.*` symbols). Removing this line breaks `_tb_theme.scss` compilation.
+// Note: `_variable.scss` is concatenated into `_tb_theme.scss` by the
+// //tensorboard/webapp/theme:inline_palette genrule, where
+// `_tb_theme.template.scss` also calls `mat.*` symbols. Keep this `@use` so
+// the concatenated `_tb_theme.scss` compiles.
 @use '@angular/material' as mat;
-@use '@angular/material' as matm2;
-@use '@angular/material' as matm2var;
 @import 'tensorboard/webapp/theme/tb_palette';
 
-$tb-primary: matm2.m2-define-palette($tf-orange, 700, 400, 800);
-$tb-accent: matm2.m2-define-palette($tf-orange);
-$tb-warn: matm2.m2-define-palette(matm2var.$m2-red-palette);
+$tb-primary: mat.m2-define-palette($tf-orange, 700, 400, 800);
+$tb-accent: mat.m2-define-palette($tf-orange);
+$tb-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
-$tb-dark-primary: matm2.m2-define-palette($tf-orange, 800, 600, 900);
+$tb-dark-primary: mat.m2-define-palette($tf-orange, 800, 600, 900);
 $tb-dark-accent: $tb-dark-primary;

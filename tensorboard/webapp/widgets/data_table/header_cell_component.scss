@@ -13,11 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-@use '@angular/material' as matm2;
-@use '@angular/material' as matm2var;
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
-$_accent: map-get(matm2.m2-get-color-config($tb-theme), accent);
+$_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
 $_icon_size: 12px;
 $_icon_padding: 4px;
 
@@ -81,16 +80,13 @@ $_icon_padding: 4px;
 }
 
 .highlight {
-  background-color: matm2.m2-get-color-from-palette(
-    matm2var.$m2-grey-palette,
-    200
-  );
+  background-color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 200);
 }
 
 .highlight-border-right {
-  border-right: 2px solid matm2.m2-get-color-from-palette($_accent);
+  border-right: 2px solid mat.m2-get-color-from-palette($_accent);
 }
 
 .highlight-border-left {
-  border-left: 2px solid matm2.m2-get-color-from-palette($_accent);
+  border-left: 2px solid mat.m2-get-color-from-palette($_accent);
 }
