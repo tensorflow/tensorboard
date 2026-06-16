@@ -18,7 +18,6 @@ filegroup(
 py_library(
     name = "images_plugin",
     srcs = ["images_plugin.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         "//tensorboard:expect_numpy_installed",
@@ -33,7 +32,6 @@ py_library(
 py_binary(
     name = "images_demo",
     srcs = ["images_demo.py"],
-    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -44,7 +42,6 @@ py_test(
     name = "images_plugin_test",
     size = "small",
     srcs = ["images_plugin_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":images_plugin",
         ":summary",
@@ -65,7 +62,6 @@ py_test(
     size = "small",
     srcs = ["images_plugin_test.py"],
     main = "images_plugin_test.py",
-    srcs_version = "PY3",
     deps = [
         ":images_plugin",
         ":summary",
@@ -84,7 +80,6 @@ py_test(
 py_library(
     name = "summary",
     srcs = ["summary.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":summary_v2",
@@ -96,7 +91,6 @@ py_library(
 py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
-    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -113,7 +107,6 @@ py_test(
     name = "summary_test",
     size = "small",
     srcs = ["summary_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":summary",
@@ -126,7 +119,6 @@ py_test(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],

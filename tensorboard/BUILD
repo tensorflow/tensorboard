@@ -24,7 +24,6 @@ py_binary(
     name = "tensorboard",
     srcs = ["main.py"],
     main = "main.py",
-    srcs_version = "PY3",
     deps = [
         ":assets_lib",  # link dep for webfiles assets
         ":default",
@@ -42,7 +41,6 @@ py_binary(
 py_library(
     name = "main_lib",
     srcs = ["main_lib.py"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard/compat",
@@ -55,7 +53,6 @@ py_binary(
     srcs = ["main_dev.py"],
     data = ["dev_webfiles.zip"],
     main = "main_dev.py",
-    srcs_version = "PY3",
     deps = [
         ":default",
         ":dynamic_plugins",  # loads internal dynamic plugin like projector
@@ -81,7 +78,6 @@ py_repl(
 py_library(
     name = "lib",
     srcs = ["__init__.py"],
-    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":errors",
@@ -103,7 +99,6 @@ py_library(
 py_library(
     name = "lib_init_only",
     srcs = ["__init__.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":lazy",
@@ -115,7 +110,6 @@ py_test(
     name = "lib_test",
     size = "small",
     srcs = ["lib_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     visibility = ["//tensorboard:internal"],
     deps = [":lib"],
@@ -125,7 +119,6 @@ py_library(
     name = "assets_lib",
     srcs = ["assets.py"],
     data = ["webfiles.zip"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard/util:tb_logging",
     ],
@@ -135,7 +128,6 @@ py_test(
     name = "assets_lib_test",
     srcs = ["assets_test.py"],
     main = "assets_test.py",
-    srcs_version = "PY3",
     deps = [
         ":assets_lib",
         "//tensorboard:test",
@@ -145,14 +137,12 @@ py_test(
 py_library(
     name = "auth",
     srcs = ["auth.py"],
-    srcs_version = "PY3",
 )
 
 py_test(
     name = "auth_test",
     size = "small",
     srcs = ["auth_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":auth",
@@ -163,7 +153,6 @@ py_test(
 py_library(
     name = "context",
     srcs = ["context.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":auth",
@@ -174,7 +163,6 @@ py_test(
     name = "context_test",
     size = "small",
     srcs = ["context_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":auth",
@@ -186,13 +174,11 @@ py_test(
 py_library(
     name = "errors",
     srcs = ["errors.py"],
-    srcs_version = "PY3",
 )
 
 py_test(
     name = "errors_test",
     srcs = ["errors_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":errors",
         ":test",
@@ -202,7 +188,6 @@ py_test(
 py_library(
     name = "manager",
     srcs = ["manager.py"],
-    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":version",
@@ -214,7 +199,6 @@ py_test(
     name = "manager_test",
     size = "large",
     srcs = ["manager_test.py"],
-    srcs_version = "PY3",
     tags = [
         "exclusive",
         "support_notf",
@@ -240,7 +224,6 @@ py_test(
     # high parallelism; TensorBoard subprocess time out instead of
     # launching successfully.
     flaky = True,
-    srcs_version = "PY3",
     visibility = ["//tensorboard:internal"],
     deps = [
         ":manager",
@@ -251,7 +234,6 @@ py_test(
 py_library(
     name = "notebook",
     srcs = ["notebook.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":manager",
@@ -261,7 +243,6 @@ py_library(
 py_library(
     name = "program",
     srcs = ["program.py"],
-    srcs_version = "PY3",
     deps = [
         ":manager",
         ":version",
@@ -279,7 +260,6 @@ py_test(
     name = "program_test",
     size = "large",
     srcs = ["program_test.py"],
-    srcs_version = "PY3",
     tags = [
         "exclusive",
         "support_notf",
@@ -298,7 +278,6 @@ py_library(
     name = "test",
     testonly = 1,
     srcs = ["test.py"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_absl_testing_absltest_installed",
         "//tensorboard/util:tb_logging",
@@ -308,7 +287,6 @@ py_library(
 py_library(
     name = "default",
     srcs = ["default.py"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard/backend:experimental_plugin",
         "//tensorboard/plugins/audio:audio_plugin",
@@ -332,7 +310,6 @@ py_library(
 
 py_library(
     name = "dynamic_plugins",
-    srcs_version = "PY3",
     deps = [
         "//tensorboard/plugins/projector:projector_plugin",
     ],
@@ -342,7 +319,6 @@ py_test(
     name = "default_test",
     size = "small",
     srcs = ["default_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":default",
@@ -354,14 +330,12 @@ py_test(
 py_library(
     name = "version",
     srcs = ["version.py"],
-    srcs_version = "PY3",
 )
 
 py_test(
     name = "version_test",
     size = "small",
     srcs = ["version_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":test",
@@ -493,7 +467,6 @@ py_library(name = "expect_protobuf_installed")
 py_library(
     name = "data_compat",
     srcs = ["data_compat.py"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_protobuf_installed",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -509,7 +482,6 @@ py_test(
     name = "data_compat_test",
     size = "small",
     srcs = ["data_compat_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":data_compat",
         "//tensorboard:expect_numpy_installed",
@@ -530,7 +502,6 @@ py_test(
 py_library(
     name = "dataclass_compat",
     srcs = ["dataclass_compat.py"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard/compat/proto:protos_all_py_pb2",
         "//tensorboard/plugins/audio:metadata",
@@ -551,7 +522,6 @@ py_test(
     name = "dataclass_compat_test",
     size = "small",
     srcs = ["dataclass_compat_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":dataclass_compat",
         "//tensorboard:expect_numpy_installed",
@@ -577,7 +547,6 @@ py_test(
 py_binary(
     name = "encode_png_benchmark",
     srcs = ["encode_png_benchmark.py"],
-    srcs_version = "PY3",
     deps = [
         "//tensorboard:expect_absl_logging_installed",
         "//tensorboard:expect_numpy_installed",
@@ -590,7 +559,6 @@ py_binary(
 py_library(
     name = "plugin_util",
     srcs = ["plugin_util.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":context",
@@ -606,7 +574,6 @@ py_test(
     name = "plugin_util_test",
     size = "small",
     srcs = ["plugin_util_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":context",
@@ -625,14 +592,12 @@ alias(
 py_library(
     name = "lazy",
     srcs = ["lazy.py"],
-    srcs_version = "PY3",
 )
 
 py_test(
     name = "lazy_test",
     size = "small",
     srcs = ["lazy_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [":lazy"],
 )

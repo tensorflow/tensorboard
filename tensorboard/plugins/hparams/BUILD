@@ -16,7 +16,6 @@ licenses(["notice"])
 py_library(
     name = "hparams",
     srcs = ["__init__.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":api",
@@ -37,7 +36,6 @@ py_library(
         "list_session_groups.py",
         "metrics.py",
     ],
-    srcs_version = "PY3",
     deps = [
         ":error",
         ":metadata",
@@ -134,7 +132,6 @@ py_test(
 py_binary(
     name = "hparams_demo",
     srcs = ["hparams_demo.py"],
-    srcs_version = "PY3",
     deps = [
         ":api",
         ":protos_all_py_pb2",
@@ -150,7 +147,6 @@ py_binary(
 py_binary(
     name = "hparams_minimal_demo",
     srcs = ["hparams_minimal_demo.py"],
-    srcs_version = "PY3",
     deps = [
         ":protos_all_py_pb2",
         ":summary",
@@ -165,7 +161,6 @@ py_binary(
 py_binary(
     name = "hparams_util",
     srcs = ["hparams_util.py"],
-    srcs_version = "PY3",
     visibility = [
         "//visibility:public",
     ],
@@ -190,7 +185,6 @@ sh_test(
 py_library(
     name = "api",
     srcs = ["api.py"],
-    srcs_version = "PY3",
     visibility = [
         "//visibility:public",
     ],
@@ -204,7 +198,6 @@ py_test(
     name = "api_test",
     size = "small",
     srcs = ["api_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":api",
         ":keras",
@@ -216,7 +209,6 @@ py_test(
 py_library(
     name = "keras",
     srcs = ["_keras.py"],
-    srcs_version = "PY3",
     deps = [
         ":protos_all_py_pb2",
         ":summary",
@@ -230,7 +222,6 @@ py_test(
     size = "small",
     srcs = ["_keras_test.py"],
     main = "_keras_test.py",
-    srcs_version = "PY3",
     deps = [
         ":api",
         ":keras",
@@ -245,7 +236,6 @@ py_test(
 py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
@@ -260,7 +250,6 @@ py_test(
     name = "summary_v2_test",
     size = "small",
     srcs = ["summary_v2_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":protos_all_py_pb2",
@@ -278,7 +267,6 @@ py_test(
     size = "small",
     srcs = ["summary_v2_test.py"],
     main = "summary_v2_test.py",
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":metadata",
@@ -295,7 +283,6 @@ py_test(
 py_library(
     name = "summary",
     srcs = ["summary.py"],
-    srcs_version = "PY3",
     visibility = [
         "//visibility:public",
     ],
@@ -310,7 +297,6 @@ py_library(
 py_test(
     name = "summary_test",
     srcs = ["summary_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":protos_all_py_pb2",
         ":summary",
@@ -322,7 +308,6 @@ py_test(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY3",
     deps = [
         ":error",
         ":protos_all_py_pb2",
@@ -334,7 +319,6 @@ py_library(
 py_library(
     name = "error",
     srcs = ["error.py"],
-    srcs_version = "PY3",
 )
 
 tb_proto_library(

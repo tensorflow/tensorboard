@@ -13,7 +13,6 @@ py_web_test_suite(
     ],
     # TODO(@jart): Make this fast and not flaky.
     flaky = True,
-    srcs_version = "PY3",
     tags = [
         "manual",
         "webtest",

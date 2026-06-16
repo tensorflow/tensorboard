@@ -14,7 +14,6 @@ licenses(["notice"])
 py_library(
     name = "histograms_plugin",
     srcs = ["histograms_plugin.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         "//tensorboard:errors",
@@ -31,7 +30,6 @@ py_test(
     size = "medium",
     srcs = ["histograms_plugin_test.py"],
     main = "histograms_plugin_test.py",
-    srcs_version = "PY3",
     deps = [
         ":histograms_plugin",
         ":summary",
@@ -54,7 +52,6 @@ py_test(
     size = "small",
     srcs = ["histograms_plugin_test.py"],
     main = "histograms_plugin_test.py",
-    srcs_version = "PY3",
     deps = [
         ":histograms_plugin",
         ":summary",
@@ -75,7 +72,6 @@ py_test(
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -88,7 +84,6 @@ py_library(
 py_library(
     name = "summary",
     srcs = ["summary.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":summary_v2",
@@ -99,7 +94,6 @@ py_library(
 py_library(
     name = "summary_v2",
     srcs = ["summary_v2.py"],
-    srcs_version = "PY3",
     visibility = [
         "//tensorboard:internal",
     ],
@@ -120,7 +114,6 @@ py_test(
     size = "small",
     srcs = ["summary_test.py"],
     main = "summary_test.py",
-    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -139,7 +132,6 @@ py_test(
         "test_with_large_counts",
     ],
     main = "summary_test.py",
-    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
@@ -151,7 +143,6 @@ py_test(
 py_binary(
     name = "histograms_demo",
     srcs = ["histograms_demo.py"],
-    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",

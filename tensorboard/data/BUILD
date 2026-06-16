@@ -11,7 +11,6 @@ licenses(["notice"])
 py_library(
     name = "provider",
     srcs = ["provider.py"],
-    srcs_version = "PY3",
     deps = ["//tensorboard:expect_numpy_installed"],
 )
 
@@ -19,7 +18,6 @@ py_test(
     name = "provider_test",
     size = "small",
     srcs = ["provider_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":provider",
@@ -31,14 +29,12 @@ py_test(
 py_library(
     name = "ingester",
     srcs = ["ingester.py"],
-    srcs_version = "PY3",
 )
 
 py_test(
     name = "ingester_test",
     size = "small",
     srcs = ["ingester_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":ingester",
@@ -57,7 +53,6 @@ py_library(
         ":link_data_server": ["//tensorboard/data/server"],
         "//conditions:default": [],
     }),
-    srcs_version = "PY3",
     deps = [
         ":grpc_provider",
         ":ingester",
@@ -73,7 +68,6 @@ py_test(
     size = "medium",  # time.sleep
     timeout = "short",
     srcs = ["server_ingester_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":grpc_provider",
@@ -87,7 +81,6 @@ py_test(
 py_library(
     name = "grpc_provider",
     srcs = ["grpc_provider.py"],
-    srcs_version = "PY3",
     deps = [
         ":provider",
         "//tensorboard:errors",
@@ -103,7 +96,6 @@ py_test(
     name = "grpc_provider_test",
     size = "small",
     srcs = ["grpc_provider_test.py"],
-    srcs_version = "PY3",
     tags = ["support_notf"],
     deps = [
         ":grpc_provider",

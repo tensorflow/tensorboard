@@ -13,7 +13,6 @@ licenses(["notice"])
 py_library(
     name = "metadata",
     srcs = ["metadata.py"],
-    srcs_version = "PY3",
     deps = [
         ":protos_all_py_pb2",
         "//tensorboard/compat/proto:protos_all_py_pb2",
@@ -23,7 +22,6 @@ py_library(
 py_library(
     name = "pr_curves_plugin",
     srcs = ["pr_curves_plugin.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":metadata",
@@ -40,7 +38,6 @@ py_test(
     name = "pr_curves_plugin_test",
     size = "medium",  # tf integration test
     srcs = ["pr_curves_plugin_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":pr_curve_demo_lib",
@@ -61,7 +58,6 @@ py_test(
     size = "medium",  # tf integration test
     srcs = ["pr_curves_plugin_test.py"],
     main = "pr_curves_plugin_test.py",
-    srcs_version = "PY3",
     deps = [
         ":metadata",
         ":pr_curve_demo_lib",
@@ -80,7 +76,6 @@ py_test(
 py_library(
     name = "summary",
     srcs = ["summary.py"],
-    srcs_version = "PY3",
     visibility = ["//visibility:public"],
     deps = [
         ":metadata",
@@ -94,7 +89,6 @@ py_test(
     name = "summary_test",
     size = "small",
     srcs = ["summary_test.py"],
-    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_numpy_installed",
@@ -115,14 +109,12 @@ tb_proto_library(
 py_binary(
     name = "pr_curve_demo",
     srcs = ["pr_curve_demo.py"],
-    srcs_version = "PY3",
     deps = [":pr_curve_demo_lib"],
 )
 
 py_library(
     name = "pr_curve_demo_lib",
     srcs = ["pr_curve_demo.py"],
-    srcs_version = "PY3",
     deps = [
         ":summary",
         "//tensorboard:expect_tensorflow_installed",
