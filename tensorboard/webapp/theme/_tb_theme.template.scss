@@ -17,6 +17,9 @@ limitations under the License.
  * VARIABLE FILE IS INLINED WITH GENRULE. DO NOT IMPORT IT.
  * Variable file declares values for $tb-primary, $tb-accent
  * and $tb-warn
+ * The inline_palette genrule (tensorboard/webapp/theme/BUILD) produces:
+ * _tb_theme.scss = _variable.scss + _tb_theme.template.scss in that order
+ *  "_variable.scss",          # has `@use '@angular/material' as mat;`
  **********************************************************/
 
 // Angular Material theme definition.
