@@ -3,7 +3,6 @@
 The 2.21 minor series tracks TensorFlow 2.21.
 
 ## Features
-
 - Time Series Dashboard Optimization: Improved usability for time-series tooltips by limiting them to a maximum of 5 items and setting the default sorting to `"Nearest Pixel"` (prioritizing values closest to the cursor) (#7046, #7051).
 
 ## Bug Fixes
