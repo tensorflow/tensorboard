@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@use '@angular/material' as matm2;
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
@@ -153,7 +153,7 @@ $_title-to-heading-gap: 12px;
 }
 
 :host ::ng-deep .mat-slider-min-value .mat-slider-thumb {
-  background-color: matm2.m2-get-color-from-palette($tb-primary);
+  background-color: mat.m2-get-color-from-palette($tb-primary);
 }
 
 :host ::ng-deep .hide-slider.mat-slider-horizontal .mat-slider-track-wrapper {

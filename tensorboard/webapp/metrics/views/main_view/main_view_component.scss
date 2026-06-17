@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@use '@angular/material' as matm2;
-@use '@angular/material' as matm2var;
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 @import '../common';
 
@@ -87,7 +86,7 @@ mat-button-toggle-group.filter-view {
 .main,
 .sidebar {
   contain: strict;
-  background-color: matm2.m2-get-color-from-palette($tb-background, background);
+  background-color: mat.m2-get-color-from-palette($tb-background, background);
   overflow-x: hidden;
   overflow-y: auto;
   will-change: transform, scroll-position;
@@ -98,7 +97,7 @@ mat-button-toggle-group.filter-view {
 }
 
 .main {
-  background-color: matm2.m2-get-color-from-palette($tf-slate, 200);
+  background-color: mat.m2-get-color-from-palette($tf-slate, 200);
   flex: 1 1;
   display: flex;
   flex-direction: column;
@@ -154,19 +153,16 @@ mat-button-toggle-group.filter-view {
 
 /** TODO(psybuzz): consider making a tb-button instead. */
 :host .settings-button {
-  color: matm2.m2-get-color-from-palette($tb-foreground, secondary-text);
+  color: mat.m2-get-color-from-palette($tb-foreground, secondary-text);
   display: inline-flex;
 
   @include tb-dark-theme {
-    color: matm2.m2-get-color-from-palette($tb-dark-foreground, secondary-text);
+    color: mat.m2-get-color-from-palette($tb-dark-foreground, secondary-text);
   }
 
   &.checked {
     @include tb-theme-background-prop(background-color, selected-button);
-    border-color: matm2.m2-get-color-from-palette(
-      matm2var.$m2-grey-palette,
-      300
-    );
+    border-color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 300);
   }
 
   ::ng-deep .mat-button-wrapper {
@@ -180,7 +176,7 @@ mat-button-toggle-group.filter-view {
 }
 
 .slide-out-menu {
-  background-color: matm2.m2-get-color-from-palette($tb-background, background);
+  background-color: mat.m2-get-color-from-palette($tb-background, background);
   // Make the menu the full height minus the size of the toolbar.
   height: calc(100% - 49px);
   position: absolute;

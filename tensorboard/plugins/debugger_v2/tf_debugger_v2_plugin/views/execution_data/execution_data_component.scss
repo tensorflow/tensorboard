@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@use '@angular/material' as matm2;
-@use '@angular/material' as matm2var;
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .debug-tensor-values-table {
@@ -46,10 +45,7 @@ limitations under the License.
 }
 
 .focus-execution-container {
-  background-color: matm2.m2-get-color-from-palette(
-    matm2var.$m2-orange-palette,
-    200
-  );
+  background-color: mat.m2-get-color-from-palette(mat.$m2-orange-palette, 200);
   border-radius: 4px;
   font-size: 12px;
   height: 120px;
@@ -57,8 +53,8 @@ limitations under the License.
   width: 360px;
 
   @include tb-dark-theme {
-    background-color: matm2.m2-get-color-from-palette(
-      matm2var.$m2-orange-palette,
+    background-color: mat.m2-get-color-from-palette(
+      mat.$m2-orange-palette,
       900
     );
   }

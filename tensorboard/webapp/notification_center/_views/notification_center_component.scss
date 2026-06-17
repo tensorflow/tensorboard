@@ -12,8 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@use '@angular/material' as matm2;
-@use '@angular/material' as matm2var;
+@use '@angular/material' as mat;
 @import 'tensorboard/webapp/theme/tb_theme';
 
 .notification-icon-button {
@@ -22,10 +21,7 @@ limitations under the License.
 
 .red-dot {
   $_dim: 10px;
-  background-color: matm2.m2-get-color-from-palette(
-    matm2var.$m2-red-palette,
-    700
-  );
+  background-color: mat.m2-get-color-from-palette(mat.$m2-red-palette, 700);
   border-radius: $_dim * 0.5;
   height: $_dim;
   position: absolute;
@@ -56,7 +52,7 @@ limitations under the License.
 }
 
 .category-icon {
-  color: matm2.m2-get-color-from-palette(matm2var.$m2-blue-palette, 700);
+  color: mat.m2-get-color-from-palette(mat.$m2-blue-palette, 700);
   height: 15px;
   margin-right: 6px;
   vertical-align: middle;
