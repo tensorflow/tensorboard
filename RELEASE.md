@@ -1,3 +1,18 @@
+# Release 2.21.0
+
+The 2.21 minor series tracks TensorFlow 2.21.
+
+## Features
+
+- Time Series Dashboard Optimization: Improved usability for time-series tooltips by limiting them to a maximum of 5 items and setting the default sorting to `"Nearest Pixel"` (prioritizing values closest to the cursor) (#7046, #7051).
+
+## Bug Fixes
+- Fix a Projector plugin vulnerability. (#7115)
+- Dependency Compatibility: Fixed runtime crashes caused by the missing `pkg_resources` library in newer environments (migrated to standard `importlib.metadata`) (#7057).
+
+## Breaking Changes
+- This version updates its runtime dependency requirements to align with the TensorFlow 2.21 dependency stack. In particular, `protobuf` now requires >=6.31.1, <8.0.0 and `grpcio` now requires >=1.74.0, <2.0.
+
 # Release 2.20.0
 
 The 2.20 minor series tracks TensorFlow 2.20.
