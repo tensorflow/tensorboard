@@ -237,7 +237,7 @@ yarn_install(
     # this Bazel/CI setup. Apply the generated patch artifacts directly during
     # yarn_install instead.
     post_install_patches = [
-        "//patches:@angular+build-tooling+0.0.0-db91da4e742cd081bfba01db2edc4e816018419b.patch",
+        "//patches:@angular+build-tooling+0.0.0-bf0dd632ed129ee8770b09a6e11c6497162b3edb.patch",
         "//patches:@bazel+concatjs+5.8.1.patch",
     ],
     yarn_lock = "//:yarn.lock",
