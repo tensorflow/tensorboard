@@ -16,7 +16,10 @@
 
 import argparse
 import io
+import os
+import socket
 import sys
+import tempfile
 from unittest import mock
 
 from tensorboard import program
@@ -113,6 +116,7 @@ class WerkzeugServerTest(tb_test.TestCase):
         flags = argparse.Namespace()
         kwargs.setdefault("host", None)
         kwargs.setdefault("bind_all", kwargs["host"] is None)
+        kwargs.setdefault("port", None)
         kwargs.setdefault("reuse_port", False)
         for k, v in kwargs.items():
             setattr(flags, k, v)
@@ -167,6 +171,23 @@ class WerkzeugServerTest(tb_test.TestCase):
             one_passed,
             "Neither IPv4 (127.0.0.1) nor IPv6 (::1) could be bound.",
         )
+
+    def testUnixSocketHost(self):
+        if not hasattr(socket, "AF_UNIX"):
+            self.skipTest("AF_UNIX not supported on this platform")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            sock_path = os.path.join(tmpdir, "tb.sock")
+            server = program.WerkzeugServer(
+                self._StubApplication(),
+                self.make_flags(host="unix://" + sock_path, path_prefix=""),
+            )
+            try:
+                self.assertTrue(os.path.exists(sock_path))
+                url = server.get_url()
+                self.assertStartsWith(url, "unix://")
+                self.assertIn("tb.sock", url)
+            finally:
+                server.server_close()
 
 
 class SubcommandTest(tb_test.TestCase):
