@@ -928,6 +928,12 @@ def walk(top, topdown=True, onerror=None):
     """
     top = compat.as_str_any(top)
     fs = get_filesystem(top)
+
+    if hasattr(fs, "walk"):
+        for item in fs.walk(top, topdown=topdown, onerror=onerror):
+            yield item
+        return
+
     try:
         listing = listdir(top)
     except errors.NotFoundError as err:
