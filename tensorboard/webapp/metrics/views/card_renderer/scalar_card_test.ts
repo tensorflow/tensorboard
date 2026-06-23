@@ -126,7 +126,7 @@ import {
   buildScalarStepData,
   provideMockCardRunToSeriesData,
 } from '../../testing';
-import {TooltipSort, XAxisType} from '../../types';
+import {MAX_TOOLTIP_ITEMS, TooltipSort, XAxisType} from '../../types';
 import * as commonSelectors from '../main_view/common_selectors';
 import {ScalarCardComponent} from './scalar_card_component';
 import {ScalarCardContainer} from './scalar_card_container';
@@ -1891,6 +1891,8 @@ describe('scalar card', () => {
     }));
 
     describe('tooltip item limiting and legend', () => {
+      const TOTAL_TOOLTIP_ITEMS_FOR_TEST = 12;
+
       const colors = [
         '#00f',
         '#0f0',
@@ -1923,56 +1925,58 @@ describe('scalar card', () => {
         store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
       });
 
-      it('shows every row when the limit tooltip rows setting is off', fakeAsync(() => {
+      it('test: Shows all rows when the setting Limit Tooltip is unchecked', fakeAsync(() => {
         store.overrideSelector(selectors.getMetricsLimitTooltipRows, false);
         store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
         const fixture = createComponent('card1');
-        setTooltipData(fixture, buildTooltipData(8));
+        setTooltipData(fixture, buildTooltipData(TOTAL_TOOLTIP_ITEMS_FOR_TEST));
         fixture.detectChanges();
 
         expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
-          8
+          TOTAL_TOOLTIP_ITEMS_FOR_TEST
         );
         expect(getLegendRow(fixture)).toBeNull();
       }));
 
-      it('limits to 5 rows when the limit tooltip rows setting is on', fakeAsync(() => {
+      it('test: Limits rows to MAX_TOOLTIP_ITEMS when the setting Limit Tooltip rows is checked', fakeAsync(() => {
         store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
         store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
         const fixture = createComponent('card1');
-        setTooltipData(fixture, buildTooltipData(8));
+        setTooltipData(fixture, buildTooltipData(TOTAL_TOOLTIP_ITEMS_FOR_TEST));
         fixture.detectChanges();
 
         expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
-          5
+          MAX_TOOLTIP_ITEMS
         );
+        const additionalItemsCount =
+          TOTAL_TOOLTIP_ITEMS_FOR_TEST - MAX_TOOLTIP_ITEMS;
         const legendRow = getLegendRow(fixture);
         expect(legendRow).not.toBeNull();
         expect(legendRow.nativeElement.textContent.trim()).toBe(
-          '3 additional items'
+          `${additionalItemsCount} additional items`
         );
       }));
 
-      it('displays all items when there are 5 or fewer', fakeAsync(() => {
+      it('Displays all items when there are 5 or fewer', fakeAsync(() => {
         store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
         const fixture = createComponent('card1');
-        setTooltipData(fixture, buildTooltipData(5));
+        setTooltipData(fixture, buildTooltipData(MAX_TOOLTIP_ITEMS));
         fixture.detectChanges();
 
         expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
-          5
+          MAX_TOOLTIP_ITEMS
         );
         expect(getLegendRow(fixture)).toBeNull();
       }));
 
-      it('limits tooltip to 5 items when there are more than 5', fakeAsync(() => {
+      it('Limits tooltip to 5 items when there are more than 5', fakeAsync(() => {
         store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
         const fixture = createComponent('card1');
-        setTooltipData(fixture, buildTooltipData(7));
+        setTooltipData(fixture, buildTooltipData(MAX_TOOLTIP_ITEMS + 2));
         fixture.detectChanges();
 
         expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
-          5
+          MAX_TOOLTIP_ITEMS
         );
       }));
 

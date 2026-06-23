@@ -269,10 +269,7 @@ export class OSSSettingsConverter extends SettingsConverter<
       settings.savingPinsEnabled = backendSettings.savingPinsEnabled;
     }
 
-    if (
-      backendSettings.hasOwnProperty('limitTooltipRows') &&
-      typeof backendSettings.limitTooltipRows === 'boolean'
-    ) {
+    if (typeof backendSettings.limitTooltipRows === 'boolean') {
       settings.limitTooltipRows = backendSettings.limitTooltipRows;
     }
 
