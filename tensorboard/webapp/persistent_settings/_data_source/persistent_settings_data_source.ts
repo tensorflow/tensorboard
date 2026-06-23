@@ -128,6 +128,9 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.savingPinsEnabled !== undefined) {
       serializableSettings.savingPinsEnabled = settings.savingPinsEnabled;
     }
+    if (settings.limitTooltipRows !== undefined) {
+      serializableSettings.limitTooltipRows = settings.limitTooltipRows;
+    }
     return serializableSettings;
   }
 
@@ -264,6 +267,13 @@ export class OSSSettingsConverter extends SettingsConverter<
       typeof backendSettings.savingPinsEnabled === 'boolean'
     ) {
       settings.savingPinsEnabled = backendSettings.savingPinsEnabled;
+    }
+
+    if (
+      backendSettings.hasOwnProperty('limitTooltipRows') &&
+      typeof backendSettings.limitTooltipRows === 'boolean'
+    ) {
+      settings.limitTooltipRows = backendSettings.limitTooltipRows;
     }
 
     return settings;

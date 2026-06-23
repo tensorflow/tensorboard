@@ -367,6 +367,11 @@ export const getMetricsScalarPartitionNonMonotonicX = createSelector(
   (settings): boolean => settings.scalarPartitionNonMonotonicX
 );
 
+export const getMetricsLimitTooltipRows = createSelector(
+  selectSettings,
+  (settings): boolean => settings.limitTooltipRows
+);
+
 export const getMetricsImageBrightnessInMilli = createSelector(
   selectSettings,
   (settings): number => settings.imageBrightnessInMilli

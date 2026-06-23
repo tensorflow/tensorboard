@@ -47,6 +47,7 @@ import {CardState} from '../../store';
 import {
   HeaderEditInfo,
   HeaderToggleInfo,
+  MAX_TOOLTIP_ITEMS,
   TooltipSort,
   XAxisType,
 } from '../../types';
@@ -75,8 +76,6 @@ type ScalarTooltipDatum = TooltipDatum<
   }
 >;
 
-const MAX_TOOLTIP_ITEMS = 5;
-
 @Component({
   standalone: false,
   selector: 'scalar-card-component',
@@ -95,6 +94,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() DataDownloadComponent!: ComponentType<Downloader>;
   @Input() dataSeries!: ScalarCardDataSeries[];
   @Input() ignoreOutliers!: boolean;
+  @Input() limitTooltipRows!: boolean;
   @Input() isCardVisible!: boolean;
   @Input() isPinned!: boolean;
   @Input() loadState!: DataLoadState;
@@ -256,6 +256,11 @@ export class ScalarCardComponent<Downloader> {
           return 0;
         });
         break;
+    }
+
+    if (!this.limitTooltipRows) {
+      this.additionalItemsCount = 0;
+      return scalarTooltipData;
     }
 
     this.additionalItemsCount = Math.max(

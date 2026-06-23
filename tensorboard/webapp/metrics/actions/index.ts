@@ -125,6 +125,10 @@ export const metricsScalarPartitionNonMonotonicXToggled = createAction(
   '[Metrics] Metrics Setting Partition Non Monotonic X Toggled'
 );
 
+export const metricsToggleLimitTooltipRows = createAction(
+  '[Metrics] Metrics Setting Toggle Limit Tooltip Rows'
+);
+
 export const metricsChangeImageBrightness = createAction(
   '[Metrics] Metrics Setting Change Image Brightness',
   props<{brightnessInMilli: number}>()

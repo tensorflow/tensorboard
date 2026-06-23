@@ -611,6 +611,9 @@ const reducer = createReducer(
     if (typeof partialSettings.savingPinsEnabled === 'boolean') {
       metricsSettings.savingPinsEnabled = partialSettings.savingPinsEnabled;
     }
+    if (typeof partialSettings.limitTooltipRows === 'boolean') {
+      metricsSettings.limitTooltipRows = partialSettings.limitTooltipRows;
+    }
 
     const isSettingsPaneOpen =
       partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
@@ -839,6 +842,18 @@ const reducer = createReducer(
       settingOverrides: {
         ...state.settingOverrides,
         scalarSmoothing: smoothing,
+      },
+    };
+  }),
+  on(actions.metricsToggleLimitTooltipRows, (state) => {
+    const nextLimitTooltipRows = !(
+      state.settingOverrides.limitTooltipRows ?? state.settings.limitTooltipRows
+    );
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        limitTooltipRows: nextLimitTooltipRows,
       },
     };
   }),

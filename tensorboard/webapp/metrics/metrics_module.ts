@@ -30,6 +30,7 @@ import {MetricsEffects} from './effects';
 import {
   getMetricsCardMinWidth,
   getMetricsIgnoreOutliers,
+  getMetricsLimitTooltipRows,
   getMetricsLinkedTimeEnabled,
   getMetricsRangeSelectionEnabled,
   getMetricsScalarSmoothing,
@@ -132,6 +133,12 @@ export function getMetricsTimeSeriesSavingPinsEnabled() {
   });
 }
 
+export function getMetricsLimitTooltipRowsSettingFactory() {
+  return createSelector(getMetricsLimitTooltipRows, (limitTooltipRows) => {
+    return {limitTooltipRows};
+  });
+}
+
 export function getSingleSelectionHeadersFactory() {
   return createSelector(getSingleSelectionHeaders, (singleSelectionHeaders) => {
     return {singleSelectionHeaders};
@@ -197,6 +204,9 @@ export function getRangeSelectionHeadersFactory() {
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsTimeSeriesSavingPinsEnabled
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsLimitTooltipRowsSettingFactory
     ),
   ],
   providers: [

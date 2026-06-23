@@ -37,6 +37,7 @@ import {
   metricsSlideoutMenuToggled,
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
+  metricsToggleLimitTooltipRows,
   rangeSelectionToggled,
   stepSelectorToggled,
 } from '../../actions';
@@ -56,6 +57,8 @@ import {
       (tooltipSortChanged)="onTooltipSortChanged($event)"
       [ignoreOutliers]="ignoreOutliers$ | async"
       (ignoreOutliersChanged)="onIgnoreOutliersChanged()"
+      [limitTooltipRows]="limitTooltipRows$ | async"
+      (limitTooltipRowsChanged)="onLimitTooltipRowsChanged()"
       [xAxisType]="xAxisType$ | async"
       (xAxisTypeChanged)="onXAxisTypeChanged($event)"
       [cardMinWidth]="cardMinWidth$ | async"
@@ -138,6 +141,9 @@ export class SettingsViewContainer {
     this.ignoreOutliers$ = this.store.select(
       selectors.getMetricsIgnoreOutliers
     );
+    this.limitTooltipRows$ = this.store.select(
+      selectors.getMetricsLimitTooltipRows
+    );
     this.xAxisType$ = this.store.select(selectors.getMetricsXAxisType);
     this.cardMinWidth$ = this.store.select(selectors.getMetricsCardMinWidth);
     this.histogramMode$ = this.store.select(selectors.getMetricsHistogramMode);
@@ -176,6 +182,7 @@ export class SettingsViewContainer {
 
   readonly tooltipSort$;
   readonly ignoreOutliers$;
+  readonly limitTooltipRows$;
   readonly xAxisType$;
   readonly cardMinWidth$;
   readonly histogramMode$;
@@ -194,6 +201,10 @@ export class SettingsViewContainer {
 
   onIgnoreOutliersChanged() {
     this.store.dispatch(metricsToggleIgnoreOutliers());
+  }
+
+  onLimitTooltipRowsChanged() {
+    this.store.dispatch(metricsToggleLimitTooltipRows());
   }
 
   onXAxisTypeChanged(xAxisType: XAxisType) {

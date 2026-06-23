@@ -1919,6 +1919,40 @@ describe('scalar card', () => {
         return fixture.debugElement.query(By.css('table.tooltip tr.legend'));
       }
 
+      beforeEach(() => {
+        store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
+      });
+
+      it('shows every row when the limit tooltip rows setting is off', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsLimitTooltipRows, false);
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, buildTooltipData(8));
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
+          8
+        );
+        expect(getLegendRow(fixture)).toBeNull();
+      }));
+
+      it('limits to 5 rows when the limit tooltip rows setting is on', fakeAsync(() => {
+        store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
+        store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+        const fixture = createComponent('card1');
+        setTooltipData(fixture, buildTooltipData(8));
+        fixture.detectChanges();
+
+        expect(fixture.debugElement.queryAll(Selector.TOOLTIP_ROW).length).toBe(
+          5
+        );
+        const legendRow = getLegendRow(fixture);
+        expect(legendRow).not.toBeNull();
+        expect(legendRow.nativeElement.textContent.trim()).toBe(
+          '3 additional items'
+        );
+      }));
+
       it('displays all items when there are 5 or fewer', fakeAsync(() => {
         store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
         const fixture = createComponent('card1');

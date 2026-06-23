@@ -106,3 +106,9 @@ export interface HeaderToggleInfo {
 
 export const SCALARS_SMOOTHING_MIN = 0;
 export const SCALARS_SMOOTHING_MAX = 0.999;
+
+/**
+ * Maximum number of rows shown in the scalar card tooltip when the
+ * "Limit tooltip rows" setting is enabled.
+ */
+export const MAX_TOOLTIP_ITEMS = 5;

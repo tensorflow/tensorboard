@@ -26,6 +26,7 @@ import {auditTime} from 'rxjs/operators';
 import {DropdownOption} from '../../../widgets/dropdown/dropdown_component';
 import {
   HistogramMode,
+  MAX_TOOLTIP_ITEMS,
   SCALARS_SMOOTHING_MAX,
   TimeSelection,
   TooltipSort,
@@ -95,6 +96,10 @@ export class SettingsViewComponent {
 
   @Input() ignoreOutliers!: boolean;
   @Output() ignoreOutliersChanged = new EventEmitter<void>();
+
+  readonly MAX_TOOLTIP_ITEMS = MAX_TOOLTIP_ITEMS;
+  @Input() limitTooltipRows!: boolean;
+  @Output() limitTooltipRowsChanged = new EventEmitter<void>();
 
   readonly XAxisType = XAxisType;
   readonly XAxisTypeDropdownOptions: DropdownOption[] = [
