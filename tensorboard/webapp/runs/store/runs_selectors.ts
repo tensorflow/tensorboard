@@ -300,6 +300,13 @@ export const getRunColorOverride = createSelector(
   }
 );
 
+export const getGroupColorOverride = createSelector(
+  getDataState,
+  (state: RunsDataState): Map<string, string> => {
+    return state.groupColorOverride;
+  }
+);
+
 export const getDefaultRunColorIdMap = createSelector(
   getDataState,
   (state: RunsDataState): Map<string, number> => {

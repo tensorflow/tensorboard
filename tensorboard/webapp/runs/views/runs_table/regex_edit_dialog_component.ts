@@ -48,6 +48,10 @@ export class RegexEditDialogComponent {
   @Output() onSave = new EventEmitter();
   @Output() regexInputOnChange = new EventEmitter<string>();
   @Output() regexTypeOnChange = new EventEmitter<GroupByKey>();
+  @Output() groupColorChange = new EventEmitter<{
+    groupId: string;
+    newColor: string;
+  }>();
 
   // Constants
   REGEX_BY_RUN_STR = 'regex_by_run';
@@ -105,5 +109,13 @@ export class RegexEditDialogComponent {
         ? GroupByKey.REGEX
         : GroupByKey.REGEX_BY_EXP
     );
+  }
+
+  /**
+   * Same as in runs_data_table.ts
+   * We don't want to trigger rerenders when choosing a color and closing the colorPicker
+   */
+  trackByGroups(index: number, group: ColorGroup) {
+    return group.groupId;
   }
 }

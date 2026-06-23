@@ -65,19 +65,26 @@ limitations under the License.
       <div *ngIf="colorRunPairList.length; else empty" class="match-container">
         <ul
           class="group"
-          *ngFor="let colorRunsPair of colorRunPairList"
+          *ngFor="let colorRunsPair of colorRunPairList; trackBy: trackByGroups"
           [ngStyle]="{borderColor: colorRunsPair.color}"
         >
           <li>
-            <label
-              ><span
+            <label class="color-container">
+              <button
                 class="color-swatch"
-                [ngStyle]="{backgroundColor: colorRunsPair.color}"
-              ></span
-              ><code class="group-id" [title]="colorRunsPair.groupId"
-                >{{colorRunsPair.groupId}}</code
-              ></label
-            >
+                [style.background]="colorRunsPair.color"
+                [colorPicker]="colorRunsPair.color"
+                [cpDialogDisplay]="'popup'"
+                [cpPositionOffset]="-20"
+                [cpUseRootViewContainer]="true"
+                [cpOutputFormat]="'hex'"
+                (colorPickerChange)="groupColorChange.emit({groupId: colorRunsPair.groupId, newColor: $event})"
+              ></button>
+
+              <code class="group-id" [title]="colorRunsPair.groupId">
+                {{ colorRunsPair.groupId }}
+              </code>
+            </label>
             <ul>
               <ng-container *ngFor="let run of colorRunsPair.runs | slice:0:5;">
                 <li [title]="run.name">{{ run.name }}</li>
