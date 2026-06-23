@@ -332,7 +332,7 @@ Note: building a Hierarchy modifies the SlimGraph's OpNodes in place!
     -   Iterate over OpNodes, keep track of device names, XLAClusters,
         opHistograms, TPU Compatibility histograms, library function nodes and
         their associated function name, etc.
-    -   Assume the node's name's '/' occurences indicate its level from the
+    -   Assume the node's name's '/' occurrences indicate its level from the
         root. If node is named 'a/b/c', create metanodes 'a' and 'a/b'.
     -   Update embedding nodes to point to the OpNode they are embedded to:
         `embedding.parentNode = node;`.
@@ -502,7 +502,7 @@ this terminology comes from
     Placeholder=2,Add=9,Pow=1[19]".
 -   **Level**: distance from the node to the artificial root node. Top-level
     `MetaNode`s have level 0, and going deeper increases the level. Can be
-    determined from counting '/' slash occurences in a node's name.
+    determined from counting '/' slash occurrences in a node's name.
 -   **Depth**: distance from the node to its bottom-most leaf descendant. A
     `MetaNode`, containing only 1 child `OpNode`, has depth 1.
 -   **RenderHierarchy / RenderGraphInfo / RenderGraph**: A structure storing
