@@ -47,7 +47,6 @@ import {CardState} from '../../store';
 import {
   HeaderEditInfo,
   HeaderToggleInfo,
-  MAX_TOOLTIP_ITEMS,
   TooltipSort,
   XAxisType,
 } from '../../types';
@@ -95,6 +94,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() dataSeries!: ScalarCardDataSeries[];
   @Input() ignoreOutliers!: boolean;
   @Input() limitTooltipRows!: boolean;
+  @Input() tooltipRowsLimit!: number;
   @Input() isCardVisible!: boolean;
   @Input() isPinned!: boolean;
   @Input() loadState!: DataLoadState;
@@ -265,9 +265,9 @@ export class ScalarCardComponent<Downloader> {
 
     this.additionalItemsCount = Math.max(
       0,
-      scalarTooltipData.length - MAX_TOOLTIP_ITEMS
+      scalarTooltipData.length - this.tooltipRowsLimit
     );
-    return scalarTooltipData.slice(0, MAX_TOOLTIP_ITEMS);
+    return scalarTooltipData.slice(0, this.tooltipRowsLimit);
   }
 
   openDataDownloadDialog(): void {

@@ -26,9 +26,10 @@ import {auditTime} from 'rxjs/operators';
 import {DropdownOption} from '../../../widgets/dropdown/dropdown_component';
 import {
   HistogramMode,
-  MAX_TOOLTIP_ITEMS,
   SCALARS_SMOOTHING_MAX,
   TimeSelection,
+  TOOLTIP_ROWS_LIMIT_MAX,
+  TOOLTIP_ROWS_LIMIT_MIN,
   TooltipSort,
   XAxisType,
 } from '../../types';
@@ -97,9 +98,28 @@ export class SettingsViewComponent {
   @Input() ignoreOutliers!: boolean;
   @Output() ignoreOutliersChanged = new EventEmitter<void>();
 
-  readonly MAX_TOOLTIP_ITEMS = MAX_TOOLTIP_ITEMS;
+  readonly TOOLTIP_ROWS_LIMIT_MIN = TOOLTIP_ROWS_LIMIT_MIN;
+  readonly TOOLTIP_ROWS_LIMIT_MAX = TOOLTIP_ROWS_LIMIT_MAX;
   @Input() limitTooltipRows!: boolean;
   @Output() limitTooltipRowsChanged = new EventEmitter<void>();
+  @Input() tooltipRowsLimit!: number;
+  @Output() tooltipRowsLimitChanged = new EventEmitter<number>();
+
+  onTooltipRowsLimitInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.value) {
+      return;
+    }
+    const nextValue = Math.min(
+      Math.max(TOOLTIP_ROWS_LIMIT_MIN, Math.round(Number(input.value))),
+      TOOLTIP_ROWS_LIMIT_MAX
+    );
+
+    if (nextValue !== Number(input.value)) {
+      input.value = String(nextValue);
+    }
+    this.tooltipRowsLimitChanged.emit(nextValue);
+  }
 
   readonly XAxisType = XAxisType;
   readonly XAxisTypeDropdownOptions: DropdownOption[] = [

@@ -31,6 +31,7 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
+  MAX_TOOLTIP_ITEMS,
   MinMaxStep,
   NonPinnedCardId,
   PinnedCardId,
@@ -234,11 +235,8 @@ export interface MetricsSettings {
    * future, we may fix this at the log writing, reading, or backend response time.
    */
   scalarPartitionNonMonotonicX: boolean;
-  /**
-   * When enabled, the scalar card tooltip is truncated to MAX_TOOLTIP_ITEMS
-   * rows instead of showing every series.
-   */
   limitTooltipRows: boolean;
+  tooltipRowsLimit: number;
   /**
    * A non-negative, unitless number. A value of 5000 corresponds to 500%
    * increased brightness from normal.
@@ -290,6 +288,7 @@ export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   scalarSmoothing: 0.6,
   scalarPartitionNonMonotonicX: false,
   limitTooltipRows: false,
+  tooltipRowsLimit: MAX_TOOLTIP_ITEMS,
   imageBrightnessInMilli: 1000,
   imageContrastInMilli: 1000,
   imageShowActualSize: false,

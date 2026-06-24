@@ -131,6 +131,9 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.limitTooltipRows !== undefined) {
       serializableSettings.limitTooltipRows = settings.limitTooltipRows;
     }
+    if (settings.tooltipRowsLimit !== undefined) {
+      serializableSettings.tooltipRowsLimit = settings.tooltipRowsLimit;
+    }
     return serializableSettings;
   }
 
@@ -271,6 +274,10 @@ export class OSSSettingsConverter extends SettingsConverter<
 
     if (typeof backendSettings.limitTooltipRows === 'boolean') {
       settings.limitTooltipRows = backendSettings.limitTooltipRows;
+    }
+
+    if (typeof backendSettings.tooltipRowsLimit === 'number') {
+      settings.tooltipRowsLimit = backendSettings.tooltipRowsLimit;
     }
 
     return settings;

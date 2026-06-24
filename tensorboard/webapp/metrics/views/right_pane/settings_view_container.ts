@@ -34,6 +34,7 @@ import {
   metricsResetImageBrightness,
   metricsResetImageContrast,
   metricsScalarPartitionNonMonotonicXToggled,
+  metricsChangeTooltipRowsLimit,
   metricsSlideoutMenuToggled,
   metricsToggleIgnoreOutliers,
   metricsToggleImageShowActualSize,
@@ -59,6 +60,8 @@ import {
       (ignoreOutliersChanged)="onIgnoreOutliersChanged()"
       [limitTooltipRows]="limitTooltipRows$ | async"
       (limitTooltipRowsChanged)="onLimitTooltipRowsChanged()"
+      [tooltipRowsLimit]="tooltipRowsLimit$ | async"
+      (tooltipRowsLimitChanged)="onTooltipRowsLimitChanged($event)"
       [xAxisType]="xAxisType$ | async"
       (xAxisTypeChanged)="onXAxisTypeChanged($event)"
       [cardMinWidth]="cardMinWidth$ | async"
@@ -144,6 +147,9 @@ export class SettingsViewContainer {
     this.limitTooltipRows$ = this.store.select(
       selectors.getMetricsLimitTooltipRows
     );
+    this.tooltipRowsLimit$ = this.store.select(
+      selectors.getMetricsTooltipRowsLimit
+    );
     this.xAxisType$ = this.store.select(selectors.getMetricsXAxisType);
     this.cardMinWidth$ = this.store.select(selectors.getMetricsCardMinWidth);
     this.histogramMode$ = this.store.select(selectors.getMetricsHistogramMode);
@@ -183,6 +189,7 @@ export class SettingsViewContainer {
   readonly tooltipSort$;
   readonly ignoreOutliers$;
   readonly limitTooltipRows$;
+  readonly tooltipRowsLimit$;
   readonly xAxisType$;
   readonly cardMinWidth$;
   readonly histogramMode$;
@@ -205,6 +212,10 @@ export class SettingsViewContainer {
 
   onLimitTooltipRowsChanged() {
     this.store.dispatch(metricsToggleLimitTooltipRows());
+  }
+
+  onTooltipRowsLimitChanged(tooltipRowsLimit: number) {
+    this.store.dispatch(metricsChangeTooltipRowsLimit({tooltipRowsLimit}));
   }
 
   onXAxisTypeChanged(xAxisType: XAxisType) {

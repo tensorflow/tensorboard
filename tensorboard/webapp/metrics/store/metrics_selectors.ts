@@ -372,6 +372,11 @@ export const getMetricsLimitTooltipRows = createSelector(
   (settings): boolean => settings.limitTooltipRows
 );
 
+export const getMetricsTooltipRowsLimit = createSelector(
+  selectSettings,
+  (settings): number => settings.tooltipRowsLimit
+);
+
 export const getMetricsImageBrightnessInMilli = createSelector(
   selectSettings,
   (settings): number => settings.imageBrightnessInMilli

@@ -129,6 +129,11 @@ export const metricsToggleLimitTooltipRows = createAction(
   '[Metrics] Metrics Setting Toggle Limit Tooltip Rows'
 );
 
+export const metricsChangeTooltipRowsLimit = createAction(
+  '[Metrics] Metrics Setting Change Tooltip Rows Limit',
+  props<{tooltipRowsLimit: number}>()
+);
+
 export const metricsChangeImageBrightness = createAction(
   '[Metrics] Metrics Setting Change Image Brightness',
   props<{brightnessInMilli: number}>()

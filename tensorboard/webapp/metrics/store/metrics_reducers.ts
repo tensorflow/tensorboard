@@ -42,6 +42,8 @@ import {
   CardUniqueInfo,
   SCALARS_SMOOTHING_MAX,
   SCALARS_SMOOTHING_MIN,
+  TOOLTIP_ROWS_LIMIT_MAX,
+  TOOLTIP_ROWS_LIMIT_MIN,
   TooltipSort,
   URLDeserializedState,
 } from '../types';
@@ -614,6 +616,9 @@ const reducer = createReducer(
     if (typeof partialSettings.limitTooltipRows === 'boolean') {
       metricsSettings.limitTooltipRows = partialSettings.limitTooltipRows;
     }
+    if (typeof partialSettings.tooltipRowsLimit === 'number') {
+      metricsSettings.tooltipRowsLimit = partialSettings.tooltipRowsLimit;
+    }
 
     const isSettingsPaneOpen =
       partialSettings.timeSeriesSettingsPaneOpened ?? state.isSettingsPaneOpen;
@@ -854,6 +859,18 @@ const reducer = createReducer(
       settingOverrides: {
         ...state.settingOverrides,
         limitTooltipRows: nextLimitTooltipRows,
+      },
+    };
+  }),
+  on(actions.metricsChangeTooltipRowsLimit, (state, {tooltipRowsLimit}) => {
+    return {
+      ...state,
+      settingOverrides: {
+        ...state.settingOverrides,
+        tooltipRowsLimit: Math.min(
+          Math.max(tooltipRowsLimit, TOOLTIP_ROWS_LIMIT_MIN),
+          TOOLTIP_ROWS_LIMIT_MAX
+        ),
       },
     };
   }),

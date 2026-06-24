@@ -35,6 +35,7 @@ import {
   getMetricsRangeSelectionEnabled,
   getMetricsScalarSmoothing,
   getMetricsStepSelectorEnabled,
+  getMetricsTooltipRowsLimit,
   getMetricsTooltipSort,
   getMetricsSavingPinsEnabled,
   getRangeSelectionHeaders,
@@ -139,6 +140,12 @@ export function getMetricsLimitTooltipRowsSettingFactory() {
   });
 }
 
+export function getMetricsTooltipRowsLimitSettingFactory() {
+  return createSelector(getMetricsTooltipRowsLimit, (tooltipRowsLimit) => {
+    return {tooltipRowsLimit};
+  });
+}
+
 export function getSingleSelectionHeadersFactory() {
   return createSelector(getSingleSelectionHeaders, (singleSelectionHeaders) => {
     return {singleSelectionHeaders};
@@ -207,6 +214,9 @@ export function getRangeSelectionHeadersFactory() {
     ),
     PersistentSettingsConfigModule.defineGlobalSetting(
       getMetricsLimitTooltipRowsSettingFactory
+    ),
+    PersistentSettingsConfigModule.defineGlobalSetting(
+      getMetricsTooltipRowsLimitSettingFactory
     ),
   ],
   providers: [

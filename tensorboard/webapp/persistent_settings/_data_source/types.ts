@@ -49,6 +49,7 @@ export declare interface BackendSettings {
   dashboardDisplayedHparamColumns?: ColumnHeader[];
   savingPinsEnabled?: boolean;
   limitTooltipRows?: boolean;
+  tooltipRowsLimit?: number;
 }
 
 /**
@@ -76,4 +77,5 @@ export interface PersistableSettings {
   dashboardDisplayedHparamColumns?: ColumnHeader[];
   savingPinsEnabled?: boolean;
   limitTooltipRows?: boolean;
+  tooltipRowsLimit?: number;
 }

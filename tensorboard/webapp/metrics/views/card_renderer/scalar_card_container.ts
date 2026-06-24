@@ -95,6 +95,7 @@ import {
   getMetricsLimitTooltipRows,
   getMetricsScalarPartitionNonMonotonicX,
   getMetricsScalarSmoothing,
+  getMetricsTooltipRowsLimit,
   getMetricsTooltipSort,
   getMetricsXAxisType,
   RunToSeries,
@@ -174,6 +175,7 @@ function areSeriesEqual(
       [dataSeries]="dataSeries$ | async"
       [ignoreOutliers]="ignoreOutliers$ | async"
       [limitTooltipRows]="limitTooltipRows$ | async"
+      [tooltipRowsLimit]="tooltipRowsLimit$ | async"
       [isCardVisible]="isVisible"
       [isPinned]="isPinned$ | async"
       [loadState]="loadState$ | async"
@@ -239,6 +241,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     this.useDarkMode$ = this.store.select(getDarkModeEnabled);
     this.ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
     this.limitTooltipRows$ = this.store.select(getMetricsLimitTooltipRows);
+    this.tooltipRowsLimit$ = this.store.select(getMetricsTooltipRowsLimit);
     this.tooltipSort$ = this.store.select(getMetricsTooltipSort);
     this.xAxisType$ = this.store.select(getMetricsXAxisType);
     this.forceSvg$ = this.store.select(getForceSvgFeatureFlag);
@@ -308,6 +311,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   readonly useDarkMode$;
   readonly ignoreOutliers$;
   readonly limitTooltipRows$;
+  readonly tooltipRowsLimit$;
   readonly tooltipSort$;
   readonly xAxisType$;
   readonly forceSvg$;
