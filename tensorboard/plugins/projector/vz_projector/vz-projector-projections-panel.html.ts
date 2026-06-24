@@ -87,6 +87,19 @@ export const template = html`
         margin-bottom: -8px;
       }
 
+      .supervise-settings {
+        display: flex;
+      }
+
+      .supervise-settings paper-dropdown-menu {
+        width: 100px;
+        margin-right: 10px;
+      }
+
+      .supervise-settings paper-input {
+        width: calc(100% - 110px);
+      }
+
       #z-container {
         display: flex;
         align-items: center;
@@ -358,6 +371,31 @@ export const template = html`
             >
             </paper-slider>
             <span></span>
+          </div>
+          <!-- Supervise by -->
+          <div class="supervise-settings">
+            <paper-dropdown-menu no-animations label="Supervise with">
+              <paper-listbox
+                attr-for-selected="value"
+                class="dropdown-content"
+                on-selected-item-changed="superviseColumnChanged"
+                selected="{{superviseColumn}}"
+                slot="dropdown-content"
+              >
+                <template is="dom-repeat" items="[[metadataFields]]">
+                  <paper-item value="[[item]]" label="[[item]]">
+                    [[item]]
+                  </paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
+            <paper-input
+              value="{{superviseInput}}"
+              label="{{superviseInputLabel}}"
+              on-change="superviseInputChange"
+              on-input="superviseInputTyping"
+            >
+            </paper-input>
           </div>
           <p>
             <button class="run-tsne ink-button" title="Re-run t-SNE">
