@@ -35,7 +35,7 @@ import {
   NonPinnedCardId,
   PinnedCardId,
   TimeSelection,
-  TOOLTIP_ROWS_LIMIT_MIN,
+  TOOLTIP_ROWS_LIMIT_DEFAULT,
   TooltipSort,
   XAxisType,
 } from '../types';
@@ -296,7 +296,7 @@ export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   scalarSmoothing: 0.6,
   scalarPartitionNonMonotonicX: false,
   isTooltipRowsLimitEnabled: false,
-  tooltipRowsLimit: TOOLTIP_ROWS_LIMIT_MIN,
+  tooltipRowsLimit: TOOLTIP_ROWS_LIMIT_DEFAULT,
   imageBrightnessInMilli: 1000,
   imageContrastInMilli: 1000,
   imageShowActualSize: false,
