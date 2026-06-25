@@ -154,6 +154,24 @@ limitations under the License.
     >
   </div>
 
+  <div class="control-row scalars-limit-tooltip-rows">
+    <mat-checkbox
+      [checked]="isTooltipRowsLimitEnabled"
+      (change)="isTooltipRowsLimitEnabledChanged.emit($event.checked)"
+      >Limit tooltip rows to</mat-checkbox
+    >
+    <input
+      class="slider-input"
+      aria-label="Tooltip rows limit"
+      type="number"
+      [min]="TOOLTIP_ROWS_LIMIT_MIN"
+      step="1"
+      [disabled]="!isTooltipRowsLimitEnabled"
+      [value]="tooltipRowsLimit"
+      (input)="onTooltipRowsLimitInput($event)"
+    />
+  </div>
+
   <div class="control-row scalars-partition-x">
     <mat-checkbox
       [checked]="scalarPartitionX"

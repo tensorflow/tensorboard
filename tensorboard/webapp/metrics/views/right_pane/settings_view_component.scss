@@ -55,20 +55,20 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
   .reset-button {
     margin-left: 6px;
   }
+}
 
-  .slider-input {
-    background-color: inherit;
-    border: 1px solid mat.m2-get-color-from-palette($tf-slate, 500);
-    border-radius: 2px;
-    box-sizing: border-box;
-    color: inherit;
-    height: 100%;
-    margin-left: 12px;
-    padding: 0 4px;
+.slider-input {
+  background-color: inherit;
+  border: 1px solid mat.m2-get-color-from-palette($tf-slate, 500);
+  border-radius: 2px;
+  box-sizing: border-box;
+  color: inherit;
+  height: 100%;
+  margin-left: 12px;
+  padding: 0 4px;
 
-    @include tb-dark-theme {
-      border-color: mat.m2-get-color-from-palette($tf-slate, 700);
-    }
+  @include tb-dark-theme {
+    border-color: mat.m2-get-color-from-palette($tf-slate, 700);
   }
 }
 
@@ -77,6 +77,17 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
   // Wide enough to show 3 digits after a decimal. Required since Firefox does
   // not shrink input fields smaller than some intrinsic size.
   width: 5em;
+}
+
+.scalars-limit-tooltip-rows {
+  align-items: center;
+  display: flex;
+  height: 28px;
+
+  .slider-input {
+    flex: none;
+    width: 3.1em;
+  }
 }
 
 .scalars-partition-x {

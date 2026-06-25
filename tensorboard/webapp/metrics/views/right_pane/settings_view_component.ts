@@ -28,6 +28,7 @@ import {
   HistogramMode,
   SCALARS_SMOOTHING_MAX,
   TimeSelection,
+  TOOLTIP_ROWS_LIMIT_MIN,
   TooltipSort,
   XAxisType,
 } from '../../types';
@@ -95,6 +96,30 @@ export class SettingsViewComponent {
 
   @Input() ignoreOutliers!: boolean;
   @Output() ignoreOutliersChanged = new EventEmitter<void>();
+
+  readonly TOOLTIP_ROWS_LIMIT_MIN = TOOLTIP_ROWS_LIMIT_MIN;
+  @Input() isTooltipRowsLimitEnabled!: boolean;
+  @Output() isTooltipRowsLimitEnabledChanged = new EventEmitter<void>();
+  @Input() tooltipRowsLimit!: number;
+  @Output() tooltipRowsLimitChanged = new EventEmitter<number>();
+
+  onTooltipRowsLimitInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.value) {
+      return;
+    }
+    const nextValue = Math.max(
+      TOOLTIP_ROWS_LIMIT_MIN,
+      Math.round(Number(input.value))
+    );
+
+    // Fallback in case Angular does not trigger ngOnChanges when expected cause one-way binding.
+    if (nextValue !== Number(input.value)) {
+      input.value = String(nextValue);
+    }
+
+    this.tooltipRowsLimitChanged.emit(nextValue);
+  }
 
   readonly XAxisType = XAxisType;
   readonly XAxisTypeDropdownOptions: DropdownOption[] = [
@@ -201,4 +226,5 @@ export const TEST_ONLY = {
   SLIDER_AUDIT_TIME_MS,
   MIN_CARD_WIDTH_SLIDER_VALUE,
   MAX_SMOOTHING_VALUE,
+  TOOLTIP_ROWS_LIMIT_MIN,
 };

@@ -183,6 +183,19 @@ describe('persistent_settings data_source test', () => {
           linkedTimeEnabled: true,
         });
       });
+      it('loads the limit tooltip rows setting from local storage', async () => {
+        getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
+          JSON.stringify({
+            isTooltipRowsLimitEnabled: true,
+          })
+        );
+
+        const actual = await firstValueFrom(dataSource.getSettings());
+
+        expect(actual).toEqual({
+          isTooltipRowsLimitEnabled: true,
+        });
+      });
       it('properly converts singleSelectionHeaders', async () => {
         getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
           JSON.stringify({
@@ -556,6 +569,25 @@ describe('persistent_settings data_source test', () => {
           TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
           JSON.stringify({
             savingPinsEnabled: false,
+          })
+        );
+      });
+
+      it('saves the limit tooltip rows setting to local storage', async () => {
+        getItemSpy
+          .withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY)
+          .and.returnValue(null);
+
+        await firstValueFrom(
+          dataSource.setSettings({
+            isTooltipRowsLimitEnabled: true,
+          })
+        );
+
+        expect(setItemSpy).toHaveBeenCalledOnceWith(
+          TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
+          JSON.stringify({
+            isTooltipRowsLimitEnabled: true,
           })
         );
       });
