@@ -186,14 +186,14 @@ describe('persistent_settings data_source test', () => {
       it('loads the limit tooltip rows setting from local storage', async () => {
         getItemSpy.withArgs(TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY).and.returnValue(
           JSON.stringify({
-            limitTooltipRows: true,
+            isTooltipRowsLimitEnabled: true,
           })
         );
 
         const actual = await firstValueFrom(dataSource.getSettings());
 
         expect(actual).toEqual({
-          limitTooltipRows: true,
+          isTooltipRowsLimitEnabled: true,
         });
       });
       it('properly converts singleSelectionHeaders', async () => {
@@ -580,14 +580,14 @@ describe('persistent_settings data_source test', () => {
 
         await firstValueFrom(
           dataSource.setSettings({
-            limitTooltipRows: true,
+            isTooltipRowsLimitEnabled: true,
           })
         );
 
         expect(setItemSpy).toHaveBeenCalledOnceWith(
           TEST_ONLY.GLOBAL_LOCAL_STORAGE_KEY,
           JSON.stringify({
-            limitTooltipRows: true,
+            isTooltipRowsLimitEnabled: true,
           })
         );
       });

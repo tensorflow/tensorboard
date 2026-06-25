@@ -128,8 +128,9 @@ export class OSSSettingsConverter extends SettingsConverter<
     if (settings.savingPinsEnabled !== undefined) {
       serializableSettings.savingPinsEnabled = settings.savingPinsEnabled;
     }
-    if (settings.limitTooltipRows !== undefined) {
-      serializableSettings.limitTooltipRows = settings.limitTooltipRows;
+    if (settings.isTooltipRowsLimitEnabled !== undefined) {
+      serializableSettings.isTooltipRowsLimitEnabled =
+        settings.isTooltipRowsLimitEnabled;
     }
     if (settings.tooltipRowsLimit !== undefined) {
       serializableSettings.tooltipRowsLimit = settings.tooltipRowsLimit;
@@ -272,8 +273,9 @@ export class OSSSettingsConverter extends SettingsConverter<
       settings.savingPinsEnabled = backendSettings.savingPinsEnabled;
     }
 
-    if (typeof backendSettings.limitTooltipRows === 'boolean') {
-      settings.limitTooltipRows = backendSettings.limitTooltipRows;
+    if (typeof backendSettings.isTooltipRowsLimitEnabled === 'boolean') {
+      settings.isTooltipRowsLimitEnabled =
+        backendSettings.isTooltipRowsLimitEnabled;
     }
 
     if (typeof backendSettings.tooltipRowsLimit === 'number') {

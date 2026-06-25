@@ -55,7 +55,7 @@ export function buildMetricsSettingsState(
     scalarSmoothing: 0.3,
     hideEmptyCards: true,
     scalarPartitionNonMonotonicX: false,
-    limitTooltipRows: false,
+    isTooltipRowsLimitEnabled: false,
     tooltipRowsLimit: 4,
     imageBrightnessInMilli: 123,
     imageContrastInMilli: 123,

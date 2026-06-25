@@ -612,8 +612,9 @@ const reducer = createReducer(
     if (typeof partialSettings.savingPinsEnabled === 'boolean') {
       metricsSettings.savingPinsEnabled = partialSettings.savingPinsEnabled;
     }
-    if (typeof partialSettings.limitTooltipRows === 'boolean') {
-      metricsSettings.limitTooltipRows = partialSettings.limitTooltipRows;
+    if (typeof partialSettings.isTooltipRowsLimitEnabled === 'boolean') {
+      metricsSettings.isTooltipRowsLimitEnabled =
+        partialSettings.isTooltipRowsLimitEnabled;
     }
     if (typeof partialSettings.tooltipRowsLimit === 'number') {
       metricsSettings.tooltipRowsLimit = partialSettings.tooltipRowsLimit;
@@ -850,14 +851,15 @@ const reducer = createReducer(
     };
   }),
   on(actions.metricsToggleLimitTooltipRows, (state) => {
-    const nextLimitTooltipRows = !(
-      state.settingOverrides.limitTooltipRows ?? state.settings.limitTooltipRows
+    const nextIsTooltipRowsLimitEnabled = !(
+      state.settingOverrides.isTooltipRowsLimitEnabled ??
+      state.settings.isTooltipRowsLimitEnabled
     );
     return {
       ...state,
       settingOverrides: {
         ...state.settingOverrides,
-        limitTooltipRows: nextLimitTooltipRows,
+        isTooltipRowsLimitEnabled: nextIsTooltipRowsLimitEnabled,
       },
     };
   }),

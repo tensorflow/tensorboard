@@ -367,9 +367,9 @@ export const getMetricsScalarPartitionNonMonotonicX = createSelector(
   (settings): boolean => settings.scalarPartitionNonMonotonicX
 );
 
-export const getMetricsLimitTooltipRows = createSelector(
+export const getMetricsIsTooltipRowsLimitEnabled = createSelector(
   selectSettings,
-  (settings): boolean => settings.limitTooltipRows
+  (settings): boolean => settings.isTooltipRowsLimitEnabled
 );
 
 export const getMetricsTooltipRowsLimit = createSelector(

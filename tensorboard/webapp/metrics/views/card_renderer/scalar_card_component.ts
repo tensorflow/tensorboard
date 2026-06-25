@@ -93,7 +93,7 @@ export class ScalarCardComponent<Downloader> {
   @Input() DataDownloadComponent!: ComponentType<Downloader>;
   @Input() dataSeries!: ScalarCardDataSeries[];
   @Input() ignoreOutliers!: boolean;
-  @Input() limitTooltipRows!: boolean;
+  @Input() isTooltipRowsLimitEnabled!: boolean;
   @Input() tooltipRowsLimit!: number;
   @Input() isCardVisible!: boolean;
   @Input() isPinned!: boolean;
@@ -258,7 +258,7 @@ export class ScalarCardComponent<Downloader> {
         break;
     }
 
-    if (!this.limitTooltipRows) {
+    if (!this.isTooltipRowsLimitEnabled) {
       this.additionalItemsCount = 0;
       return scalarTooltipData;
     }

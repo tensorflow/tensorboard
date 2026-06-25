@@ -1923,7 +1923,10 @@ describe('scalar card', () => {
       }
 
       beforeEach(() => {
-        store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
+        store.overrideSelector(
+          selectors.getMetricsIsTooltipRowsLimitEnabled,
+          true
+        );
         store.overrideSelector(
           selectors.getMetricsTooltipRowsLimit,
           TOOLTIP_ROWS_LIMIT_FOR_TEST
@@ -1931,7 +1934,10 @@ describe('scalar card', () => {
       });
 
       it('test: Shows all rows when the setting Limit Tooltip is unchecked', fakeAsync(() => {
-        store.overrideSelector(selectors.getMetricsLimitTooltipRows, false);
+        store.overrideSelector(
+          selectors.getMetricsIsTooltipRowsLimitEnabled,
+          false
+        );
         store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
         const fixture = createComponent('card1');
         setTooltipData(fixture, buildTooltipData(TOTAL_TOOLTIP_ITEMS_FOR_TEST));

@@ -156,8 +156,8 @@ limitations under the License.
 
   <div class="control-row scalars-limit-tooltip-rows">
     <mat-checkbox
-      [checked]="limitTooltipRows"
-      (change)="limitTooltipRowsChanged.emit($event.checked)"
+      [checked]="isTooltipRowsLimitEnabled"
+      (change)="isTooltipRowsLimitEnabledChanged.emit($event.checked)"
       >Limit tooltip rows to</mat-checkbox
     >
     <input
@@ -166,7 +166,7 @@ limitations under the License.
       type="number"
       [min]="TOOLTIP_ROWS_LIMIT_MIN"
       step="1"
-      [disabled]="!limitTooltipRows"
+      [disabled]="!isTooltipRowsLimitEnabled"
       [value]="tooltipRowsLimit"
       (input)="onTooltipRowsLimitInput($event)"
     />

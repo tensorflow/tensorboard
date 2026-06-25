@@ -307,7 +307,8 @@ describe('metrics right_pane', () => {
     });
 
     describe('tooltip rows limit input', () => {
-      const TOOLTIP_ROWS_LIMIT_INPUT = '.scalars-limit-tooltip-rows .slider-input';
+      const TOOLTIP_ROWS_LIMIT_INPUT =
+        '.scalars-limit-tooltip-rows .slider-input';
 
       it('renders the current tooltip rows limit', () => {
         store.overrideSelector(selectors.getMetricsTooltipRowsLimit, 8);
@@ -319,7 +320,10 @@ describe('metrics right_pane', () => {
       });
 
       it('disables the input when limit tooltip rows is unchecked', () => {
-        store.overrideSelector(selectors.getMetricsLimitTooltipRows, false);
+        store.overrideSelector(
+          selectors.getMetricsIsTooltipRowsLimitEnabled,
+          false
+        );
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
@@ -328,7 +332,10 @@ describe('metrics right_pane', () => {
       });
 
       it('dispatches the typed value on input', () => {
-        store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
+        store.overrideSelector(
+          selectors.getMetricsIsTooltipRowsLimitEnabled,
+          true
+        );
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
@@ -342,7 +349,10 @@ describe('metrics right_pane', () => {
       });
 
       it('corrects and dispatches the minimum value when input is too low', () => {
-        store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
+        store.overrideSelector(
+          selectors.getMetricsIsTooltipRowsLimitEnabled,
+          true
+        );
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 
@@ -361,7 +371,10 @@ describe('metrics right_pane', () => {
       });
 
       it('does not dispatch when the input is cleared', () => {
-        store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
+        store.overrideSelector(
+          selectors.getMetricsIsTooltipRowsLimitEnabled,
+          true
+        );
         const fixture = TestBed.createComponent(SettingsViewContainer);
         fixture.detectChanges();
 

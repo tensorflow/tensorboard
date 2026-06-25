@@ -239,10 +239,10 @@ export interface MetricsSettings {
    * When enabled, the scalar card tooltip is truncated to
    * `tooltipRowsLimit` rows instead of showing all items.
    */
-  limitTooltipRows: boolean;
+  isTooltipRowsLimitEnabled: boolean;
   /**
    * Number of rows shown in the scalar card tooltip when
-   * `limitTooltipRows` is enabled.
+   * `isTooltipRowsLimitEnabled` is enabled.
    */
   tooltipRowsLimit: number;
   /**
@@ -295,7 +295,7 @@ export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   hideEmptyCards: true,
   scalarSmoothing: 0.6,
   scalarPartitionNonMonotonicX: false,
-  limitTooltipRows: false,
+  isTooltipRowsLimitEnabled: false,
   tooltipRowsLimit: TOOLTIP_ROWS_LIMIT_MIN,
   imageBrightnessInMilli: 1000,
   imageContrastInMilli: 1000,

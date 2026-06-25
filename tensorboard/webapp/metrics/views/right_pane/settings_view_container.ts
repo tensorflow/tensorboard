@@ -58,8 +58,8 @@ import {
       (tooltipSortChanged)="onTooltipSortChanged($event)"
       [ignoreOutliers]="ignoreOutliers$ | async"
       (ignoreOutliersChanged)="onIgnoreOutliersChanged()"
-      [limitTooltipRows]="limitTooltipRows$ | async"
-      (limitTooltipRowsChanged)="onLimitTooltipRowsChanged()"
+      [isTooltipRowsLimitEnabled]="isTooltipRowsLimitEnabled$ | async"
+      (isTooltipRowsLimitEnabledChanged)="onIsTooltipRowsLimitEnabledChanged()"
       [tooltipRowsLimit]="tooltipRowsLimit$ | async"
       (tooltipRowsLimitChanged)="onTooltipRowsLimitChanged($event)"
       [xAxisType]="xAxisType$ | async"
@@ -144,8 +144,8 @@ export class SettingsViewContainer {
     this.ignoreOutliers$ = this.store.select(
       selectors.getMetricsIgnoreOutliers
     );
-    this.limitTooltipRows$ = this.store.select(
-      selectors.getMetricsLimitTooltipRows
+    this.isTooltipRowsLimitEnabled$ = this.store.select(
+      selectors.getMetricsIsTooltipRowsLimitEnabled
     );
     this.tooltipRowsLimit$ = this.store.select(
       selectors.getMetricsTooltipRowsLimit
@@ -188,7 +188,7 @@ export class SettingsViewContainer {
 
   readonly tooltipSort$;
   readonly ignoreOutliers$;
-  readonly limitTooltipRows$;
+  readonly isTooltipRowsLimitEnabled$;
   readonly tooltipRowsLimit$;
   readonly xAxisType$;
   readonly cardMinWidth$;
@@ -210,7 +210,7 @@ export class SettingsViewContainer {
     this.store.dispatch(metricsToggleIgnoreOutliers());
   }
 
-  onLimitTooltipRowsChanged() {
+  onIsTooltipRowsLimitEnabledChanged() {
     this.store.dispatch(metricsToggleLimitTooltipRows());
   }
 

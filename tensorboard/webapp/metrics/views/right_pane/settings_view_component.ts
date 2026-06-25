@@ -98,8 +98,8 @@ export class SettingsViewComponent {
   @Output() ignoreOutliersChanged = new EventEmitter<void>();
 
   readonly TOOLTIP_ROWS_LIMIT_MIN = TOOLTIP_ROWS_LIMIT_MIN;
-  @Input() limitTooltipRows!: boolean;
-  @Output() limitTooltipRowsChanged = new EventEmitter<void>();
+  @Input() isTooltipRowsLimitEnabled!: boolean;
+  @Output() isTooltipRowsLimitEnabledChanged = new EventEmitter<void>();
   @Input() tooltipRowsLimit!: number;
   @Output() tooltipRowsLimitChanged = new EventEmitter<number>();
 
