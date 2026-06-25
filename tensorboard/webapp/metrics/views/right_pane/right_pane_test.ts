@@ -306,6 +306,73 @@ describe('metrics right_pane', () => {
       );
     });
 
+    describe('tooltip rows limit input', () => {
+      const TOOLTIP_ROWS_LIMIT_INPUT = '.scalars-limit-tooltip-rows .slider-input';
+
+      it('renders the current tooltip rows limit', () => {
+        store.overrideSelector(selectors.getMetricsTooltipRowsLimit, 8);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const input = select(fixture, TOOLTIP_ROWS_LIMIT_INPUT);
+        expect(input.nativeElement.value).toBe('8');
+      });
+
+      it('disables the input when limit tooltip rows is unchecked', () => {
+        store.overrideSelector(selectors.getMetricsLimitTooltipRows, false);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const input = select(fixture, TOOLTIP_ROWS_LIMIT_INPUT);
+        expect(input.nativeElement.disabled).toBeTrue();
+      });
+
+      it('dispatches the typed value on input', () => {
+        store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const input = select(fixture, TOOLTIP_ROWS_LIMIT_INPUT);
+        input.nativeElement.value = '8';
+        input.nativeElement.dispatchEvent(new Event('input'));
+
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.metricsChangeTooltipRowsLimit({tooltipRowsLimit: 8})
+        );
+      });
+
+      it('corrects and dispatches the minimum value when input is too low', () => {
+        store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const input = select(fixture, TOOLTIP_ROWS_LIMIT_INPUT);
+        input.nativeElement.value = '0';
+        input.nativeElement.dispatchEvent(new Event('input'));
+
+        expect(input.nativeElement.value).toBe(
+          TEST_ONLY.TOOLTIP_ROWS_LIMIT_MIN.toString()
+        );
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          actions.metricsChangeTooltipRowsLimit({
+            tooltipRowsLimit: TEST_ONLY.TOOLTIP_ROWS_LIMIT_MIN,
+          })
+        );
+      });
+
+      it('does not dispatch when the input is cleared', () => {
+        store.overrideSelector(selectors.getMetricsLimitTooltipRows, true);
+        const fixture = TestBed.createComponent(SettingsViewContainer);
+        fixture.detectChanges();
+
+        const input = select(fixture, TOOLTIP_ROWS_LIMIT_INPUT);
+        input.nativeElement.value = '';
+        input.nativeElement.dispatchEvent(new Event('input'));
+
+        expect(dispatchSpy).not.toHaveBeenCalled();
+      });
+    });
+
     it('dispatches metricsToggleImageShowActualSize on toggle', () => {
       const fixture = TestBed.createComponent(SettingsViewContainer);
       fixture.detectChanges();

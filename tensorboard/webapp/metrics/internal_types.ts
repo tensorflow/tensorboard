@@ -107,7 +107,5 @@ export interface HeaderToggleInfo {
 export const SCALARS_SMOOTHING_MIN = 0;
 export const SCALARS_SMOOTHING_MAX = 0.999;
 
-export const MAX_TOOLTIP_ITEMS = 5;
-
+/** Minimum value for the input: tooltip rows limit setting. */
 export const TOOLTIP_ROWS_LIMIT_MIN = 1;
-export const TOOLTIP_ROWS_LIMIT_MAX = 50;

@@ -31,11 +31,11 @@ import {
   CardMetadata,
   CardUniqueInfo,
   HistogramMode,
-  MAX_TOOLTIP_ITEMS,
   MinMaxStep,
   NonPinnedCardId,
   PinnedCardId,
   TimeSelection,
+  TOOLTIP_ROWS_LIMIT_MIN,
   TooltipSort,
   XAxisType,
 } from '../types';
@@ -235,7 +235,15 @@ export interface MetricsSettings {
    * future, we may fix this at the log writing, reading, or backend response time.
    */
   scalarPartitionNonMonotonicX: boolean;
+  /**
+   * When enabled, the scalar card tooltip is truncated to
+   * `tooltipRowsLimit` rows instead of showing all items.
+   */
   limitTooltipRows: boolean;
+  /**
+   * Number of rows shown in the scalar card tooltip when
+   * `limitTooltipRows` is enabled.
+   */
   tooltipRowsLimit: number;
   /**
    * A non-negative, unitless number. A value of 5000 corresponds to 500%
@@ -288,7 +296,7 @@ export const METRICS_SETTINGS_DEFAULT: MetricsSettings = {
   scalarSmoothing: 0.6,
   scalarPartitionNonMonotonicX: false,
   limitTooltipRows: false,
-  tooltipRowsLimit: MAX_TOOLTIP_ITEMS,
+  tooltipRowsLimit: TOOLTIP_ROWS_LIMIT_MIN,
   imageBrightnessInMilli: 1000,
   imageContrastInMilli: 1000,
   imageShowActualSize: false,

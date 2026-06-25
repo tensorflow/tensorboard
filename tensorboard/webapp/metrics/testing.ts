@@ -41,13 +41,7 @@ import {
   RunToSeries,
   StepDatum,
 } from './store/metrics_types';
-import {
-  CardId,
-  CardMetadata,
-  MAX_TOOLTIP_ITEMS,
-  TooltipSort,
-  XAxisType,
-} from './types';
+import {CardId, CardMetadata, TooltipSort, XAxisType} from './types';
 import {DataTableMode} from '../widgets/data_table/types';
 
 export function buildMetricsSettingsState(
@@ -62,7 +56,7 @@ export function buildMetricsSettingsState(
     hideEmptyCards: true,
     scalarPartitionNonMonotonicX: false,
     limitTooltipRows: false,
-    tooltipRowsLimit: MAX_TOOLTIP_ITEMS,
+    tooltipRowsLimit: 4,
     imageBrightnessInMilli: 123,
     imageContrastInMilli: 123,
     imageShowActualSize: true,

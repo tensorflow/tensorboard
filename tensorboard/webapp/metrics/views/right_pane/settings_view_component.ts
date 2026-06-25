@@ -28,7 +28,6 @@ import {
   HistogramMode,
   SCALARS_SMOOTHING_MAX,
   TimeSelection,
-  TOOLTIP_ROWS_LIMIT_MAX,
   TOOLTIP_ROWS_LIMIT_MIN,
   TooltipSort,
   XAxisType,
@@ -99,7 +98,6 @@ export class SettingsViewComponent {
   @Output() ignoreOutliersChanged = new EventEmitter<void>();
 
   readonly TOOLTIP_ROWS_LIMIT_MIN = TOOLTIP_ROWS_LIMIT_MIN;
-  readonly TOOLTIP_ROWS_LIMIT_MAX = TOOLTIP_ROWS_LIMIT_MAX;
   @Input() limitTooltipRows!: boolean;
   @Output() limitTooltipRowsChanged = new EventEmitter<void>();
   @Input() tooltipRowsLimit!: number;
@@ -110,14 +108,16 @@ export class SettingsViewComponent {
     if (!input.value) {
       return;
     }
-    const nextValue = Math.min(
-      Math.max(TOOLTIP_ROWS_LIMIT_MIN, Math.round(Number(input.value))),
-      TOOLTIP_ROWS_LIMIT_MAX
+    const nextValue = Math.max(
+      TOOLTIP_ROWS_LIMIT_MIN,
+      Math.round(Number(input.value))
     );
 
+    // Fallback in case Angular does not trigger ngOnChanges when expected cause one-way binding.
     if (nextValue !== Number(input.value)) {
       input.value = String(nextValue);
     }
+
     this.tooltipRowsLimitChanged.emit(nextValue);
   }
 
@@ -226,4 +226,5 @@ export const TEST_ONLY = {
   SLIDER_AUDIT_TIME_MS,
   MIN_CARD_WIDTH_SLIDER_VALUE,
   MAX_SMOOTHING_VALUE,
+  TOOLTIP_ROWS_LIMIT_MIN,
 };

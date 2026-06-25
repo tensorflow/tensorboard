@@ -42,7 +42,6 @@ import {
   CardUniqueInfo,
   SCALARS_SMOOTHING_MAX,
   SCALARS_SMOOTHING_MIN,
-  TOOLTIP_ROWS_LIMIT_MAX,
   TOOLTIP_ROWS_LIMIT_MIN,
   TooltipSort,
   URLDeserializedState,
@@ -867,10 +866,7 @@ const reducer = createReducer(
       ...state,
       settingOverrides: {
         ...state.settingOverrides,
-        tooltipRowsLimit: Math.min(
-          Math.max(tooltipRowsLimit, TOOLTIP_ROWS_LIMIT_MIN),
-          TOOLTIP_ROWS_LIMIT_MAX
-        ),
+        tooltipRowsLimit: Math.max(tooltipRowsLimit, TOOLTIP_ROWS_LIMIT_MIN),
       },
     };
   }),
