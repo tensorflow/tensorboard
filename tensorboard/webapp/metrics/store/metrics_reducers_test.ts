@@ -46,9 +46,11 @@ import {
   HistogramMode,
   MinMaxStep,
   NonPinnedCardId,
+  TOOLTIP_ROWS_LIMIT_DEFAULT,
   TooltipSort,
   XAxisType,
 } from '../types';
+import {METRICS_SETTINGS_DEFAULT} from './metrics_types';
 import {ColumnHeaderType, DataTableMode} from '../../widgets/data_table/types';
 import {reducers} from './metrics_reducers';
 import {getCardId, getPinnedCardId} from './metrics_store_internal_utils';
@@ -1032,6 +1034,29 @@ describe('metrics reducers', () => {
       );
       expect(nextState.settings.ignoreOutliers).toBe(true);
       expect(nextState.settingOverrides.ignoreOutliers).toBe(false);
+    });
+
+    it('uses TOOLTIP_ROWS_LIMIT_DEFAULT as the default tooltipRowsLimit', () => {
+      expect(METRICS_SETTINGS_DEFAULT.tooltipRowsLimit).toBe(
+        TOOLTIP_ROWS_LIMIT_DEFAULT
+      );
+    });
+
+    it('updates tooltipRowsLimit on metricsChangeTooltipRowsLimit', () => {
+      const prevState = buildMetricsState({
+        settings: buildMetricsSettingsState({
+          tooltipRowsLimit: TOOLTIP_ROWS_LIMIT_DEFAULT,
+        }),
+        settingOverrides: {},
+      });
+      const nextState = reducers(
+        prevState,
+        actions.metricsChangeTooltipRowsLimit({tooltipRowsLimit: 10})
+      );
+      expect(nextState.settings.tooltipRowsLimit).toBe(
+        TOOLTIP_ROWS_LIMIT_DEFAULT
+      );
+      expect(nextState.settingOverrides.tooltipRowsLimit).toBe(10);
     });
 
     it('changes xAxisType on metricsChangeXAxisType', () => {
