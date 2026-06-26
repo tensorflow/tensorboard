@@ -142,12 +142,13 @@ pub enum DataType {
     ///
     /// 5 exponent bits, 2 mantissa bits, finite-only,
     DtFloat8E5m2fnuz = 28,
-    // with NaN.
-
+    /// with NaN.
     DtInt4 = 29,
     DtUint4 = 30,
     DtInt2 = 31,
     DtUint2 = 32,
+    /// 2 exponent bits, 1 mantissa bit, finite-only
+    DtFloat4E2m1fn = 33,
     /// Do not use!  These are only for TF1's obsolete reference Variables.
     /// Every enum above should have a corresponding value below (verified by
     /// types_test).
@@ -183,6 +184,7 @@ pub enum DataType {
     DtUint4Ref = 130,
     DtInt2Ref = 131,
     DtUint2Ref = 132,
+    DtFloat4E2m1fnRef = 133,
 }
 /// Protocol buffer representing a handle to a tensorflow resource. Handles are
 /// not valid across executions, but can be serialized back and forth from within
