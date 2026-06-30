@@ -208,18 +208,17 @@ build_bazel_rules_nodejs_dependencies()
 
 load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
 
-# Angular 17 needs Node.js 18.17 or higher. rules_nodejs 5.8.1 does not
-# include Node 18, so we add it here manually.
-# @TODO(@cdavalos7): We plan to upgrade to a newer version of rules_nodejs that includes Node 18 and remove this manual addition in next version upgrade.
+# Angular 19 supports Node.js 18, 20, or 22. rules_nodejs 5.8.1
+# doesn't bundle Node 22, so we add it here manually.
 node_repositories(
     node_repositories = {
-        "18.20.8-darwin_arm64": ("node-v18.20.8-darwin-arm64.tar.gz", "node-v18.20.8-darwin-arm64", "bae4965d29d29bd32f96364eefbe3bca576a03e917ddbb70b9330d75f2cacd76"),
-        "18.20.8-darwin_amd64": ("node-v18.20.8-darwin-x64.tar.gz", "node-v18.20.8-darwin-x64", "ed2554677188f4afc0d050ecd8bd56effb2572d6518f8da6d40321ede6698509"),
-        "18.20.8-linux_arm64": ("node-v18.20.8-linux-arm64.tar.xz", "node-v18.20.8-linux-arm64", "224e569dbe7b0ea4628ce383d9d482494b57ee040566583f1c54072c86d1116b"),
-        "18.20.8-linux_amd64": ("node-v18.20.8-linux-x64.tar.xz", "node-v18.20.8-linux-x64", "5467ee62d6af1411d46b6a10e3fb5cacc92734dbcef465fea14e7b90993001c9"),
-        "18.20.8-windows_amd64": ("node-v18.20.8-win-x64.zip", "node-v18.20.8-win-x64", "1a1e40260a6facba83636e4cd0ba01eb5bd1386896824b36645afba44857384a"),
+        "22.23.1-darwin_arm64": ("node-v22.23.1-darwin-arm64.tar.gz", "node-v22.23.1-darwin-arm64", "ef28d8fab2c0e4314522d4bb1b7173270aa3937e93b92cb7de79c112ac1fa953"),
+        "22.23.1-darwin_amd64": ("node-v22.23.1-darwin-x64.tar.gz", "node-v22.23.1-darwin-x64", "b8da981b8a0b1241b70249204916da76c63573ddf5814dbd2d1e41069105cb81"),
+        "22.23.1-linux_arm64": ("node-v22.23.1-linux-arm64.tar.xz", "node-v22.23.1-linux-arm64", "0294e8b915ab75f92c7513d2fcb830ae06e10684e6c603e99a87dbf8835389c1"),
+        "22.23.1-linux_amd64": ("node-v22.23.1-linux-x64.tar.xz", "node-v22.23.1-linux-x64", "9749e988f437343b7fa832c69ded82a312e41a03116d766797ac14f6f9eee578"),
+        "22.23.1-windows_amd64": ("node-v22.23.1-win-x64.zip", "node-v22.23.1-win-x64", "7df0bc9375723f4a86b3aa1b7cc73342423d9677a8df4538aca31a049e309c29"),
     },
-    node_version = "18.20.8",
+    node_version = "22.23.1",
 )
 
 yarn_install(
@@ -237,7 +236,7 @@ yarn_install(
     # this Bazel/CI setup. Apply the generated patch artifacts directly during
     # yarn_install instead.
     post_install_patches = [
-        "//patches:@angular+build-tooling+0.0.0-db91da4e742cd081bfba01db2edc4e816018419b.patch",
+        "//patches:@angular+build-tooling+0.0.0-bf0dd632ed129ee8770b09a6e11c6497162b3edb.patch",
         "//patches:@bazel+concatjs+5.8.1.patch",
     ],
     yarn_lock = "//:yarn.lock",
