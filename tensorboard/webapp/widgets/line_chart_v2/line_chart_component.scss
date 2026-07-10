@@ -12,7 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 :host {
   contain: strict;
@@ -53,7 +54,7 @@ limitations under the License.
   // of the Angular app and want to control the dark mode styling based on
   // the component prop alone.
   &.dark-mode {
-    color: map-get($tb-dark-foreground, text);
+    color: map.get(tb_theme.$tb-dark-foreground, text);
   }
   // We does not want to render x-axis and y axis in line only mode. Thus
   // we also removes the spaces the axis take.

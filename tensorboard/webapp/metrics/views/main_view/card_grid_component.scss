@@ -12,10 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
-@import '../common';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_theme';
+@use '../common';
 
-$_background: map-get($tb-theme, background);
+$_background: map.get(tb_theme.$tb-theme, background);
 
 :host {
   contain: content;
@@ -25,10 +26,10 @@ $_background: map-get($tb-theme, background);
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
-    minmax($metrics-min-card-width, 1fr)
+    minmax(common.$metrics-min-card-width, 1fr)
   );
-  gap: $metrics-preferred-gap;
-  padding: $metrics-preferred-gap;
+  gap: common.$metrics-preferred-gap;
+  padding: common.$metrics-preferred-gap;
 }
 
 .card-space.full-width {
@@ -37,7 +38,7 @@ $_background: map-get($tb-theme, background);
 }
 
 .card-space.full-height {
-  min-height: $metrics-min-card-height * 1.5;
+  min-height: common.$metrics-min-card-height * 1.5;
 
   card-view {
     height: 100%;
@@ -45,31 +46,31 @@ $_background: map-get($tb-theme, background);
 }
 
 card-view {
-  @include tb-theme-foreground-prop(border, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 4px;
   box-sizing: border-box;
   contain: layout paint;
   display: block;
   // Make sure the cards generally have some guaranteed minimum height to avoid
   // jank as cards load.
-  min-height: $metrics-min-card-height;
+  min-height: common.$metrics-min-card-height;
 }
 
 .group-controls {
-  @include tb-theme-foreground-prop(color, secondary-text);
+  @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
   display: grid;
   align-items: center;
   grid-template-columns: 1fr 1fr;
-  gap: $metrics-preferred-gap;
-  padding: 0 $metrics-preferred-gap;
+  gap: common.$metrics-preferred-gap;
+  padding: 0 common.$metrics-preferred-gap;
 }
 
 .group-controls:first-of-type {
-  padding-top: $metrics-preferred-gap;
+  padding-top: common.$metrics-preferred-gap;
 }
 
 .group-controls:last-of-type {
-  padding-bottom: $metrics-preferred-gap;
+  padding-bottom: common.$metrics-preferred-gap;
 }
 
 .prev-container {
@@ -81,7 +82,7 @@ card-view {
 }
 
 .pagination-input {
-  margin-right: $metrics-preferred-gap;
+  margin-right: common.$metrics-preferred-gap;
 
   input {
     background: transparent;
@@ -92,8 +93,8 @@ card-view {
 }
 
 .pagination-button {
-  background-color: $metrics-button-background-color-on-gray;
-  @include tb-dark-theme {
+  background-color: common.$metrics-button-background-color-on-gray;
+  @include tb_theme.tb-dark-theme {
     background-color: transparent;
   }
 }

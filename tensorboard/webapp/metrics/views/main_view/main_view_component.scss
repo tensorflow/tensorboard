@@ -13,8 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
-@import '../common';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_theme';
+@use '../common';
 
 :host {
   display: flex;
@@ -23,22 +24,22 @@ limitations under the License.
 }
 
 .toolbar {
-  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
   flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 48px;
-  padding: 0 $metrics-preferred-gap;
+  padding: 0 common.$metrics-preferred-gap;
 
   metrics-tag-filter {
     flex: 1 1 100px;
   }
 
   .right-items {
-    @include tb-theme-foreground-prop(border-left, border, 1px solid);
-    margin-left: $metrics-preferred-gap;
-    padding-left: $metrics-preferred-gap;
+    @include tb_theme.tb-theme-foreground-prop(border-left, border, 1px solid);
+    margin-left: common.$metrics-preferred-gap;
+    padding-left: common.$metrics-preferred-gap;
   }
 }
 
@@ -48,7 +49,7 @@ limitations under the License.
 // appearance. Either the buttons should be replaced with `mat-button-toggle` or the
 // `mat-button-toggle-group` should be removed.
 mat-button-toggle-group.filter-view {
-  @include tb-theme-foreground-prop(border, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border, border, 1px solid);
 }
 
 .filter-view {
@@ -68,11 +69,11 @@ mat-button-toggle-group.filter-view {
     padding: 0 12px;
 
     & + button {
-      @include tb-theme-foreground-prop(border-left, border, 1px solid);
+      @include tb_theme.tb-theme-foreground-prop(border-left, border, 1px solid);
     }
 
     &[aria-checked='true'] {
-      @include tb-theme-background-prop(background-color, selected-button);
+      @include tb_theme.tb-theme-background-prop(background-color, selected-button);
     }
   }
 }
@@ -86,30 +87,30 @@ mat-button-toggle-group.filter-view {
 .main,
 .sidebar {
   contain: strict;
-  background-color: mat.m2-get-color-from-palette($tb-background, background);
+  background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
   overflow-x: hidden;
   overflow-y: auto;
   will-change: transform, scroll-position;
 
-  @include tb-dark-theme {
-    background-color: map-get($tb-dark-background, background);
+  @include tb_theme.tb-dark-theme {
+    background-color: map.get(tb_theme.$tb-dark-background, background);
   }
 }
 
 .main {
-  background-color: mat.m2-get-color-from-palette($tf-slate, 200);
+  background-color: mat.m2-get-color-from-palette(tb_theme.$tf-slate, 200);
   flex: 1 1;
   display: flex;
   flex-direction: column;
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     // There are no slate color that looks very natural and nice.
     background-color: #3a3a3a;
   }
 
   metrics-filtered-view,
   metrics-pinned-view {
-    @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+    @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
   }
 
   &.filter-view {
@@ -131,16 +132,16 @@ mat-button-toggle-group.filter-view {
 }
 
 .sidebar {
-  @include tb-theme-foreground-prop(border-left, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border-left, border, 1px solid);
   flex: 0 0 250px;
 
   .header {
-    @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+    @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
     display: flex;
     align-items: center;
     justify-content: space-between;
     height: 42px;
-    padding: 0 $metrics-preferred-gap;
+    padding: 0 common.$metrics-preferred-gap;
 
     .title {
       font-size: 18px;
@@ -153,15 +154,15 @@ mat-button-toggle-group.filter-view {
 
 /** TODO(psybuzz): consider making a tb-button instead. */
 :host .settings-button {
-  color: mat.m2-get-color-from-palette($tb-foreground, secondary-text);
+  color: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, secondary-text);
   display: inline-flex;
 
-  @include tb-dark-theme {
-    color: mat.m2-get-color-from-palette($tb-dark-foreground, secondary-text);
+  @include tb_theme.tb-dark-theme {
+    color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, secondary-text);
   }
 
   &.checked {
-    @include tb-theme-background-prop(background-color, selected-button);
+    @include tb_theme.tb-theme-background-prop(background-color, selected-button);
     border-color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 300);
   }
 
@@ -176,7 +177,7 @@ mat-button-toggle-group.filter-view {
 }
 
 .slide-out-menu {
-  background-color: mat.m2-get-color-from-palette($tb-background, background);
+  background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
   // Make the menu the full height minus the size of the toolbar.
   height: calc(100% - 49px);
   position: absolute;
@@ -186,10 +187,10 @@ mat-button-toggle-group.filter-view {
   visibility: hidden;
   width: 200px;
 
-  @include tb-theme-foreground-prop(border-left, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border-left, border, 1px solid);
 
-  @include tb-dark-theme {
-    background-color: map-get($tb-dark-background, background);
+  @include tb_theme.tb-dark-theme {
+    background-color: map.get(tb_theme.$tb-dark-background, background);
   }
 }
 

@@ -12,21 +12,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 :host {
-  background-color: map-get($tb-background, background);
-  color: map-get($tb-foreground, text);
+  background-color: map.get(tb_theme.$tb-background, background);
+  color: map.get(tb_theme.$tb-foreground, text);
   display: block;
   position: relative;
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     // There is no great way to style iframe, especially given that they
     // can generate nested iframes. Opt-out of styling non-first-party plugins for
     // now.
     .plugins.is-first-party-plugin {
-      background-color: map-get($tb-dark-background, background);
-      color: map-get($tb-dark-foreground, text);
+      background-color: map.get(tb_theme.$tb-dark-background, background);
+      color: map.get(tb_theme.$tb-dark-foreground, text);
     }
   }
 }
@@ -37,7 +38,7 @@ limitations under the License.
 }
 
 .warning {
-  @include tb-theme-background-prop(background, background);
+  @include tb_theme.tb-theme-background-prop(background, background);
   bottom: 0;
   left: 0;
   position: absolute;
@@ -46,7 +47,7 @@ limitations under the License.
 }
 
 .warning-message {
-  @include tb-theme-foreground-prop(color, text);
+  @include tb_theme.tb-theme-foreground-prop(color, text);
   margin: 80px auto 0;
   max-width: 540px;
 }

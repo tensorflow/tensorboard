@@ -13,9 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_theme';
 
-$_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
+$_accent: map.get(mat.m2-get-color-config(tb_theme.$tb-theme), accent);
 
 .data-table-wrapper {
   display: flex;
@@ -23,11 +24,11 @@ $_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
   &.should-add-borders {
     .left-section,
     .right-section {
-      @include tb-theme-foreground-prop(border-top, border, 1px solid);
+      @include tb_theme.tb-theme-foreground-prop(border-top, border, 1px solid);
     }
 
     .add-button-column {
-      @include tb-theme-foreground-prop(border-left, border, 1px solid);
+      @include tb_theme.tb-theme-foreground-prop(border-left, border, 1px solid);
     }
   }
 }
@@ -38,7 +39,7 @@ $_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
   width: 100%;
 
   .header {
-    background-color: mat.m2-get-color-from-palette($tb-background, background);
+    background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
     display: table-row;
     font-weight: bold;
     position: sticky;
@@ -51,8 +52,8 @@ $_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
       cursor: pointer;
     }
 
-    @include tb-dark-theme {
-      background-color: map-get($tb-dark-background, background);
+    @include tb_theme.tb-dark-theme {
+      background-color: map.get(tb_theme.$tb-dark-background, background);
     }
   }
 }
@@ -60,7 +61,7 @@ $_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
 .loading {
   align-items: center;
   border: 0;
-  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
   display: flex;
   height: 48px;
   padding: 0 24px;
@@ -72,13 +73,13 @@ $_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
 }
 
 .right-section {
-  background-color: mat.m2-get-color-from-palette($tb-background, background);
+  background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
   position: sticky;
   right: -1px; // Prevent fractional width from creating a gap.
   z-index: 1;
 
-  @include tb-dark-theme {
-    background-color: map-get($tb-dark-background, background);
+  @include tb_theme.tb-dark-theme {
+    background-color: map.get(tb_theme.$tb-dark-background, background);
   }
 
   .add-button-column {

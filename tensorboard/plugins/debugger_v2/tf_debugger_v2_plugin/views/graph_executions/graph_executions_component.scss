@@ -12,11 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
-@import '../common/lib';
+@use 'tensorboard/webapp/theme/tb_theme';
+@use '../common/lib';
 
 .graph-executions-container {
-  @include tb-theme-foreground-prop(border-left, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border-left, border, 1px solid);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -29,7 +29,7 @@ limitations under the License.
 }
 
 .graph-execution-index {
-  @include tb-theme-foreground-prop(color, secondary-text);
+  @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
   display: inline-block;
   padding-right: 4px;
   text-align: right;
@@ -49,7 +49,7 @@ limitations under the License.
 }
 
 .input-of-focus {
-  @include debugger-highlight-background;
+  @include lib.debugger-highlight-background;
 }
 
 .loading-spinner {
@@ -57,7 +57,7 @@ limitations under the License.
 }
 
 .op-type {
-  @include debugger-op-type;
+  @include lib.debugger-op-type;
   direction: rtl;
   display: block;
 }
@@ -67,7 +67,7 @@ limitations under the License.
 }
 
 .tensor-item {
-  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
   display: flex;
   flex-wrap: nowrap;
   height: 38px;

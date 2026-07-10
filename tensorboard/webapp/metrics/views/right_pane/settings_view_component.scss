@@ -13,20 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 :host {
-  @include tb-theme-foreground-prop(color, secondary-text);
+  @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
   font-size: 12px;
 }
 
 section {
-  @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
   padding: 16px;
 }
 
 .section-title {
-  @include tb-theme-foreground-prop(color, text);
+  @include tb_theme.tb-theme-foreground-prop(color, text);
   text-transform: uppercase;
   font-weight: 500;
   font-size: 13px;
@@ -59,7 +59,7 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
 
 .slider-input {
   background-color: inherit;
-  border: 1px solid mat.m2-get-color-from-palette($tf-slate, 500);
+  border: 1px solid mat.m2-get-color-from-palette(tb_theme.$tf-slate, 500);
   border-radius: 2px;
   box-sizing: border-box;
   color: inherit;
@@ -67,8 +67,8 @@ section .control-row:not(:has(+ .control-row > mat-checkbox)):not(:last-child) {
   margin-left: 12px;
   padding: 0 4px;
 
-  @include tb-dark-theme {
-    border-color: mat.m2-get-color-from-palette($tf-slate, 700);
+  @include tb_theme.tb-dark-theme {
+    border-color: mat.m2-get-color-from-palette(tb_theme.$tf-slate, 700);
   }
 }
 
@@ -109,7 +109,7 @@ mat-checkbox {
   margin-left: -11px;
 
   ::ng-deep label {
-    @include tb-theme-foreground-prop(color, secondary-text);
+    @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
     font-size: 12px;
     letter-spacing: normal;
     padding-left: 0px;
@@ -142,7 +142,7 @@ mat-slider {
   &.toggle-opened {
     background-color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 200);
 
-    @include tb-dark-theme {
+    @include tb_theme.tb-dark-theme {
       background-color: mat.m2-get-color-from-palette(
         mat.$m2-grey-palette,
         800

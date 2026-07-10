@@ -51,7 +51,7 @@ $tb-theme: mat.m2-define-light-theme(
 );
 
 // Overriding mat-light-theme-foreground variables.
-$tb-foreground: map_merge(
+$tb-foreground: map.merge(
   mat.$m2-light-theme-foreground-palette,
   (
     text: mat.m2-get-color-from-palette(mat.$m2-gray-palette, 900),
@@ -63,7 +63,7 @@ $tb-foreground: map_merge(
     link-visited: mat.m2-get-color-from-palette(mat.$m2-purple-palette, 700),
   )
 );
-$tb-background: map_merge(
+$tb-background: map.merge(
   mat.$m2-light-theme-background-palette,
   (
     app-bar: $tb-app-bar-color,
@@ -72,7 +72,7 @@ $tb-background: map_merge(
   )
 );
 
-$tb-theme: map_merge(
+$tb-theme: map.merge(
   $tb-theme,
   (
     foreground: $tb-foreground,
@@ -80,20 +80,20 @@ $tb-theme: map_merge(
   )
 );
 
-$color: map_merge(
-  map_get($tb-theme, 'color'),
+$color: map.merge(
+  map.get($tb-theme, 'color'),
   (
     foreground: $tb-foreground,
     background: $tb-background,
   )
 );
-$tb-theme: map_merge(
+$tb-theme: map.merge(
   $tb-theme,
   (
     color: $color,
   )
 );
-$tb-theme: map_merge(
+$tb-theme: map.merge(
   $tb-theme,
   color,
   system,
@@ -113,8 +113,8 @@ $tb-dark-theme: mat.m2-define-dark-theme(
     density: 0,
   )
 );
-$tb-dark-foreground: map_merge(
-  map-get(mat.m2-get-color-config($tb-dark-theme), foreground),
+$tb-dark-foreground: map.merge(
+  map.get(mat.m2-get-color-config($tb-dark-theme), foreground),
   (
     border: #555,
     disabled-text: mat.m2-get-color-from-palette(mat.$m2-gray-palette, 700),
@@ -122,13 +122,13 @@ $tb-dark-foreground: map_merge(
     link-visited: mat.m2-get-color-from-palette(mat.$m2-purple-palette, 300),
   )
 );
-$tb-dark-background: map_merge(
-  map-get(mat.m2-get-color-config($tb-dark-theme), background),
+$tb-dark-background: map.merge(
+  map.get(mat.m2-get-color-config($tb-dark-theme), background),
   (
     app-bar: $tb-dark-app-bar-color,
   )
 );
-$tb-dark-theme: map_merge(
+$tb-dark-theme: map.merge(
   $tb-dark-theme,
   (
     background: $tb-dark-background,
@@ -136,14 +136,14 @@ $tb-dark-theme: map_merge(
   )
 );
 
-$color-dark: map_merge(
-  map_get($tb-dark-theme, 'color'),
+$color-dark: map.merge(
+  map.get($tb-dark-theme, 'color'),
   (
     foreground: $tb-dark-foreground,
     background: $tb-dark-background,
   )
 );
-$tb-dark-theme: map_merge(
+$tb-dark-theme: map.merge(
   $tb-dark-theme,
   (
     color: $color-dark,
@@ -184,8 +184,8 @@ $tb-dark-theme: map_merge(
   $dict-name,
   $css-value-prefix
 ) {
-  $light-color: map-get($foreground-or-background, $dict-name);
-  $dark-color: map-get($dark-foreground-or-background, $dict-name);
+  $light-color: map.get($foreground-or-background, $dict-name);
+  $dark-color: map.get($dark-foreground-or-background, $dict-name);
 
   @if (not $light-color) {
     @error "Name '#{$dict-name}' is not found in light #{$object-name}.";
@@ -300,10 +300,10 @@ $tb-dark-theme: map_merge(
   }
 
   a:not(.mdc-button, .mdc-icon-button) {
-    color: map-get($tb-foreground, link);
+    color: map.get($tb-foreground, link);
 
     &:visited {
-      color: map-get($tb-foreground, link-visited);
+      color: map.get($tb-foreground, link-visited);
     }
   }
 
@@ -358,13 +358,13 @@ $tb-dark-theme: map_merge(
   // Cannot use `tb-dark-theme` as :host-context in the global stylesheet is
   // meaningless.
   body.dark-mode {
-    background-color: map-get($tb-dark-background, background);
+    background-color: map.get($tb-dark-background, background);
 
     a:not(.mdc-button, .mdc-icon-button) {
-      color: map-get($tb-dark-foreground, link);
+      color: map.get($tb-dark-foreground, link);
 
       &:visited {
-        color: map-get($tb-dark-foreground, link-visited);
+        color: map.get($tb-dark-foreground, link-visited);
       }
     }
 

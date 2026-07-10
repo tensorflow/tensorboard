@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 :host {
   display: flex;
@@ -29,7 +29,7 @@ limitations under the License.
 
 .resizer,
 .expand-collapsed-sidebar {
-  @include tb-theme-foreground-prop(border-color, border);
+  @include tb_theme.tb-theme-foreground-prop(border-color, border);
   box-sizing: border-box;
   flex: 0 0;
   justify-self: stretch;
@@ -72,7 +72,7 @@ limitations under the License.
     outline: 3px solid #ccc;
     z-index: 1;
 
-    @include tb-dark-theme {
+    @include tb_theme.tb-dark-theme {
       outline-color: #777;
       border-color: #777;
     }

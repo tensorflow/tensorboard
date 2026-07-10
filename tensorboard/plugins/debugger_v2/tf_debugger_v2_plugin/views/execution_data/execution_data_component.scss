@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 .debug-tensor-values-table {
   width: 100%;
@@ -52,7 +52,7 @@ limitations under the License.
   padding: 5px;
   width: 360px;
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     background-color: mat.m2-get-color-from-palette(
       mat.$m2-orange-palette,
       900
@@ -67,7 +67,7 @@ limitations under the License.
 }
 
 .output-slot-container {
-  @include tb-theme-foreground-prop(border-top, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border-top, border, 1px solid);
   margin-top: 5px;
   padding: 2px 0;
   vertical-align: top;

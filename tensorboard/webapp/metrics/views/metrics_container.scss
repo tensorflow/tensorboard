@@ -13,7 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 :host {
   contain: strict;
@@ -31,7 +32,7 @@ limitations under the License.
   );
   $yellow-500: mat.m2-get-color-from-palette(mat.$m2-yellow-palette, 500);
   border-bottom: 1px solid $yellow-500;
-  color: map-get($tb-foreground, text);
+  color: map.get(tb_theme.$tb-foreground, text);
   display: block;
   flex: 0 0;
 }
@@ -42,16 +43,16 @@ tb-dashboard-layout {
 }
 
 nav {
-  background-color: mat.m2-get-color-from-palette($tb-background, background);
-  $border: mat.m2-get-color-from-palette($tb-foreground, border);
+  background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
+  $border: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, border);
   border-right: 1px solid $border;
   flex: none;
   width: 340px;
 
-  @include tb-dark-theme {
-    background-color: map-get($tb-dark-background, background);
+  @include tb_theme.tb-dark-theme {
+    background-color: map.get(tb_theme.$tb-dark-background, background);
     border-right-color: mat.m2-get-color-from-palette(
-      $tb-dark-foreground,
+      tb_theme.$tb-dark-foreground,
       border
     );
   }

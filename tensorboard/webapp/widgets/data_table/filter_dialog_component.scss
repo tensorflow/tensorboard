@@ -13,20 +13,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 .filter-dialog {
   padding: 16px 8px;
   border-radius: 4px;
   border: 1px solid;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-color: mat.m2-get-color-from-palette($tb-foreground, border);
-  background-color: mat.m2-get-color-from-palette($tb-background, background);
+  border-color: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, border);
+  background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
 
-  @include tb-dark-theme {
-    border-color: mat.m2-get-color-from-palette($tb-dark-foreground, border);
+  @include tb_theme.tb-dark-theme {
+    border-color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, border);
     background-color: mat.m2-get-color-from-palette(
-      $tb-dark-background,
+      tb_theme.$tb-dark-background,
       'background'
     );
   }
@@ -50,12 +50,12 @@ limitations under the License.
 .filter-container {
   padding-bottom: 8px;
   margin-bottom: 8px;
-  $border: mat.m2-get-color-from-palette($tb-foreground, border);
+  $border: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, border);
   border-bottom: 1px solid $border;
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     border-bottom-color: mat.m2-get-color-from-palette(
-      $tb-dark-foreground,
+      tb_theme.$tb-dark-foreground,
       border
     );
   }

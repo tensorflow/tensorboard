@@ -13,9 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_theme';
 
-$_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
+$_accent: map.get(mat.m2-get-color-config(tb_theme.$tb-theme), accent);
 
 :host ::ng-deep .mat-tab-label {
   min-width: 0;
@@ -62,20 +63,20 @@ $_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
   align-items: center;
   justify-content: flex-end;
   padding: 4px;
-  $border: mat.m2-get-color-from-palette($tb-foreground, border);
+  $border: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, border);
   border-top: 1px solid $border;
 
-  @include tb-dark-theme {
-    border-color: mat.m2-get-color-from-palette($tb-dark-foreground, border);
+  @include tb_theme.tb-dark-theme {
+    border-color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, border);
   }
 }
 
 .close-button {
-  color: mat.m2-get-color-from-palette($tb-foreground, secondary-text);
+  color: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, secondary-text);
   width: 84px;
 
-  @include tb-dark-theme {
-    color: mat.m2-get-color-from-palette($tb-dark-foreground, secondary-text);
+  @include tb_theme.tb-dark-theme {
+    color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, secondary-text);
   }
 }
 

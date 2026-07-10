@@ -12,11 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
-@import '../common';
+@use 'tensorboard/webapp/theme/tb_theme';
+@use '../common';
 
 :host {
-  @include metrics-sub-view;
+  @include common.metrics-sub-view;
 }
 
 .group-text {
@@ -25,15 +25,15 @@ limitations under the License.
 }
 
 .group-title {
-  @include metrics-card-group-title;
+  @include common.metrics-card-group-title;
 }
 
 .group-card-count {
-  @include metrics-card-group-count-text;
+  @include common.metrics-card-group-count-text;
   margin-left: 6px;
 }
 
 metrics-empty-tag-match {
-  @include metrics-empty-message;
+  @include common.metrics-empty-message;
   display: block;
 }

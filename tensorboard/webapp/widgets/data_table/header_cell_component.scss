@@ -14,9 +14,10 @@ limitations under the License.
 ==============================================================================*/
 
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_theme';
 
-$_accent: map-get(mat.m2-get-color-config($tb-theme), accent);
+$_accent: map.get(mat.m2-get-color-config(tb_theme.$tb-theme), accent);
 $_icon_size: 12px;
 $_icon_padding: 4px;
 

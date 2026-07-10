@@ -17,11 +17,12 @@ limitations under the License.
 // `_tb_theme.template.scss` also calls `mat.*` symbols. Keep this `@use` so
 // the concatenated `_tb_theme.scss` compiles.
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_palette';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_palette';
 
-$tb-primary: mat.m2-define-palette($tf-orange, 700, 400, 800);
-$tb-accent: mat.m2-define-palette($tf-orange);
+$tb-primary: mat.m2-define-palette(tb_palette.$tf-orange, 700, 400, 800);
+$tb-accent: mat.m2-define-palette(tb_palette.$tf-orange);
 $tb-warn: mat.m2-define-palette(mat.$m2-red-palette);
 
-$tb-dark-primary: mat.m2-define-palette($tf-orange, 800, 600, 900);
+$tb-dark-primary: mat.m2-define-palette(tb_palette.$tf-orange, 800, 600, 900);
 $tb-dark-accent: $tb-dark-primary;

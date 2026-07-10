@@ -13,10 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 mat-select {
-  border: 1px solid mat.m2-get-color-from-palette($tf-slate, 500);
+  border: 1px solid mat.m2-get-color-from-palette(tb_theme.$tf-slate, 500);
   border-radius: 3px;
   box-sizing: border-box;
   padding: 6px;

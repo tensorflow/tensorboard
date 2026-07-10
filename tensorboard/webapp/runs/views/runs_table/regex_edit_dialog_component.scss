@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 $padding-size: 16px;
 
@@ -23,9 +23,9 @@ $padding-size: 16px;
     border: none;
     cursor: pointer;
     text-decoration: underline;
-    @include tb-theme-foreground-prop(color, link);
+    @include tb_theme.tb-theme-foreground-prop(color, link);
     &:visited {
-      @include tb-theme-foreground-prop(color, link-visited);
+      @include tb_theme.tb-theme-foreground-prop(color, link-visited);
     }
   }
   padding: $padding-size;
@@ -39,13 +39,13 @@ $padding-size: 16px;
   }
 
   .warning {
-    @include tb-theme-foreground-prop(color, secondary-text);
+    @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
     font-size: 0.9em;
   }
 }
 
 .grouping-preview {
-  @include tb-theme-foreground-prop(border, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border, border, 1px solid);
   max-height: 50vh;
   overflow-y: auto;
   padding: $padding-size;
@@ -78,13 +78,13 @@ mat-form-field {
 }
 
 .group {
-  @include tb-theme-foreground-prop(border, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 3px;
   margin: 0;
   padding: $padding-size;
 
   label {
-    @include tb-theme-foreground-prop(border-bottom, border, 1px solid);
+    @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
     align-items: center;
     display: grid;
     gap: 10px;
@@ -111,7 +111,7 @@ mat-form-field {
 
   .more,
   .no-match {
-    @include tb-theme-foreground-prop(color, secondary-text);
+    @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
     margin-top: $padding-size;
   }
 }

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 :host {
   display: flex;
@@ -21,7 +21,7 @@ limitations under the License.
 }
 
 mat-icon {
-  @include tb-theme-foreground-prop(color, secondary-text);
+  @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
   flex: none;
   margin-right: 5px;
 }

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
+@use 'tensorboard/webapp/theme/tb_theme';
 
 :host {
   display: inline-block;
@@ -61,7 +61,7 @@ span {
   color: inherit;
   display: inline-block;
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 700);
   }
 }
@@ -85,7 +85,7 @@ button {
     height: 110%;
   }
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 700);
   }
 }
@@ -95,7 +95,7 @@ button:hover {
   color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 200);
   cursor: pointer;
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     background-color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 700);
     color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 300);
   }

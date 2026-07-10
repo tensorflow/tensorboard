@@ -13,12 +13,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
-@import '../common';
+@use 'sass:map';
+@use 'tensorboard/webapp/theme/tb_theme';
+@use '../common';
 
 $_title-to-heading-gap: 12px;
 
-$_card_padding_top: $metrics-preferred-gap - $_title-to-heading-gap;
+$_card_padding_top: common.$metrics-preferred-gap - $_title-to-heading-gap;
 
 // If this is changed, please also update canExpandTable
 $_data_table_initial_height: 100px;
@@ -28,14 +29,14 @@ $_data_table_initial_height: 100px;
   flex-direction: column;
   box-sizing: border-box;
   height: 100%;
-  padding: $metrics-preferred-gap;
+  padding: common.$metrics-preferred-gap;
   // When vertically centered, the title's text-top contains extra space above
   // the text, which counts towards the visually perceived white space.
   padding-top: $_card_padding_top;
 
   &:has(.expand-button) {
     // Remove the bottom padding when the expand button appears
-    padding: $_card_padding_top $metrics-preferred-gap 0;
+    padding: $_card_padding_top common.$metrics-preferred-gap 0;
   }
 }
 
@@ -49,7 +50,7 @@ $_data_table_initial_height: 100px;
 
   // The content that is always visible should match the min height of a card,
   // taking into account padding and 2px for the card border.
-  flex-basis: $metrics-min-card-height - 2px - ($metrics-preferred-gap * 2) +
+  flex-basis: common.$metrics-min-card-height - 2px - (common.$metrics-preferred-gap * 2) +
     $_title-to-heading-gap;
 }
 
@@ -81,7 +82,7 @@ $_data_table_initial_height: 100px;
 }
 
 .controls {
-  @include metrics-card-controls;
+  @include common.metrics-card-controls;
   flex-shrink: 0;
   // TODO(psybuzz) do not use negative margin.
   margin-right: -1 * $_title-to-heading-gap;
@@ -181,7 +182,7 @@ $_data_table_initial_height: 100px;
     // Replace this with backdrop-filter if opacity works.
     background-color: rgba(255, 255, 255, 0.5);
 
-    @include tb-dark-theme {
+    @include tb_theme.tb-dark-theme {
       background-color: rgba(0, 0, 0, 0.4);
     }
   }
@@ -205,11 +206,11 @@ $_data_table_initial_height: 100px;
   align-items: center;
 
   .expand-button {
-    color: mat.m2-get-color-from-palette($tb-foreground, secondary-text);
+    color: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, secondary-text);
 
-    @include tb-dark-theme {
-      color: mat.m2-get-color-from-palette($tb-dark-foreground, secondary-text);
-      background-color: map-get($tb-dark-background, background);
+    @include tb_theme.tb-dark-theme {
+      color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, secondary-text);
+      background-color: map.get(tb_theme.$tb-dark-background, background);
     }
   }
 }

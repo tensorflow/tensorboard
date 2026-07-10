@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
-@import '../common/lib';
+@use 'tensorboard/webapp/theme/tb_theme';
+@use '../common/lib';
 
 .op-container,
 .op-name {
@@ -23,7 +23,7 @@ limitations under the License.
 }
 
 .op-container {
-  @include tb-theme-foreground-prop(border, border, 2px solid);
+  @include tb_theme.tb-theme-foreground-prop(border, border, 2px solid);
   border-radius: 4px;
   box-shadow: 1px 3px #eee;
   cursor: pointer;
@@ -33,7 +33,7 @@ limitations under the License.
   width: 200px;
   $grey-600: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 600);
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     box-shadow: 1px 3px $grey-600;
   }
 }
@@ -66,7 +66,7 @@ limitations under the License.
 }
 
 .op-type {
-  @include debugger-op-type;
+  @include lib.debugger-op-type;
   display: inline-block;
   margin-top: 3px;
 }
@@ -77,5 +77,5 @@ limitations under the License.
 }
 
 .slot {
-  @include tb-theme-foreground-prop(color, secondary-text);
+  @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
 }

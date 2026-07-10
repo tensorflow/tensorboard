@@ -13,15 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
-@import 'tensorboard/webapp/theme/tb_theme';
-@import '../common';
+@use 'tensorboard/webapp/theme/tb_theme';
+@use '../common';
 
 :host {
-  @include metrics-sub-view;
+  @include common.metrics-sub-view;
 }
 
 mat-icon {
-  @include tb-theme-foreground-prop(color, secondary-text);
+  @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
   flex: none;
   margin-right: 5px;
 }
@@ -52,15 +52,15 @@ mat-icon {
 }
 
 .group-title {
-  @include metrics-card-group-title;
+  @include common.metrics-card-group-title;
 }
 
 .group-card-count {
-  @include metrics-card-group-count-text;
+  @include common.metrics-card-group-count-text;
 }
 
 .empty-message {
-  @include metrics-empty-message;
+  @include common.metrics-empty-message;
 }
 
 .new-card-pinned {
