@@ -10,7 +10,7 @@ sass_library(
     ],
     deps = [
         "//tensorboard/webapp/theme",
-    ]
+    ],
 )
 
 sass_binary(
