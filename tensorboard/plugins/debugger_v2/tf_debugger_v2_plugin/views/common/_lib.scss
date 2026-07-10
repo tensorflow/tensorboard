@@ -13,13 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 @use '@angular/material' as mat;
+@use 'tensorboard/webapp/theme/tb_theme';
 
 @mixin debugger-op-type {
   background-color: mat.m2-get-color-from-palette(
     mat.$m2-blue-grey-palette,
     50
   );
-  @include tb-theme-foreground-prop(border, border, 1px solid);
+  @include tb_theme.tb-theme-foreground-prop(border, border, 1px solid);
   border-radius: 4px;
   font-family: 'Roboto Mono', monospace;
   font-size: 10px;
@@ -28,7 +29,7 @@ limitations under the License.
   padding: 1px 3px;
   width: max-content;
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     background-color: mat.m2-get-color-from-palette(
       mat.$m2-blue-grey-palette,
       700

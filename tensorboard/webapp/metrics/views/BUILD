@@ -8,6 +8,9 @@ sass_library(
     srcs = [
         "_common.scss",
     ],
+    deps = [
+        "//tensorboard/webapp/theme",
+    ]
 )
 
 sass_binary(
