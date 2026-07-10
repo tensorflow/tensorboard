@@ -14,11 +14,12 @@ limitations under the License.
 ==============================================================================*/
 // Note: `_variable.scss` is concatenated into `_tb_theme.scss` by the
 // //tensorboard/webapp/theme:inline_palette genrule, where
-// `_tb_theme.template.scss` also calls `mat.*` symbols. Keep this `@use` so
+// `_tb_theme.template.scss` also calls `mat.*` symbols. Keep these `@use`s so
 // the concatenated `_tb_theme.scss` compiles.
 @use '@angular/material' as mat;
 @use 'sass:map';
 @use 'tensorboard/webapp/theme/tb_palette';
+@forward 'tensorboard/webapp/theme/tb_palette';
 
 $tb-primary: mat.m2-define-palette(tb_palette.$tf-orange, 700, 400, 800);
 $tb-accent: mat.m2-define-palette(tb_palette.$tf-orange);
