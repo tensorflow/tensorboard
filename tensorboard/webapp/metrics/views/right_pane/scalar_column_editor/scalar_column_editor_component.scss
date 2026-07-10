@@ -67,7 +67,10 @@ $_accent: map.get(mat.m2-get-color-config(tb_theme.$tb-theme), accent);
   border-top: 1px solid $border;
 
   @include tb_theme.tb-dark-theme {
-    border-color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, border);
+    border-color: mat.m2-get-color-from-palette(
+      tb_theme.$tb-dark-foreground,
+      border
+    );
   }
 }
 
@@ -76,7 +79,10 @@ $_accent: map.get(mat.m2-get-color-config(tb_theme.$tb-theme), accent);
   width: 84px;
 
   @include tb_theme.tb-dark-theme {
-    color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, secondary-text);
+    color: mat.m2-get-color-from-palette(
+      tb_theme.$tb-dark-foreground,
+      secondary-text
+    );
   }
 }
 

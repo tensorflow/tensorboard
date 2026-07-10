@@ -19,7 +19,10 @@ limitations under the License.
   font-size: 16px;
 
   .label {
-    color: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, secondary-text);
+    color: mat.m2-get-color-from-palette(
+      tb_theme.$tb-foreground,
+      secondary-text
+    );
     font-size: 0.9em;
     margin: 10px 0;
     padding: 0 16px;

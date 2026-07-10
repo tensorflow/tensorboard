@@ -21,10 +21,16 @@ limitations under the License.
   border: 1px solid;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   border-color: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, border);
-  background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
+  background-color: mat.m2-get-color-from-palette(
+    tb_theme.$tb-background,
+    background
+  );
 
   @include tb_theme.tb-dark-theme {
-    border-color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, border);
+    border-color: mat.m2-get-color-from-palette(
+      tb_theme.$tb-dark-foreground,
+      border
+    );
     background-color: mat.m2-get-color-from-palette(
       tb_theme.$tb-dark-background,
       'background'

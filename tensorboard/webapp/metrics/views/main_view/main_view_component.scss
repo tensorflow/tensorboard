@@ -69,11 +69,18 @@ mat-button-toggle-group.filter-view {
     padding: 0 12px;
 
     & + button {
-      @include tb_theme.tb-theme-foreground-prop(border-left, border, 1px solid);
+      @include tb_theme.tb-theme-foreground-prop(
+        border-left,
+        border,
+        1px solid
+      );
     }
 
     &[aria-checked='true'] {
-      @include tb_theme.tb-theme-background-prop(background-color, selected-button);
+      @include tb_theme.tb-theme-background-prop(
+        background-color,
+        selected-button
+      );
     }
   }
 }
@@ -87,7 +94,10 @@ mat-button-toggle-group.filter-view {
 .main,
 .sidebar {
   contain: strict;
-  background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
+  background-color: mat.m2-get-color-from-palette(
+    tb_theme.$tb-background,
+    background
+  );
   overflow-x: hidden;
   overflow-y: auto;
   will-change: transform, scroll-position;
@@ -110,7 +120,11 @@ mat-button-toggle-group.filter-view {
 
   metrics-filtered-view,
   metrics-pinned-view {
-    @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
+    @include tb_theme.tb-theme-foreground-prop(
+      border-bottom,
+      border,
+      1px solid
+    );
   }
 
   &.filter-view {
@@ -136,7 +150,11 @@ mat-button-toggle-group.filter-view {
   flex: 0 0 250px;
 
   .header {
-    @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
+    @include tb_theme.tb-theme-foreground-prop(
+      border-bottom,
+      border,
+      1px solid
+    );
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -158,11 +176,17 @@ mat-button-toggle-group.filter-view {
   display: inline-flex;
 
   @include tb_theme.tb-dark-theme {
-    color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, secondary-text);
+    color: mat.m2-get-color-from-palette(
+      tb_theme.$tb-dark-foreground,
+      secondary-text
+    );
   }
 
   &.checked {
-    @include tb_theme.tb-theme-background-prop(background-color, selected-button);
+    @include tb_theme.tb-theme-background-prop(
+      background-color,
+      selected-button
+    );
     border-color: mat.m2-get-color-from-palette(mat.$m2-grey-palette, 300);
   }
 
@@ -177,7 +201,10 @@ mat-button-toggle-group.filter-view {
 }
 
 .slide-out-menu {
-  background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
+  background-color: mat.m2-get-color-from-palette(
+    tb_theme.$tb-background,
+    background
+  );
   // Make the menu the full height minus the size of the toolbar.
   height: calc(100% - 49px);
   position: absolute;

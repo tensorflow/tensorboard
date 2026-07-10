@@ -43,7 +43,10 @@ tb-dashboard-layout {
 }
 
 nav {
-  background-color: mat.m2-get-color-from-palette(tb_theme.$tb-background, background);
+  background-color: mat.m2-get-color-from-palette(
+    tb_theme.$tb-background,
+    background
+  );
   $border: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, border);
   border-right: 1px solid $border;
   flex: none;

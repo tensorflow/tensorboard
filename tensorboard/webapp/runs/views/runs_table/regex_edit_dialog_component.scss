@@ -84,7 +84,11 @@ mat-form-field {
   padding: $padding-size;
 
   label {
-    @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
+    @include tb_theme.tb-theme-foreground-prop(
+      border-bottom,
+      border,
+      1px solid
+    );
     align-items: center;
     display: grid;
     gap: 10px;

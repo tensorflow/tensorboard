@@ -28,7 +28,8 @@ $_circle-size: 20px;
 
 .run-color-swatch {
   border-radius: 100%;
-  border: 1px solid mat.m2-get-color-from-palette(tb_theme.$tb-foreground, border);
+  border: 1px solid
+    mat.m2-get-color-from-palette(tb_theme.$tb-foreground, border);
   height: $_circle-size;
   width: $_circle-size;
   outline: none;

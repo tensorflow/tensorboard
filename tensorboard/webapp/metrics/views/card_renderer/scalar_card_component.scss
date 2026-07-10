@@ -50,8 +50,8 @@ $_data_table_initial_height: 100px;
 
   // The content that is always visible should match the min height of a card,
   // taking into account padding and 2px for the card border.
-  flex-basis: common.$metrics-min-card-height - 2px - (common.$metrics-preferred-gap * 2) +
-    $_title-to-heading-gap;
+  flex-basis: common.$metrics-min-card-height - 2px -
+    (common.$metrics-preferred-gap * 2) + $_title-to-heading-gap;
 }
 
 .heading {
@@ -206,10 +206,16 @@ $_data_table_initial_height: 100px;
   align-items: center;
 
   .expand-button {
-    color: mat.m2-get-color-from-palette(tb_theme.$tb-foreground, secondary-text);
+    color: mat.m2-get-color-from-palette(
+      tb_theme.$tb-foreground,
+      secondary-text
+    );
 
     @include tb_theme.tb-dark-theme {
-      color: mat.m2-get-color-from-palette(tb_theme.$tb-dark-foreground, secondary-text);
+      color: mat.m2-get-color-from-palette(
+        tb_theme.$tb-dark-foreground,
+        secondary-text
+      );
       background-color: map.get(tb_theme.$tb-dark-background, background);
     }
   }

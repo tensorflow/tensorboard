@@ -26,7 +26,11 @@ $metrics-min-card-height: 320px;
 @mixin metrics-sub-view {
   .group-toolbar {
     @include tb_theme.tb-theme-background-prop(background-color, background);
-    @include tb_theme.tb-theme-foreground-prop(border-bottom, border, 1px solid);
+    @include tb_theme.tb-theme-foreground-prop(
+      border-bottom,
+      border,
+      1px solid
+    );
 
     align-items: center;
     background-color: #fff;
