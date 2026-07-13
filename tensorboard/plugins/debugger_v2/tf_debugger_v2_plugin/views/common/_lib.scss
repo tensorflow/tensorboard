@@ -40,7 +40,7 @@ limitations under the License.
 @mixin debugger-highlight-background {
   background-color: #fff099;
 
-  @include tb-dark-theme {
+  @include tb_theme.tb-dark-theme {
     background-color: mat.m2-get-color-from-palette(
       mat.$m2-orange-palette,
       900
