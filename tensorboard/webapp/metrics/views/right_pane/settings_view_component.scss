@@ -108,7 +108,7 @@ mat-checkbox {
   // with other items in the pane.
   margin-left: -11px;
 
-  ::ng-deep label {
+  ::ng-deep .mdc-label {
     @include tb_theme.tb-theme-foreground-prop(color, secondary-text);
     font-size: 12px;
     letter-spacing: normal;
