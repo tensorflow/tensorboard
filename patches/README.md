@@ -1,17 +1,21 @@
-# TensorBoard patches using patch-package.
+# TensorBoard dependency patches
 
-We use [patch-package](https://www.npmjs.com/package/patch-package) to author
-TensorBoard-specific patches to some of our npm/yarn dependencies.
+This directory contains TensorBoard-specific patches for Bazel modules and
+npm/Yarn dependencies. Bazel module patches are applied from `MODULE.bazel`;
+npm patches are authored with
+[patch-package](https://www.npmjs.com/package/patch-package).
 
-At build time, `WORKSPACE` and the transitional `WORKSPACE.bzlmod` apply the
-generated patch artifacts via `yarn_install(post_install_patches = ...)`
-instead of invoking `patch-package` inside the repository rule. In the current
-Bazel/CI setup, that install-time invocation was less reliable than applying
-the generated patch files directly.
+At build time, the `tensorboard_node_dependencies` module extension in
+`third_party/nodejs_extensions.bzl` applies the generated patch artifacts via
+`yarn_install(post_install_patches = ...)` instead of invoking `patch-package`
+inside the repository rule. In the current Bazel/CI setup, that install-time
+invocation was less reliable than applying the generated patch files directly.
 
-After creating or updating a patch, ensure there is no trailing whitespace on
-any line (CI runs `./tensorboard/tools/whitespace_hygiene_test.py`). You can
-strip it with `sed -i '' 's/[[:space:]]*$//' patches/<patch-file>.patch`.
+Unified diffs require a single space on otherwise blank context lines. The
+repository whitespace check explicitly permits those lines in applicable patch
+files; do not strip them because doing so makes the patch invalid. Other patch
+content must not have trailing whitespace (CI runs
+`./tensorboard/tools/whitespace_hygiene_test.py`).
 
 **Important:** `patch-package` defaults to `--exclude '/package\.json$/'`, so a
 plain `yarn patch-package "<pkg>"` silently drops any changes to the package's
@@ -61,7 +65,7 @@ To regenerate:
 * make edits
 * `yarn patch-package "@bazel/concatjs" --exclude '^$'` (the `--exclude` is
   required, otherwise the `package.json` hunk is dropped)
-* update the WORKSPACE file with the name of the new patch file
+* update `third_party/nodejs_extensions.bzl` with the new patch file name
 
 
 ## `@angular+build-tooling+0.0.0-98b30ab5fdeeb1df3278f5257b9a8f07abb76941.patch`
@@ -75,8 +79,8 @@ function calls that TensorBoard depends on at runtime. Without this, the app
 bundles to a blank page with no console error. The resulting bundle is larger.
 
 Note the patch file name tracks the pinned `@angular/build-tooling` commit, so it
-has to be renamed (and the WORKSPACE reference updated) whenever that dependency
-is bumped.
+has to be renamed (and the module-extension reference updated) whenever that
+dependency is bumped.
 
 Removal is planned along with the concatjs patch. `@angular/build-tooling` is
 frozen upstream, and both patches only go away once the frontend build moves off
@@ -86,82 +90,81 @@ To regenerate:
 * `vi node_modules/@angular/build-tooling/shared-scripts/angular-optimization/esbuild-plugin.mjs`
 * make edits
 * `yarn patch-package "@angular/build-tooling"`
-* update the WORKSPACE file with the name of the new patch file
+* update `third_party/nodejs_extensions.bzl` with the new patch file name
 
 
-## `protobuf_6_31_1_java_export.patch`
+## `gzgz_rules_sass_bzlmod_npm_paths.patch`
 
 **Modified files:**
-- `build_defs/java_opts.bzl`
-- `bazel/private/proto_library_rule.bzl`
+- `MODULE.bazel`
+- `sass/defs.bzl`
 
 **What it does:**
-- Drops the older javadocopts workaround from protobuf's Java export helper on
-  the current rules_java/protobuf stack.
-- Relaxes the import-prefix normalization check so empty-but-normalized values
-  continue to work under the newer path handling used here.
+- Corrects the module version embedded in the 1.0.4 release archive.
+- Adds the canonical Bzlmod `node_modules` roots represented by Sass dependency
+  inputs to Dart Sass's load paths. This lets Sass packages supplied by
+  TensorBoard's module-extension `yarn_install` repository resolve inside Bazel
+  sandboxes.
 
-## `protobuf_6_31_1_bzlmod.patch`
+Removal is planned when an upstream release carries the correct module version
+and resolves npm package imports from Bzlmod extension repositories, or when
+TensorBoard's remaining legacy Yarn/Sass consumers migrate to the modern
+`rules_js` package graph.
+
+
+## `protobuf_33_6_bzlmod.patch`
 
 **Modified files:**
 - `MODULE.bazel`
 
 **What it does:**
-This patch fixes two downstream-consumer issues in protobuf 6.31.1's own
-`MODULE.bazel`. Protobuf supports Bazel, but its public `//python/dist` targets
-depend on repositories that this release's module metadata does not expose
-correctly when protobuf is a dependency rather than the root module:
+- Exposes protobuf's system-Python and pip repositories to downstream modules;
+  upstream marks both development-only even though public Python build targets
+  load them.
+- Gives protobuf's pinned Maven install its own generated repository while
+  preserving protobuf's internal `@maven` apparent name. Starting in protobuf
+  32, the install uses the shared default name and its lockfile excludes Java
+  dependencies contributed by rules_closure and grpc-java.
 
-- The apparent `@system_python` name points to a rules_python toolchain
-  repository, which does not provide the `version.bzl` and Python-header
-  targets that `//python/dist` expects. The patch creates protobuf's intended
-  system-Python repository under that name instead.
-- `//python/dist` loads `@protobuf_pip_deps`, but protobuf declares the pip
-  extension that creates it as development-only. The patch makes the extension
-  available to downstream modules such as TensorBoard.
-
-Removal is planned once protobuf's own module metadata provides both
-repositories to downstream consumers without a source override.
+Removal is planned once protobuf exposes its Python repositories and isolates
+its pinned Maven lockfile upstream.
 
 
-## `rules_cc_protobuf.patch`
+## `rules_closure_java_proto_library.patch`
 
 **Modified files:**
-- `cc/defs.bzl`
+- `java/io/bazel/rules/closure/BUILD`
+- `java/io/bazel/rules/closure/webfiles/BUILD`
+- `java/io/bazel/rules/closure/webfiles/server/BUILD`
 
 **What it does:**
-- Re-exports `cc_proto_library` from protobuf's Bazel definitions so callers on
-  this repository can keep loading the symbol through `rules_cc` while using the
-  protobuf 6.31.1 repository layout.
+- Loads `java_proto_library` from protobuf's supported Bazel API instead of
+  the deprecated compatibility export in `rules_java`.
+- Removes the associated Bazel 8 deprecation warnings from TensorBoard's
+  Closure and Vulcanize targets.
+
+Removal is planned once rules_closure publishes this migration upstream.
 
 
-## `rules_closure_soy_cli.patch`
+## `rules_nodejs_5_8_1_bzlmod.patch`
 
-**Modified files:**
-- `closure/templates/closure_java_template_library.bzl`
-
-**What it does:**
-- Updates rules_closure's Soy invocation for the compiler/jar combination used
-  here.
-- Switches to the `--depHeaders` flag expected by this compiler and drops the
-  older `--allowExternalCalls` flag that is not accepted here.
-
-
-## `rules_closure_bzlmod.patch`
-
-**Modified files:**
-- `closure/defs.bzl`
+**Modified areas:**
+- npm repository generation and repository-label handling
+- Node launcher and source-map runfiles lookup
+- esbuild toolchain registration
+- legacy host-Windows selectors
 
 **What it does:**
-- Removes the unused `setup_web_test_repositories` export from the pinned
-  Closure snapshot. That helper eagerly loads repository macros removed from
-  rules_webtesting 0.4.1, even though TensorBoard never calls the helper.
-- Lets TensorBoard consume `rules_webtesting` and
-  `rules_web_testing_python` as Bazel modules while retaining the existing
-  Bazel-7-compatible Closure/Soy setup.
+- Makes rules_nodejs 5.8.1's repository rules and launchers understand
+  canonical Bzlmod repository names.
+- Lets TensorBoard register the generated esbuild toolchains from
+  `MODULE.bazel`.
+- Replaces deprecated Bazel host-Windows selectors with platform constraints,
+  eliminating warnings from generated npm targets on Bazel 8.
 
-Removal is planned when TensorBoard moves to a module-native Closure release
-whose public definitions no longer load the legacy web-testing setup.
+Removal is planned as one coordinated migration from Yarn, concatjs,
+`ts_library`, and the pinned Angular bundling/test helpers to rules_js,
+rules_ts, and maintained bundling/test rules.
 
 
 ## `rules_web_testing_python_py310.patch`
@@ -177,3 +180,20 @@ whose public definitions no longer load the legacy web-testing setup.
 
 Removal is planned when rules_web_testing_python lets the root module select
 the Python version instead of hardcoding it in the dependency module.
+
+
+## `rules_web_testing_java_guava.patch`
+
+**Modified files:**
+- `MODULE.bazel`
+
+**What it does:**
+- Aligns rules_web_testing_java's direct Guava declaration with the
+  `33.5.0-android` artifact already required by grpc-java 1.82.0 in their
+  shared rules_jvm_external module extension.
+- Removes the duplicate-version warning without changing the artifact selected
+  by the working Bazel 8 graph.
+
+Removal is planned when rules_web_testing_java updates its Guava declaration or
+the web-testing and grpc-java dependencies no longer share conflicting Maven
+coordinates.

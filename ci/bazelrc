@@ -6,7 +6,7 @@ build --worker_max_instances=2
 # Ensure sandboxing is on to increase hermeticity.
 build --spawn_strategy=sandboxed
 build --worker_sandboxing
-# Bazel 7 may materialize frontend/npm assets with CopyFile/CopyDirectory
+# Bazel may materialize frontend/npm assets with CopyFile/CopyDirectory
 # actions that are not executable under processwrapper-sandbox alone.
 # Keep sandboxing for normal actions, but allow these copy helpers to run
 # locally so Angular/sass/esbuild repository actions remain buildable in CI.

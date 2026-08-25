@@ -1,4 +1,4 @@
-load("@io_bazel_rules_sass//:defs.bzl", "sass_binary")
+load("@io_bazel_rules_sass//sass:defs.bzl", "sass_binary")
 load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ng_prod_js_binary", "tf_ng_web_test_suite", "tf_svg_bundle", "tf_ts_library")
 load("//tensorboard/defs:js.bzl", "tf_resource_digest_suffixer")
 load("//tensorboard/defs:web.bzl", "tb_combine_html", "tf_web_library")

@@ -1,0 +1,14 @@
+diff --git a/MODULE.bazel b/MODULE.bazel
+index 2789104..5445e20 100644
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -27,8 +27,8 @@
+ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+ 
+ maven.install(
+     artifacts = [
+-        "com.google.guava:guava:33.2.1-jre",
++        "com.google.guava:guava:33.5.0-android",
+         "org.seleniumhq.selenium:selenium-remote-driver:4.27.0",
+         "org.seleniumhq.selenium:selenium-api:4.27.0",
+         "junit:junit:4.13.2",

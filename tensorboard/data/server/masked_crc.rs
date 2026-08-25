@@ -44,7 +44,7 @@ const CRC_MASK_DELTA: u32 = 0xa282ead8;
 
 /// Applies a masking permutation to a raw CRC-32C checksum.
 fn mask(crc: u32) -> MaskedCrc {
-    MaskedCrc(((crc >> 15) | (crc << 17)).wrapping_add(CRC_MASK_DELTA))
+    MaskedCrc(crc.rotate_right(15).wrapping_add(CRC_MASK_DELTA))
 }
 
 impl MaskedCrc {

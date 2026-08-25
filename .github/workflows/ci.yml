@@ -24,9 +24,9 @@ permissions:
 
 env:
   # Keep this Bazel version in sync with .bazelversion and MODULE.bazel's
-  # bazel_compatibility declaration. Bazel 8 is intentionally unsupported.
-  BAZEL_VERSION: '7.7.0'
-  BAZEL_SHA256SUM: 'fe7e799cbc9140f986b063e06800a3d4c790525075c877d00a7112669824acbf'
+  # bazel_compatibility declaration.
+  BAZEL_VERSION: '8.7.0'
+  BAZEL_SHA256SUM: 'd7606e679b78067c811096fb3d6cf135225b528835ca396e3a4dddf957859544'
   BUILDTOOLS_VERSION: '3.0.0'
   BUILDIFIER_SHA256SUM: 'e92a6793c7134c5431c58fbc34700664f101e5c9b1c1fcd93b97978e8b7f88db'
   BUILDOZER_SHA256SUM: '3d58a0b6972e4535718cdd6c12778170ea7382de7c75bc3728f5719437ffb84d'
@@ -91,6 +91,8 @@ jobs:
           sudo mv ~/bazel /usr/local/bin/bazel
           sudo chmod +x /usr/local/bin/bazel
           cp ./ci/bazelrc ~/.bazelrc
+      - name: 'Validate Bzlmod lockfile'
+        run: bazel mod graph --lockfile_mode=error
       - name: 'Install TensorFlow'
         run: |
           python -m pip install -U pip
@@ -178,11 +180,11 @@ jobs:
       matrix:
         mode: ['native']
         platform: ['ubuntu-22.04']
-        rust_version: ['1.65.0']
+        rust_version: ['1.85.0']
         include:
           - mode: 'universal'
             platform: 'ubuntu-22.04'
-            rust_version: '1.65.0'
+            rust_version: '1.85.0'
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
@@ -221,10 +223,10 @@ jobs:
             setuptools wheel
       - name: 'Build'
         if: matrix.mode == 'native'
-        run: cd tensorboard/data/server/ && cargo build --release
+        run: cd tensorboard/data/server/ && cargo build --locked --release
       - name: 'Test'
         if: matrix.mode == 'native'
-        run: cd tensorboard/data/server/ && cargo test --release
+        run: cd tensorboard/data/server/ && cargo test --locked --release
       - name: 'Package (native)'
         if: matrix.mode == 'native'
         run: |
@@ -305,8 +307,8 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        rust_version: ['1.65.0']
-        cargo_raze_version: ['0.16.1']
+        # Keep this version in sync with the rules_rust toolchain in MODULE.bazel.
+        rust_version: ['1.85.0']
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: 'Cache Cargo artifacts'
@@ -319,29 +321,18 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
-            # Needed for installing binaries (`cargo-raze`) with cache
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-          key: lint-rust-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ matrix.cargo_raze_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
+          key: lint-rust-${{ runner.os }}-cargo-${{ matrix.rust_version }}-${{ hashFiles('**/Cargo.lock', '.github/workflows/ci.yml') }}
       - name: 'Install Rust toolchain'
         uses: dtolnay/rust-toolchain@5f2e2a7aff63d8cbdacb4832218a30fa7a37ee6e # current HEAD as of 1/19/2023
         with:
           toolchain: ${{ matrix.rust_version }}
           components: rustfmt, clippy
-      - name: 'Install cargo-raze'
-        run: cargo install cargo-raze --version ${{ matrix.cargo_raze_version }} --locked
       - name: 'Run Rustfmt'
         run: (cd tensorboard/data/server/ && cargo fmt -- --check)
       - name: 'Run Clippy'
         # You can run `cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml --fix` to fix all Clippy complaints.
         # This will only apply `MachineApplicable` fixes (https://doc.rust-lang.org/nightly/nightly-rustc/rustc_lint_defs/enum.Applicability.html), so some modifications may need to be done manually.
-        run: cargo clippy --all-targets --manifest-path tensorboard/data/server/Cargo.toml -- -D warnings
-      - name: 'Check cargo-raze freshness'
-        run: |
-          rm -rf third_party/rust/
-          (cd tensorboard/data/server/ && cargo fetch && cargo raze)
-          git add .
-          git diff --staged --exit-code
+        run: cargo clippy --locked --all-targets --manifest-path tensorboard/data/server/Cargo.toml -- -D warnings
 
   lint-frontend:
     runs-on: ubuntu-22.04
@@ -390,7 +381,7 @@ jobs:
       - name: 'Lint BUILD files'
         # TODO(tensorboard-team): address all lint warnings and remove the exemption.
         run:
-          git ls-files -z '*BUILD' third_party/js.bzl third_party/workspace.bzl WORKSPACE | xargs -0 buildifier --mode=check --lint=warn
+          git ls-files -z '*BUILD' third_party/js.bzl MODULE.bazel | xargs -0 buildifier --mode=check --lint=warn
           --warnings=-native-py,-native-java
       - run: ./tensorboard/tools/mirror_urls_test.sh
       - name: 'Lint for no py2 BUILD targets'

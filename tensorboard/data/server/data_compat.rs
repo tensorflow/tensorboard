@@ -260,7 +260,7 @@ fn tensor_proto_to_scalar(tp: &pb::TensorProto) -> Option<f32> {
 fn is_plugin(md: &pb::SummaryMetadata, plugin_name: &str) -> bool {
     md.plugin_data
         .as_ref()
-        .map_or(false, |pd| pd.plugin_name == plugin_name)
+        .is_some_and(|pd| pd.plugin_name == plugin_name)
 }
 
 /// A value from an `Event` whose `graph_def` field is set.

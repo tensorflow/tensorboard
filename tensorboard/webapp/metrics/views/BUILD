@@ -1,4 +1,4 @@
-load("@io_bazel_rules_sass//:defs.bzl", "sass_binary", "sass_library")
+load("@io_bazel_rules_sass//sass:defs.bzl", "sass_binary", "sass_library")
 load("//tensorboard/defs:defs.bzl", "tf_ng_module", "tf_ts_library")
 
 package(default_visibility = ["//tensorboard:internal"])

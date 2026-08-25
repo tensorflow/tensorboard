@@ -19,8 +19,8 @@
 
 set -e
 
-if ! [ -f WORKSPACE ]; then
-    printf >&2 'fatal: no WORKSPACE file found (are you at TensorBoard root?)\n'
+if ! [ -f MODULE.bazel ]; then
+    printf >&2 'fatal: no MODULE.bazel file found (are you at TensorBoard root?)\n'
     exit 2
 fi
 

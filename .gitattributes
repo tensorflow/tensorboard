@@ -1,11 +1,16 @@
 * text=auto
 *.bzl text eol=lf
+*.py text eol=lf
 *.sh text eol=lf
+*.toml text eol=lf
 .bazel* text eol=lf
 BUILD text eol=lf
 BUILD.bazel text eol=lf
+*.BUILD text eol=lf
+Cargo.lock text eol=lf
 WORKSPACE text eol=lf
 MODULE.bazel text eol=lf
+MODULE.bazel.lock text eol=lf
 *.proto text eol=lf
 tensorboard/data/server/*.pb.rs text eol=lf
 

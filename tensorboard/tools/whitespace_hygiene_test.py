@@ -30,8 +30,10 @@ import sys
 exceptions = frozenset(
     [
         "patches/@bazel+concatjs+5.8.1.patch",
-        "patches/protobuf_6_31_1_bzlmod.patch",
-        "patches/protobuf_6_31_1_java_export.patch",
+        "patches/gzgz_rules_sass_bzlmod_npm_paths.patch",
+        "patches/protobuf_33_6_bzlmod.patch",
+        "patches/rules_nodejs_5_8_1_bzlmod.patch",
+        "patches/rules_web_testing_java_guava.patch",
         "patches/rules_web_testing_python_py310.patch",
     ]
 )

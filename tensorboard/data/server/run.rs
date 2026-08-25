@@ -348,7 +348,7 @@ impl RunLoaderData {
             }
             Some(wt) => wt,
         };
-        if self.start_time.map_or(true, |start| wall_time < start) {
+        if self.start_time.is_none_or(|start| wall_time < start) {
             self.start_time = Some(wall_time);
         }
         let psh = &self.plugin_sampling_hint;

@@ -57,7 +57,7 @@ pub enum ParseBlobKeyError {
     BadIndex(u64),
 }
 
-impl<'a> FromStr for BlobKey<'a> {
+impl FromStr for BlobKey<'_> {
     type Err = ParseBlobKeyError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -75,7 +75,7 @@ impl<'a> FromStr for BlobKey<'a> {
     }
 }
 
-impl<'a> Display for BlobKey<'a> {
+impl Display for BlobKey<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use base64::display::Base64Display;
         let wire = WireBlobKey(

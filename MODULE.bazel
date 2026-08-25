@@ -1,34 +1,116 @@
+"""TensorBoard's Bazel module dependencies and toolchain configuration."""
+
 module(
     name = "tensorboard",
     bazel_compatibility = [
-        ">=7.7.0",
-        "<8.0.0",
+        ">=8.7.0",
+        "<9.0.0",
     ],
     repo_name = "org_tensorflow_tensorboard",
 )
 
 # Keep Bazel itself pinned in .bazelversion. This module graph is intentionally
-# constrained to dependencies that support Bazel 7.7.0.
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
-bazel_dep(name = "rules_cc", version = "0.1.1")
-bazel_dep(name = "rules_java", version = "8.6.1")
-bazel_dep(name = "rules_jvm_external", version = "6.7")
-bazel_dep(name = "rules_python", version = "1.0.0")
+# constrained to dependencies that support Bazel 8.7.0.
+bazel_dep(name = "bazel_skylib", version = "1.9.2")
+bazel_dep(name = "rules_cc", version = "0.2.22")
+bazel_dep(name = "rules_java", version = "9.8.0")
+bazel_dep(name = "rules_jvm_external", version = "7.1")
+bazel_dep(name = "rules_python", version = "2.3.1")
+bazel_dep(name = "rules_shell", version = "0.8.0")
+bazel_dep(name = "platforms", version = "1.1.0")
+
+# Build Rustboard with the current module-native rules_rust stack. Keep the
+# application crate versions pinned by Cargo.lock while replacing the
+# cargo-raze repositories that were previously instantiated from WORKSPACE.
+bazel_dep(name = "rules_rust", version = "0.73.0")
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2018",
+    versions = ["1.85.0"],
+)
+use_repo(rust, "rust_toolchains")
+
+register_toolchains("@rust_toolchains//:all")
+
+rust_crates = use_extension(
+    "@rules_rust//crate_universe:extensions.bzl",
+    "crate",
+)
+rust_crates.annotation(
+    build_script_env = {
+        "PROTOC": "$(execpath @@protobuf+//:protoc)",
+        # tonic-reflection 0.3 invokes rustfmt while generating sources. The
+        # output is compiled directly and does not need formatting.
+        "RUSTFMT": "/bin/true",
+    },
+    # Use protobuf's canonical module label because generated crate
+    # repositories do not inherit the root module's com_google_protobuf alias.
+    build_script_tools = ["@@protobuf+//:protoc"],
+    crate = "tonic-reflection",
+)
+rust_crates.from_cargo(
+    name = "rust_crates",
+    cargo_lockfile = "//tensorboard/data/server:Cargo.lock",
+    manifests = ["//tensorboard/data/server:Cargo.toml"],
+)
+use_repo(rust_crates, "rust_crates")
 
 # Resolve TensorBoard's Java dependencies through a module extension.
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     name = "tensorboard_maven",
-    # Preserve the Flogger versions used by the existing Closure/Soy toolchain.
     artifacts = [
-        "com.google.flogger:flogger:0.5.1",
-        "com.google.flogger:flogger-system-backend:0.5.1",
-        "com.google.flogger:google-extensions:0.5.1",
+        "org.jsoup:jsoup:1.21.1",
     ],
     lock_file = "//:maven_install.json",
     repositories = ["https://repo1.maven.org/maven2"],
 )
 use_repo(maven, "tensorboard_maven")
+
+# Closure is module-native in this stack. Keep its historical apparent
+# repository name so TensorBoard's web rules do not need label churn.
+bazel_dep(
+    name = "rules_closure",
+    version = "0.16.0",
+    repo_name = "io_bazel_rules_closure",
+)
+single_version_override(
+    module_name = "rules_closure",
+    patch_strip = 1,
+    patches = ["//patches:rules_closure_java_proto_library.patch"],
+    version = "0.16.0",
+)
+
+# TensorBoard's Vulcanize tool imports Guava directly. Declare the same module
+# used by rules_closure so strict Java dependencies do not rely on transitives.
+bazel_dep(name = "google_bazel_common", version = "0.0.1")
+
+# gzgz_rules_sass is the maintained Bazel 8-compatible successor to the
+# archived bazelbuild/rules_sass project. Preserve the existing repository name
+# because its sass_binary and sass_library APIs are stable. TensorBoard keeps a
+# small adapter for rules_sass's removed npm_sass_library API.
+bazel_dep(
+    name = "gzgz_rules_sass",
+    version = "1.0.4",
+    repo_name = "io_bazel_rules_sass",
+)
+archive_override(
+    module_name = "gzgz_rules_sass",
+    integrity = "sha256-4/UV+7WV2P2H5OBgqpe66ze19nilxH3sGhLY0Ic61Ao=",
+    patch_strip = 1,
+    patches = ["//patches:gzgz_rules_sass_bzlmod_npm_paths.patch"],
+    strip_prefix = "gzgz_rules_sass-1.0.4",
+    urls = [
+        "https://github.com/GZGavinZhao/gzgz_rules_sass/releases/download/v1.0.4/gzgz_rules_sass-v1.0.4.tar.gz",
+    ],
+)
+
+sass = use_extension("@io_bazel_rules_sass//sass:extensions.bzl", "sass")
+sass.toolchain(sass_version = "1.86.3")
+use_repo(sass, "sass_toolchains")
+
+register_toolchains("@sass_toolchains//:all")
 
 # Functional browser tests use rules_webtesting. Its module owns the Go,
 # Gazelle, and Python support repositories that the legacy WORKSPACE setup had
@@ -38,6 +120,17 @@ bazel_dep(
     version = "0.4.1",
     repo_name = "io_bazel_rules_webtesting",
 )
+
+# rules_web_testing_java and grpc-java contribute to the same Maven repository.
+# Align their direct Guava coordinate with the newer artifact already selected
+# by grpc-java so rules_jvm_external does not report a duplicate root version.
+single_version_override(
+    module_name = "rules_web_testing_java",
+    patch_strip = 1,
+    patches = ["//patches:rules_web_testing_java_guava.patch"],
+    version = "0.4.1",
+)
+
 bazel_dep(name = "rules_web_testing_python", version = "0.4.1")
 archive_override(
     module_name = "rules_web_testing_python",
@@ -118,54 +211,142 @@ use_repo(
     "org_pythonhosted_webencodings",
 )
 
-single_version_override(
-    module_name = "rules_cc",
-    # 0.1.0 is yanked in the BCR because it removed cc_proto_library.
-    # TensorBoard patched that API back in WORKSPACE mode; 0.1.1 contains the
-    # upstream fix and is the smallest usable module version.
-    version = "0.1.1",
+# The generated BUILD files for TensorBoard's pinned fonts and JavaScript
+# archives use rules_closure, so resolve them in module-extension context.
+tensorboard_web = use_extension(
+    "//third_party:extensions.bzl",
+    "tensorboard_web_dependencies",
+)
+use_repo(
+    tensorboard_web,
+    "com_google_fonts_roboto",
+    "com_google_javascript_closure_compiler_externs",
+    "com_google_material_design_icon",
 )
 
-# Protobuf 31.1 is the Bazel module version for the protobuf 6.31.1 release
-# required by TensorFlow 2.21. Keep the historical apparent repository names
-# used throughout TensorBoard's BUILD files.
+# Protobuf 33.6 is the newest release that retains gRPC 1.76's public UPB
+# Starlark API. Protobuf 34 removed that API, while 35 and 36 also evaluate a
+# transitive Rust extension without its required lockfile. Keep TensorBoard's
+# historical apparent repository name.
 bazel_dep(
     name = "protobuf",
-    version = "31.1",
+    version = "33.6",
     repo_name = "com_google_protobuf",
 )
-archive_override(
+single_version_override(
     module_name = "protobuf",
-    integrity = "sha256-bgm7yVC6YMOnswKAIQzSha+NfY7V4KbtEBxyr/IujYg=",
     patch_strip = 1,
-    patches = [
-        "//patches:protobuf_6_31_1_bzlmod.patch",
-        "//patches:protobuf_6_31_1_java_export.patch",
-    ],
-    strip_prefix = "protobuf-6.31.1",
-    urls = [
-        "https://storage.googleapis.com/mirror.tensorflow.org/github.com/protocolbuffers/protobuf/archive/refs/tags/v6.31.1.zip",
-        "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v6.31.1.zip",
-    ],
+    patches = ["//patches:protobuf_33_6_bzlmod.patch"],
+    version = "33.6",
 )
 
 bazel_dep(
     name = "grpc",
-    version = "1.74.0",
+    version = "1.76.0.bcr.1",
     repo_name = "com_github_grpc_grpc",
 )
-
-# A transitive grpc-java 1.66 module imports repositories that gRPC 1.74 no
-# longer generates. grpc-java 1.69 moved those repositories to normal module
-# dependencies and is the smallest compatible graph correction.
 bazel_dep(
     name = "grpc-java",
-    version = "1.69.0",
+    version = "1.82.0",
     repo_name = "io_grpc_grpc_java",
 )
 
 # Angular's build tooling only consumes JsInfo/js_info from rules_js. This also
 # resolves the module-native rules_nodejs toolchain used by rules_js itself.
 # TensorBoard's legacy Yarn/concatjs integration still requires the separate
-# rules_nodejs 5.8.1 compatibility repository in WORKSPACE.bzlmod.
-bazel_dep(name = "aspect_rules_js", version = "2.1.0")
+# rules_nodejs 5.8.1 compatibility repository instantiated below.
+bazel_dep(name = "aspect_rules_js", version = "3.4.0")
+
+# Modern TypeScript rules are introduced alongside the legacy concatjs
+# ts_library stack so leaf targets can migrate incrementally. The extension
+# imports the exact TypeScript version pinned in package.json without creating
+# a second full node_modules repository.
+bazel_dep(name = "aspect_rules_ts", version = "3.10.0")
+
+rules_ts = use_extension("@aspect_rules_ts//ts:extensions.bzl", "typescript")
+rules_ts.deps(version_from = "//:package.json")
+use_repo(rules_ts, "npm_typescript")
+
+# Seed the rules_js package-manager migration under a separate repository.
+# The working legacy yarn_install repository remains @npm until all consumers
+# have moved away from rules_nodejs providers.
+pnpm = use_extension("@aspect_rules_js//npm:extensions.bzl", "pnpm")
+pnpm.pnpm(
+    name = "pnpm",
+    pnpm_version = "10.34.5",
+)
+use_repo(pnpm, "pnpm")
+
+npm_modern = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm")
+npm_modern.npm_translate_lock(
+    name = "npm_modern",
+    pnpm_lock = "//third_party/npm_modern:pnpm-lock.yaml",
+)
+use_repo(npm_modern, "npm_modern")
+
+# rules_nodejs 5.8.1 is no longer published as a Bazel module, but TensorBoard's
+# patched concatjs/Angular pipeline still loads Starlark APIs from its npm
+# packages. Instantiate that compatibility ruleset through Bzlmod while the
+# TypeScript rules are migrated to rules_ts.
+http_archive = use_repo_rule(
+    "@bazel_tools//tools/build_defs/repo:http.bzl",
+    "http_archive",
+)
+
+http_archive(
+    name = "build_bazel_rules_nodejs",
+    patch_args = ["-p1"],
+    patches = ["//patches:rules_nodejs_5_8_1_bzlmod.patch"],
+    sha256 = "f02557f31d4110595ca6e93660018bcd7fdfdbe7d0086089308f1b3af3a7a7ee",
+    urls = [
+        "https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.1/rules_nodejs-5.8.1.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "rules_nodejs",
+    sha256 = "de1ede962d5e517fd866942cd9de6aac36e59b39d09d1aeb882a795dde7a03e9",
+    urls = [
+        "https://github.com/bazelbuild/rules_nodejs/releases/download/5.8.1/rules_nodejs-core-5.8.1.tar.gz",
+    ],
+)
+
+tensorboard_node = use_extension(
+    "//third_party:nodejs_extensions.bzl",
+    "tensorboard_node_dependencies",
+)
+use_repo(
+    tensorboard_node,
+    "esbuild_darwin_amd64",
+    "esbuild_darwin_arm64",
+    "esbuild_linux_amd64",
+    "esbuild_linux_arm64",
+    "esbuild_linux_ppc64le",
+    "esbuild_linux_s390x",
+    "esbuild_npm",
+    "esbuild_windows_amd64",
+    "nodejs",
+    "nodejs_darwin_amd64",
+    "nodejs_darwin_arm64",
+    "nodejs_host",
+    "nodejs_linux_amd64",
+    "nodejs_linux_arm64",
+    "nodejs_linux_ppc64le",
+    "nodejs_linux_s390x",
+    "nodejs_toolchains",
+    "nodejs_windows_amd64",
+    "npm",
+    "yarn",
+)
+
+register_toolchains("@nodejs_toolchains//:all")
+
+register_toolchains(
+    "@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_darwin_amd64_toolchain",
+    "@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_darwin_arm64_toolchain",
+    "@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_linux_amd64_toolchain",
+    "@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_linux_arm64_toolchain",
+    "@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_linux_ppc64le_toolchain",
+    "@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_linux_s390x_toolchain",
+    "@build_bazel_rules_nodejs//toolchains/esbuild:esbuild_windows_amd64_toolchain",
+)

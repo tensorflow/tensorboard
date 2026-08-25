@@ -52,7 +52,7 @@ impl Logdir for DiskLogdir {
                     // TensorBoard traditionally doesn't complain loudly about non-existent
                     // directories, since the logdir may be created after TensorBoard starts.
                     if e.io_error()
-                        .map_or(false, |e| e.kind() == io::ErrorKind::NotFound)
+                        .is_some_and(|e| e.kind() == io::ErrorKind::NotFound)
                     {
                         info!("While walking log directory: {}", e);
                     } else {

@@ -14,6 +14,8 @@
 
 """Bzlmod extensions for TensorBoard-owned third-party repositories."""
 
+load("//third_party:fonts.bzl", "tensorboard_fonts_workspace")
+load("//third_party:js.bzl", "tensorboard_js_workspace")
 load("//third_party:python.bzl", "tensorboard_python_workspace")
 
 def _tensorboard_python_dependencies_impl(_module_ctx):
@@ -21,4 +23,12 @@ def _tensorboard_python_dependencies_impl(_module_ctx):
 
 tensorboard_python_dependencies = module_extension(
     implementation = _tensorboard_python_dependencies_impl,
+)
+
+def _tensorboard_web_dependencies_impl(_module_ctx):
+    tensorboard_fonts_workspace()
+    tensorboard_js_workspace()
+
+tensorboard_web_dependencies = module_extension(
+    implementation = _tensorboard_web_dependencies_impl,
 )

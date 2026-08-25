@@ -1,9 +1,12 @@
-# Bazel 7.7.0 remains pinned in .bazelversion. Bzlmod is TensorBoard's only
-# supported dependency-resolution entry point. WORKSPACE.bzlmod is an internal
-# compatibility bridge for dependencies that do not yet expose module APIs.
-# Bazel must still evaluate that bridge, so --noenable_workspace is not yet
-# supported even though --noenable_bzlmod is intentionally unsupported.
+# Bazel 8.7.0 remains pinned in .bazelversion. Bzlmod is TensorBoard's only
+# supported dependency-resolution entry point. Keep WORKSPACE evaluation
+# disabled so new dependencies cannot silently bypass MODULE.bazel.
 common --enable_bzlmod
+common --noenable_workspace
+
+# Keep local and CI builds from reporting ruleset usage through telemetry
+# introduced by newer Aspect build rules.
+common --repo_env=DO_NOT_TRACK=1
 # Let the OS-specific sections below (`common:linux`, `common:macos`, etc.)
 # take effect so one `.bazelrc` can carry the required per-platform C++ flags.
 common --enable_platform_specific_config
@@ -18,12 +21,16 @@ test --incompatible_default_to_explicit_init_py
 build --define=use_fast_cpp_protos=true
 
 # Use Bazel's hermetic JDK 21 for Java targets and build tools. The default
-# target runtime is the host JDK, which can be newer than Bazel 7's Java
+# target runtime is the host JDK, which can be newer than Bazel's Java
 # compiler and make otherwise unrelated Java compilation fail.
 build --java_runtime_version=remotejdk_21
 build --tool_java_runtime_version=remotejdk_21
 
-# Protobuf 6.31.1 requires C++17 in this build. Keep the host and target
+# rules_nodejs 5.8.1's concatjs rules still return legacy struct providers.
+# Remove this compatibility flag with the planned rules_js/ts_project migration.
+build --incompatible_disallow_struct_provider_syntax=false
+
+# The current protobuf/gRPC stack requires C++17. Keep the host and target
 # language level aligned across supported platforms.
 common:linux --cxxopt=-std=c++17
 common:linux --host_cxxopt=-std=c++17
@@ -31,6 +38,9 @@ common:macos --cxxopt=-std=c++17
 common:macos --host_cxxopt=-std=c++17
 common:windows --cxxopt=/std:c++17
 common:windows --host_cxxopt=/std:c++17
+# Protobuf requires Bazel-on-Windows users to acknowledge that upstream may
+# remove MSVC support in a future release.
+common:windows --define=protobuf_allow_msvc=true
 
 # Local shells and virtualenvs can leak Python import state into Bazel tests,
 # which then import from the wrong environment instead of the test runfiles.

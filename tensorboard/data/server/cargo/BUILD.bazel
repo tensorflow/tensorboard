@@ -1,9 +1,4 @@
-"""
-@generated
-cargo-raze generated Bazel file.
-
-DO NOT EDIT! Replaced on runs of cargo-raze
-"""
+"""Stable aliases for crate_universe-generated Rust targets."""
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,279 +9,285 @@ licenses([
 # Aliased targets
 alias(
     name = "async_stream",
-    actual = "@raze__async_stream__0_3_0//:async_stream",
+    actual = "@rust_crates//:async-stream",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "async_trait",
-    actual = "@raze__async_trait__0_1_41//:async_trait",
+    actual = "@rust_crates//:async-trait",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "base64",
-    actual = "@raze__base64__0_13_0//:base64",
+    actual = "@rust_crates//:base64",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "byteorder",
-    actual = "@raze__byteorder__1_3_4//:byteorder",
+    actual = "@rust_crates//:byteorder",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "bytes",
-    actual = "@raze__bytes__1_0_1//:bytes",
+    actual = "@rust_crates//:bytes",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "clap",
-    actual = "@raze__clap__3_0_0_beta_2//:clap",
+    actual = "@rust_crates//:clap",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "crc",
-    actual = "@raze__crc__1_8_1//:crc",
+    actual = "@rust_crates//:crc",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "crossbeam",
-    actual = "@raze__crossbeam__0_8_0//:crossbeam",
+    actual = "@rust_crates//:crossbeam",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "env_logger",
-    actual = "@raze__env_logger__0_8_2//:env_logger",
+    actual = "@rust_crates//:env_logger",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "futures_core",
-    actual = "@raze__futures_core__0_3_12//:futures_core",
+    actual = "@rust_crates//:futures-core",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "gcp_auth",
-    actual = "@raze__gcp_auth__0_7_4//:gcp_auth",
+    actual = "@rust_crates//:gcp_auth",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "log",
-    actual = "@raze__log__0_4_11//:log",
+    actual = "@rust_crates//:log",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "prost",
-    actual = "@raze__prost__0_9_0//:prost",
+    actual = "@rust_crates//:prost",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "prost_build",
-    actual = "@raze__prost_build__0_9_0//:prost_build",
+    actual = "@rust_crates//:prost-build",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "prost_types",
-    actual = "@raze__prost_types__0_9_0//:prost_types",
+    actual = "@rust_crates//:prost-types",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "rand",
-    actual = "@raze__rand__0_7_3//:rand",
+    actual = "@rust_crates//:rand",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "rand_chacha",
-    actual = "@raze__rand_chacha__0_2_2//:rand_chacha",
+    actual = "@rust_crates//:rand_chacha",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "rayon",
-    actual = "@raze__rayon__1_5_0//:rayon",
+    actual = "@rust_crates//:rayon",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "reqwest",
-    actual = "@raze__reqwest__0_11_0//:reqwest",
+    actual = "@rust_crates//:reqwest",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "serde",
-    actual = "@raze__serde__1_0_144//:serde",
+    actual = "@rust_crates//:serde",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "serde_json",
-    actual = "@raze__serde_json__1_0_61//:serde_json",
+    actual = "@rust_crates//:serde_json",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "tempfile",
-    actual = "@raze__tempfile__3_1_0//:tempfile",
+    actual = "@rust_crates//:tempfile",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "thiserror",
-    actual = "@raze__thiserror__1_0_22//:thiserror",
+    actual = "@rust_crates//:thiserror",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "tokio",
-    actual = "@raze__tokio__1_19_2//:tokio",
+    actual = "@rust_crates//:tokio",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "tokio_stream",
-    actual = "@raze__tokio_stream__0_1_2//:tokio_stream",
+    actual = "@rust_crates//:tokio-stream",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "tonic",
-    actual = "@raze__tonic__0_6_2//:tonic",
+    actual = "@rust_crates//:tonic",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "tonic_build",
-    actual = "@raze__tonic_build__0_6_2//:tonic_build",
+    actual = "@rust_crates//:tonic-build",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "tonic_reflection",
-    actual = "@raze__tonic_reflection__0_3_0//:tonic_reflection",
+    actual = "@rust_crates//:tonic-reflection",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 alias(
     name = "walkdir",
-    actual = "@raze__walkdir__2_3_1//:walkdir",
+    actual = "@rust_crates//:walkdir",
     tags = [
-        "cargo-raze",
+        "crate-universe",
         "manual",
     ],
 )
 
 # Export file for Stardoc support
 exports_files(
-    glob([
-        "**/*.bazel",
-        "**/*.bzl",
-    ]),
+    glob(
+        [
+            "**/*.bazel",
+            "**/*.bzl",
+        ],
+        allow_empty = True,
+    ),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "srcs",
-    srcs = glob([
-        "**/*.bazel",
-        "**/*.bzl",
-    ]),
+    srcs = glob(
+        [
+            "**/*.bazel",
+            "**/*.bzl",
+        ],
+        allow_empty = True,
+    ),
     visibility = ["//visibility:public"],
 )

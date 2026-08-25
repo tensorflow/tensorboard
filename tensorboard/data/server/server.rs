@@ -383,13 +383,13 @@ impl TensorBoardDataProvider for DataProviderHandler {
                 }
                 let (mut max_step, mut max_wall_time, mut max_length) = (None, None, None);
                 for (step, wall_time, value) in ts.valid_values() {
-                    if max_step.map_or(true, |s| s < step) {
+                    if max_step.is_none_or(|s| s < step) {
                         max_step = Some(step);
                     }
-                    if max_wall_time.map_or(true, |wt| wt < wall_time) {
+                    if max_wall_time.is_none_or(|wt| wt < wall_time) {
                         max_wall_time = Some(wall_time);
                     }
-                    if max_length.map_or(true, |len| len < value.0.len()) {
+                    if max_length.is_none_or(|len| len < value.0.len()) {
                         max_length = Some(value.0.len());
                     }
                 }
@@ -452,7 +452,7 @@ impl TensorBoardDataProvider for DataProviderHandler {
                 let mut steps = Vec::with_capacity(n);
                 let mut wall_times = Vec::with_capacity(n);
                 let mut values = Vec::with_capacity(n);
-                for (step, wall_time, &BlobSequenceValue(ref value)) in points {
+                for (step, wall_time, BlobSequenceValue(value)) in points {
                     steps.push(step.into());
                     wall_times.push(wall_time.into());
                     let eid = req.experiment_id.as_str();
@@ -619,10 +619,10 @@ impl<T: Hash + Eq> Filter<T> {
     // TODO(@wchargin): Consider offering a function that enables callers with a `Filter<T>` and a
     // `HashMap<K, V>` to iterate over matching `(&K, &V)`s by only iterating over this filter's
     // explicit set in the `Just` case, optimizing for the case when `Just` is small.
-    pub fn want<Q: ?Sized>(&self, value: &Q) -> bool
+    pub fn want<Q>(&self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: ?Sized + Hash + Eq,
     {
         match self {
             Filter::All => true,

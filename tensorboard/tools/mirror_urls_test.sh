@@ -17,15 +17,15 @@
 # Check that all TensorFlow build mirror URLs resolve, and that we're
 # not using any legacy Bazel mirror URLs.
 #
-# This does not check that every URL in a build/workspace file is
+# This does not check that every URL in a build/module file is
 # properly mirrored.
 #
 # This test requires an Internet connection.
 
 set -eu
 
-if ! [ -f WORKSPACE ]; then
-    printf >&2 'fatal: no WORKSPACE file found (are you at TensorBoard root?)\n'
+if ! [ -f MODULE.bazel ]; then
+    printf >&2 'fatal: no MODULE.bazel file found (are you at TensorBoard root?)\n'
     exit 2
 fi
 
@@ -42,12 +42,15 @@ check_urls_resolve() {
     exclude_bazel=':!ci/download_bazel.sh'  # uses a '${version}' format string
     exclude_buildifier=':!ci/download_buildifier.sh'  # likewise
     exclude_buildozer=':!ci/download_buildozer.sh'  # likewise
+    # The lockfile records URLs emitted by transitive module extensions; those
+    # are maintained upstream rather than by TensorBoard.
+    exclude_module_lock=':!MODULE.bazel.lock'
     # We use `git-grep` to efficiently get an initial result set, then
     # filter it down with GNU `grep` separately, because `git-grep` only
     # learned `-o` in Git v2.19.
     unresolved_urls_file="${tmpdir}/unresolved_urls"
     git grep -Ph "${url_pcre}" "${exclude_bazel}" "${exclude_buildifier}" \
-        "${exclude_buildozer}" \
+        "${exclude_buildozer}" "${exclude_module_lock}" \
         | grep -o 'https\?://mirror\.tensorflow\.org/[^"]*' \
         | sort -u \
         >"${unresolved_urls_file}"
@@ -83,6 +86,7 @@ check_urls_resolve() {
 check_no_bazel_urls() {
     bazel_urls_file="${tmpdir}/bazel_urls"
     git grep -Hn 'https\?://mirror\.bazel\.build' \
+        ':!MODULE.bazel.lock' \
         | sort \
         >"${bazel_urls_file}"
     if ! [ -s "${bazel_urls_file}" ]; then
