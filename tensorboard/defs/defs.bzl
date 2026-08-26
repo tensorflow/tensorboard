@@ -271,7 +271,7 @@ def tf_inline_pngs(name, html_template, images, out):
     """Inline png images in html.
 
     Replaces %<file_basename>.png% in the input `html_template` with a data URI
-    containing the base64-encoded image content of the corresopnding .png files
+    containing the base64-encoded image content of the corresponding .png files
     in the `images` input.
 
     In case there is a collision in the base file name, the first instance will
