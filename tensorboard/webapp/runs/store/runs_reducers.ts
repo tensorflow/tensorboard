@@ -49,6 +49,7 @@ const {
 >(
   {
     runColorOverrideForGroupBy: new Map(),
+    groupColorOverride: new Map(),
     defaultRunColorIdForGroupBy: new Map(),
     groupKeyToColorId: new Map(),
     initialGroupBy: {key: GroupByKey.RUN},
@@ -271,13 +272,19 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
         expNameByExpId
       );
 
+      const colorOverrideFromGroup = state.groupColorOverride;
       Object.entries(groups.matches).forEach(([groupId, runs]) => {
         const colorId =
           groupKeyToColorId.get(groupId) ?? groupKeyToColorId.size;
         groupKeyToColorId.set(groupId, colorId);
 
+        const colorOverride = colorOverrideFromGroup.get(groupId);
         for (const run of runs) {
           defaultRunColorIdForGroupBy.set(run.id, colorId);
+
+          if (colorOverride) {
+            colorOverrideFromGroup.set(run.id, colorOverride);
+          }
         }
       });
 
@@ -298,8 +305,8 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
         userSetGroupByKey: groupBy.key,
         defaultRunColorIdForGroupBy,
         groupKeyToColorId,
-        // Resets the color override when the groupBy changes.
-        runColorOverrideForGroupBy: new Map(),
+        // Use group color override if set
+        runColorOverrideForGroupBy: colorOverrideFromGroup,
       };
     }
   ),
@@ -308,6 +315,12 @@ const dataReducer: ActionReducer<RunsDataState, Action> = createReducer(
     nextRunColorOverride.set(runId, newColor);
 
     return {...state, runColorOverrideForGroupBy: nextRunColorOverride};
+  }),
+  on(runsActions.groupColorChanged, (state, {groupId, newColor}) => {
+    const nextGroupColorOverride = new Map(state.groupColorOverride);
+    nextGroupColorOverride.set(groupId, newColor);
+
+    return {...state, groupColorOverride: nextGroupColorOverride};
   }),
   on(runsActions.runSelectorRegexFilterChanged, (state, action) => {
     return {

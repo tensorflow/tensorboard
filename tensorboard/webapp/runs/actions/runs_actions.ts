@@ -78,6 +78,11 @@ export const runColorChanged = createAction(
   props<{runId: string; newColor: string}>()
 );
 
+export const groupColorChanged = createAction(
+  '[Runs] Group Color Changed',
+  props<{groupId: string; newColor: string}>()
+);
+
 export const runGroupByChanged = createAction(
   '[Runs] Run Group By Changed',
   props<{
