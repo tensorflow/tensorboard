@@ -16,3 +16,8 @@ export * from '@tensorflow/tfjs-core';
 
 import '@tensorflow/tfjs-backend-cpu';
 import '@tensorflow/tfjs-backend-webgl';
+
+// TF.js 4.x requires explicitly setting/registering a backend.
+// setBackend is re-exported from tfjs-core above; callers should invoke
+// tf.setBackend('webgl') or tf.setBackend('cpu') before running operations
+// if the default backend resolution is not sufficient.
