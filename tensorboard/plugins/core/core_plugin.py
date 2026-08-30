@@ -22,6 +22,8 @@ import io
 import mimetypes
 import posixpath
 import zipfile
+import os
+import binascii
 
 from werkzeug import utils
 from werkzeug import wrappers
@@ -540,7 +542,15 @@ based routing of an ELB when the website base_url is not available e.g.
 """,
         )
 
-        parser.add_argument(
+	parser.add_argument(
+            "--gen_path_prefix",
+            action="store_true",
+            help="""\
+automatically generate path_prefix and print it to STDOUT; in case --path_prefix is also given on the command line, the auto-generated path_prefix will have priority and overwrite the value from the --path_prefix command line\
+""",
+        )
+        
+	parser.add_argument(
             "--window_title",
             metavar="TEXT",
             type=str,
@@ -715,7 +725,11 @@ disable fast-loading mode. (default: false)\
                 "--detect_file_replacement=true"
             )
 
-        flags.path_prefix = flags.path_prefix.rstrip("/")
+	if flags.gen_path_prefix:
+                    flags.path_prefix = "/" + binascii.hexlify(os.urandom(32)).decode()
+                    print("NOTE: using auto-generated path_prefix=" +  flags.path_prefix)
+        
+	flags.path_prefix = flags.path_prefix.rstrip("/")
         if flags.path_prefix and not flags.path_prefix.startswith("/"):
             raise FlagsError(
                 "Path prefix must start with slash, but got: %r."
