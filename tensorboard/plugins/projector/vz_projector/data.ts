@@ -86,7 +86,7 @@ export interface DataPoint {
     [key: string]: number;
   };
 }
-const IS_FIREFOX = navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
+
 /** Maximum sample size for each projection type. */
 export const TSNE_SAMPLE_SIZE = 10000;
 export const UMAP_SAMPLE_SIZE = 5000;
@@ -473,23 +473,15 @@ export class DataSet {
           .map((neighbors) => neighbors.slice(0, nNeighbors))
       );
     } else {
-      const knnGpuEnabled = (await util.hasWebGLSupport()) && !IS_FIREFOX;
       const numKnnNeighborsToCompute = Math.max(
         nNeighbors,
         MIN_NUM_KNN_NEIGHBORS
       );
-      const result = await (knnGpuEnabled
-        ? knn.findKNNGPUCosDistNorm(
-            data,
-            numKnnNeighborsToCompute,
-            (d) => d.vector
-          )
-        : knn.findKNN(
-            data,
-            numKnnNeighborsToCompute,
-            (d) => d.vector,
-            (a, b) => vector.cosDistNorm(a, b)
-          ));
+      const result = await knn.findKNNGPUCosDistNorm(
+        data,
+        numKnnNeighborsToCompute,
+        (d) => d.vector
+      );
       this.nearest = result;
       return Promise.resolve(
         result.map((neighbors) => neighbors.slice(0, nNeighbors))
