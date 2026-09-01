@@ -12,9 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Signal} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
 import {map, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../app_state';
 import {
@@ -44,75 +44,80 @@ import {
   standalone: false,
   selector: 'feature-flag-dialog',
   template: `<feature-flag-dialog-component
-    [featureFlagStatuses]="featureFlags$ | async"
-    [hasFlagsSentToServer]="hasFlagsSentToServer$ | async"
-    [showFlagsFilter]="showFlagsFilter$ | async"
+    [featureFlagStatuses]="featureFlags()"
+    [hasFlagsSentToServer]="hasFlagsSentToServer()"
+    [showFlagsFilter]="showFlagsFilter()"
     (flagChanged)="onFlagChanged($event)"
     (allFlagsReset)="onAllFlagsReset()"
   ></feature-flag-dialog-component>`,
 })
 export class FeatureFlagDialogContainer {
   constructor(private readonly store: Store<State>) {
-    this.showFlagsFilter$ = this.store.select(getOverriddenFeatureFlags).pipe(
+    const showFlagsFilter$ = this.store.select(getOverriddenFeatureFlags).pipe(
       map((overriddenFeatureFlags) => {
         return overriddenFeatureFlags.showFlags?.toLowerCase();
       })
     );
-    this.hasFlagsSentToServer$ = this.store
-      .select(getFeatureFlagsMetadata)
-      .pipe(
+    this.showFlagsFilter = toSignal(showFlagsFilter$, {requireSync: true});
+    this.hasFlagsSentToServer = toSignal(
+      this.store.select(getFeatureFlagsMetadata).pipe(
         map((flagMetadata) => {
           return Object.values(flagMetadata).some((metadata) => {
             return (metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>)
               .sendToServerWhenOverridden;
           });
         })
-      );
-    this.featureFlags$ = this.store.select(getOverriddenFeatureFlags).pipe(
-      withLatestFrom(
-        this.store.select(getDefaultFeatureFlags),
-        this.store.select(getFeatureFlagsMetadata),
-        this.showFlagsFilter$
       ),
-      map(
-        ([
-          overriddenFeatureFlags,
-          defaultFeatureFlags,
-          flagMetadata,
-          showFlagsFilter,
-        ]) => {
-          return Object.entries(defaultFeatureFlags)
-            .filter(([flagName]) => {
-              if (!showFlagsFilter) {
-                return true;
-              }
-              return flagName.toLowerCase().includes(showFlagsFilter);
-            })
-            .map(([flagName, defaultValue]) => {
-              const status = getFlagStatus(
-                flagName as keyof FeatureFlags,
-                overriddenFeatureFlags
-              );
-              const metadata = flagMetadata[flagName as keyof FeatureFlags];
-              return {
-                flag: flagName,
-                defaultValue,
-                status,
-                sendToServerWhenOverridden: (
-                  metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>
-                ).sendToServerWhenOverridden,
-              } as FeatureFlagStatus<keyof FeatureFlags>;
-            });
-        }
-      )
+      {requireSync: true}
+    );
+    this.featureFlags = toSignal(
+      this.store.select(getOverriddenFeatureFlags).pipe(
+        withLatestFrom(
+          this.store.select(getDefaultFeatureFlags),
+          this.store.select(getFeatureFlagsMetadata),
+          showFlagsFilter$
+        ),
+        map(
+          ([
+            overriddenFeatureFlags,
+            defaultFeatureFlags,
+            flagMetadata,
+            showFlagsFilter,
+          ]) => {
+            return Object.entries(defaultFeatureFlags)
+              .filter(([flagName]) => {
+                if (!showFlagsFilter) {
+                  return true;
+                }
+                return flagName.toLowerCase().includes(showFlagsFilter);
+              })
+              .map(([flagName, defaultValue]) => {
+                const status = getFlagStatus(
+                  flagName as keyof FeatureFlags,
+                  overriddenFeatureFlags
+                );
+                const metadata = flagMetadata[flagName as keyof FeatureFlags];
+                return {
+                  flag: flagName,
+                  defaultValue,
+                  status,
+                  sendToServerWhenOverridden: (
+                    metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>
+                  ).sendToServerWhenOverridden,
+                } as FeatureFlagStatus<keyof FeatureFlags>;
+              });
+          }
+        )
+      ),
+      {requireSync: true}
     );
   }
 
-  readonly showFlagsFilter$;
+  readonly showFlagsFilter: Signal<string | undefined>;
 
-  readonly hasFlagsSentToServer$: Observable<boolean>;
+  readonly hasFlagsSentToServer: Signal<boolean>;
 
-  readonly featureFlags$: Observable<FeatureFlagStatus<keyof FeatureFlags>[]>;
+  readonly featureFlags: Signal<FeatureFlagStatus<keyof FeatureFlags>[]>;
 
   onFlagChanged({flag, status}: FeatureFlagStatusEvent) {
     switch (status) {

@@ -61,20 +61,20 @@ export class ScalarCardLineChartComponent {
   @Input() seriesMetadataMap!: ScalarCardSeriesMetadataMap;
   @Input() seriesData!: ScalarCardDataSeries[];
   @Input() ignoreOutliers!: boolean;
-  @Input() disableUpdate!: boolean;
+  @Input() disableUpdate!: boolean | undefined;
   @Input() loadState!: DataLoadState;
   @Input() smoothingEnabled!: boolean;
   @Input() xAxisType!: XAxisType;
   @Input() xScaleType!: ScaleType;
-  @Input() yScaleType!: ScaleType;
+  @Input() yScaleType!: ScaleType | undefined;
   @Input() useDarkMode!: boolean;
   @Input() forceSvg!: boolean;
   @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;
   @Input() minMaxStep!: MinMaxStep;
   @Input() userViewBox!: Extent | null;
-  @Input() tooltipTemplate!: TooltipTemplate | null;
-  @Input() allowFobRemoval!: boolean;
-  @Input() disableTooltip!: boolean;
+  @Input() tooltipTemplate!: TooltipTemplate | null | undefined;
+  @Input() allowFobRemoval!: boolean | undefined;
+  @Input() disableTooltip!: boolean | undefined;
 
   @Output()
   onTimeSelectionChanged = new EventEmitter<{

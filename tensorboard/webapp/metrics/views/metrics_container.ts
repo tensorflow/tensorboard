@@ -25,7 +25,7 @@ import {getRunsTableFullScreen} from '../../core/store/core_selectors';
       <runs-selector sidebar></runs-selector>
       <metrics-main-view
         main
-        *ngIf="!(runsTableFullScreen$ | async)"
+        *ngIf="!runsTableFullScreen()"
       ></metrics-main-view>
     </tb-dashboard-layout>
   `,
@@ -33,9 +33,9 @@ import {getRunsTableFullScreen} from '../../core/store/core_selectors';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetricsDashboardContainer {
-  runsTableFullScreen$;
+  runsTableFullScreen;
 
   constructor(readonly store: Store<State>) {
-    this.runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
+    this.runsTableFullScreen = this.store.selectSignal(getRunsTableFullScreen);
   }
 }

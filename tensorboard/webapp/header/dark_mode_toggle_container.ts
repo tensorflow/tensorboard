@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {State as CoreState} from '../core/store/core_types';
 import {overrideEnableDarkModeChanged} from '../feature_flag/actions/feature_flag_actions';
@@ -28,23 +28,26 @@ import {DarkModeOverride} from './dark_mode_toggle_component';
   selector: 'app-header-dark-mode-toggle',
   template: `
     <app-header-dark-mode-toggle-component
-      [darkModeOverride]="darkModeOverride$ | async"
+      [darkModeOverride]="darkModeOverride()"
       (onOverrideChanged)="changeDarkMode($event)"
     >
     </app-header-dark-mode-toggle-component>
   `,
 })
 export class DarkModeToggleContainer {
-  readonly darkModeOverride$: Observable<DarkModeOverride>;
+  readonly darkModeOverride;
 
   constructor(private readonly store: Store<CoreState & FeatureFlagState>) {
-    this.darkModeOverride$ = this.store.select(getEnableDarkModeOverride).pipe(
-      map((override: boolean | null): DarkModeOverride => {
-        if (override === null) return DarkModeOverride.DEFAULT;
-        return override
-          ? DarkModeOverride.DARK_MODE_ON
-          : DarkModeOverride.DARK_MODE_OFF;
-      })
+    this.darkModeOverride = toSignal(
+      this.store.select(getEnableDarkModeOverride).pipe(
+        map((override: boolean | null): DarkModeOverride => {
+          if (override === null) return DarkModeOverride.DEFAULT;
+          return override
+            ? DarkModeOverride.DARK_MODE_ON
+            : DarkModeOverride.DARK_MODE_OFF;
+        })
+      ),
+      {requireSync: true}
     );
   }
 

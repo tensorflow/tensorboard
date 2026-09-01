@@ -18,6 +18,7 @@ import {
   Input,
   TemplateRef,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {createSelector, Store} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -57,14 +58,14 @@ const activePlugin = createSelector(
   selector: 'plugins',
   template: `
     <plugins-component
-      [activeKnownPlugin]="activeKnownPlugin$ | async"
-      [activePluginId]="activePluginId$ | async"
-      [dataLocation]="dataLocation$ | async"
-      [lastUpdated]="lastLoadedTimeInMs$ | async"
-      [pluginLoadState]="pluginLoadState$ | async"
-      [isFeatureFlagsLoaded]="isFeatureFlagsLoaded$ | async"
-      [settingsLoadState]="settingsLoadState$ | async"
-      [featureFlags]="featureFlags$ | async"
+      [activeKnownPlugin]="activeKnownPlugin()"
+      [activePluginId]="activePluginId()"
+      [dataLocation]="dataLocation()"
+      [lastUpdated]="lastLoadedTimeInMs()"
+      [pluginLoadState]="pluginLoadState()"
+      [isFeatureFlagsLoaded]="isFeatureFlagsLoaded()"
+      [settingsLoadState]="settingsLoadState()"
+      [featureFlags]="featureFlags()"
       [environmentFailureNotFoundTemplate]="environmentFailureNotFoundTemplate"
       [environmentFailurePermissionDeniedTemplate]="
         environmentFailurePermissionDeniedTemplate
@@ -76,8 +77,8 @@ const activePlugin = createSelector(
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PluginsContainer {
-  readonly activeKnownPlugin$;
-  readonly activePluginId$;
+  readonly activeKnownPlugin;
+  readonly activePluginId;
 
   @Input()
   environmentFailureNotFoundTemplate?: TemplateRef<any>;
@@ -88,65 +89,73 @@ export class PluginsContainer {
   @Input()
   environmentFailureUnknownTemplate?: TemplateRef<any>;
 
-  readonly pluginLoadState$;
+  readonly pluginLoadState;
 
-  readonly lastLoadedTimeInMs$;
-  readonly dataLocation$;
-  readonly isFeatureFlagsLoaded$;
-  readonly featureFlags$;
-  readonly settingsLoadState$;
+  readonly lastLoadedTimeInMs;
+  readonly dataLocation;
+  readonly isFeatureFlagsLoaded;
+  readonly featureFlags;
+  readonly settingsLoadState;
 
   constructor(private readonly store: Store<State>) {
-    this.activeKnownPlugin$ = this.store.select(activePlugin);
-    this.activePluginId$ = this.store.select(getActivePlugin);
-    this.pluginLoadState$ = combineLatest(
-      this.activeKnownPlugin$,
-      this.activePluginId$,
-      this.store.select(getPluginsListLoaded)
-    ).pipe(
-      map(([activePlugin, activePluginId, loadState]) => {
-        if (loadState.failureCode !== null) {
-          // Despite its 'Plugins'-specific name, getPluginsListLoaded actually
-          // encapsulates multiple requests to load different parts of the
-          // environment.
-          if (loadState.failureCode === PluginsListFailureCode.NOT_FOUND) {
-            return PluginLoadState.ENVIRONMENT_FAILURE_NOT_FOUND;
-          } else if (
-            loadState.failureCode === PluginsListFailureCode.PERMISSION_DENIED
-          ) {
-            return PluginLoadState.ENVIRONMENT_FAILURE_PERMISSION_DENIED;
-          } else {
-            return PluginLoadState.ENVIRONMENT_FAILURE_UNKNOWN;
+    this.activeKnownPlugin = this.store.selectSignal(activePlugin);
+    this.activePluginId = this.store.selectSignal(getActivePlugin);
+    this.pluginLoadState = toSignal(
+      combineLatest(
+        this.store.select(activePlugin),
+        this.store.select(getActivePlugin),
+        this.store.select(getPluginsListLoaded)
+      ).pipe(
+        map(([activePlugin, activePluginId, loadState]) => {
+          if (loadState.failureCode !== null) {
+            // Despite its 'Plugins'-specific name, getPluginsListLoaded
+            // actually encapsulates multiple requests to load different
+            // parts of the environment.
+            if (loadState.failureCode === PluginsListFailureCode.NOT_FOUND) {
+              return PluginLoadState.ENVIRONMENT_FAILURE_NOT_FOUND;
+            } else if (
+              loadState.failureCode === PluginsListFailureCode.PERMISSION_DENIED
+            ) {
+              return PluginLoadState.ENVIRONMENT_FAILURE_PERMISSION_DENIED;
+            } else {
+              return PluginLoadState.ENVIRONMENT_FAILURE_UNKNOWN;
+            }
           }
-        }
 
-        if (activePlugin !== null) {
-          return PluginLoadState.LOADED;
-        }
+          if (activePlugin !== null) {
+            return PluginLoadState.LOADED;
+          }
 
-        if (
-          loadState.lastLoadedTimeInMs === null &&
-          loadState.state === DataLoadState.LOADING
-        ) {
-          return PluginLoadState.LOADING;
-        }
+          if (
+            loadState.lastLoadedTimeInMs === null &&
+            loadState.state === DataLoadState.LOADING
+          ) {
+            return PluginLoadState.LOADING;
+          }
 
-        if (activePluginId) {
-          return PluginLoadState.UNKNOWN_PLUGIN_ID;
-        }
+          if (activePluginId) {
+            return PluginLoadState.UNKNOWN_PLUGIN_ID;
+          }
 
-        return PluginLoadState.NO_ENABLED_PLUGINS;
-      })
+          return PluginLoadState.NO_ENABLED_PLUGINS;
+        })
+      ),
+      {requireSync: true}
     );
-    this.lastLoadedTimeInMs$ = this.store.select(getAppLastLoadedTimeInMs);
-    this.dataLocation$ = this.store.select(getEnvironment).pipe(
-      map((env) => {
-        return env.data_location;
-      })
+    this.lastLoadedTimeInMs = this.store.selectSignal(getAppLastLoadedTimeInMs);
+    this.dataLocation = toSignal(
+      this.store.select(getEnvironment).pipe(
+        map((env) => {
+          return env.data_location;
+        })
+      ),
+      {requireSync: true}
     );
-    this.isFeatureFlagsLoaded$ = this.store.select(getIsFeatureFlagsLoaded);
-    this.featureFlags$ = this.store.select(getFeatureFlags);
-    this.settingsLoadState$ = this.store.select(
+    this.isFeatureFlagsLoaded = this.store.selectSignal(
+      getIsFeatureFlagsLoaded
+    );
+    this.featureFlags = this.store.selectSignal(getFeatureFlags);
+    this.settingsLoadState = this.store.selectSignal(
       settingsSelectors.getSettingsLoadState
     );
   }

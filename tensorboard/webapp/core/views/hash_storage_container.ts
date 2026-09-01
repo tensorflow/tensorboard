@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {pluginUrlHashChanged} from '../actions';
 import {State} from '../state';
 import {getActivePlugin} from '../store';
@@ -24,7 +24,7 @@ import {ChangedProp} from './hash_storage_component';
   selector: 'hash-storage',
   template: `
     <hash-storage-component
-      [activePluginId]="activePluginId$ | async"
+      [activePluginId]="activePluginId()"
       (onValueChange)="onValueChanged($event)"
     >
     </hash-storage-component>
@@ -39,10 +39,10 @@ import {ChangedProp} from './hash_storage_component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HashStorageContainer {
-  readonly activePluginId$;
+  readonly activePluginId;
 
   constructor(private readonly store: Store<State>) {
-    this.activePluginId$ = this.store.pipe(select(getActivePlugin));
+    this.activePluginId = this.store.selectSignal(getActivePlugin);
   }
 
   onValueChanged(change: {prop: ChangedProp; value: string}) {

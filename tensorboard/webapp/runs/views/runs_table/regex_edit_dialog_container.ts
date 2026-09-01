@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  Signal,
+} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
 import {combineLatest, defer, merge, Observable, Subject} from 'rxjs';
@@ -50,10 +56,10 @@ const INPUT_CHANGE_DEBOUNCE_INTERVAL_MS = 500;
   standalone: false,
   selector: 'regex-edit-dialog',
   template: `<regex-edit-dialog-component
-    [regexString]="groupByRegexString$ | async"
-    [colorRunPairList]="colorRunPairList$ | async"
-    [selectedGroupBy]="groupByRegexType$ | async"
-    [enableColorByExperiment]="enableColorByExperiment$ | async"
+    [regexString]="groupByRegexString()"
+    [colorRunPairList]="colorRunPairList()"
+    [selectedGroupBy]="groupByRegexType()"
+    [enableColorByExperiment]="enableColorByExperiment()"
     (onSave)="onSave()"
     (regexInputOnChange)="onRegexInputOnChange($event)"
     (regexTypeOnChange)="onRegexTypeOnChange($event)"
@@ -77,7 +83,7 @@ export class RegexEditDialogContainer {
   private readonly runIdToEid$: Observable<Record<string, string>>;
   private readonly allRuns$: Observable<Run[]>;
   private readonly expNameByExpId$: Observable<Record<string, string>>;
-  readonly enableColorByExperiment$: Observable<boolean>;
+  readonly enableColorByExperiment;
 
   // Tentative regex string and type are used because we don't want to change the state
   // every time we type in or select the dropdown option.
@@ -86,75 +92,84 @@ export class RegexEditDialogContainer {
   private readonly tentativeRegexType$: Subject<GroupByKey> =
     new Subject<GroupByKey>();
 
-  readonly groupByRegexString$: Observable<string> = defer(() => {
+  private readonly groupByRegexStringObs$: Observable<string> = defer(() => {
     return merge(
       this.store.select(getColorGroupRegexString).pipe(take(1)),
       this.tentativeRegexString$
     );
   }).pipe(startWith(''), shareReplay(1));
 
-  readonly groupByRegexType$: Observable<GroupByKey>;
+  readonly groupByRegexString = toSignal(this.groupByRegexStringObs$, {
+    requireSync: true,
+  });
 
-  readonly colorRunPairList$: Observable<ColorGroup[]> = defer(() => {
-    return this.groupByRegexString$.pipe(
-      debounceTime(INPUT_CHANGE_DEBOUNCE_INTERVAL_MS),
-      filter((regexString) => {
-        try {
-          const regex = new RegExp(regexString);
-          return Boolean(regex);
-        } catch (e) {
-          return false;
-        }
-      }),
-      combineLatestWith(
-        this.groupByRegexType$,
-        this.allRuns$,
-        this.runIdToEid$,
-        this.expNameByExpId$,
-        this.store.select(settingsSelectors.getColorPalette),
-        this.store.select(getDarkModeEnabled)
-      ),
-      map(
-        ([
-          regexString,
-          regexType,
-          allRuns,
-          runIdToEid,
-          expNameByExpId,
-          colorPalette,
-          darkModeEnabled,
-        ]) => {
-          const groupBy = {
-            key: regexType,
+  private readonly groupByRegexTypeObs$: Observable<GroupByKey>;
+  readonly groupByRegexType: Signal<GroupByKey>;
+
+  private readonly colorRunPairListObs$: Observable<ColorGroup[]> = defer(
+    () => {
+      return this.groupByRegexStringObs$.pipe(
+        debounceTime(INPUT_CHANGE_DEBOUNCE_INTERVAL_MS),
+        filter((regexString) => {
+          try {
+            const regex = new RegExp(regexString);
+            return Boolean(regex);
+          } catch (e) {
+            return false;
+          }
+        }),
+        combineLatestWith(
+          this.groupByRegexTypeObs$,
+          this.allRuns$,
+          this.runIdToEid$,
+          this.expNameByExpId$,
+          this.store.select(settingsSelectors.getColorPalette),
+          this.store.select(getDarkModeEnabled)
+        ),
+        map(
+          ([
             regexString,
-          };
-          const groups = groupRuns(
-            groupBy,
+            regexType,
             allRuns,
             runIdToEid,
-            expNameByExpId
-          );
-          const groupKeyToColorString = new Map<string, string>();
-          const colorRunPairList: ColorGroup[] = [];
+            expNameByExpId,
+            colorPalette,
+            darkModeEnabled,
+          ]) => {
+            const groupBy = {
+              key: regexType,
+              regexString,
+            };
+            const groups = groupRuns(
+              groupBy,
+              allRuns,
+              runIdToEid,
+              expNameByExpId
+            );
+            const groupKeyToColorString = new Map<string, string>();
+            const colorRunPairList: ColorGroup[] = [];
 
-          for (const [groupId, runs] of Object.entries(groups.matches)) {
-            let colorHex: string | undefined =
-              groupKeyToColorString.get(groupId);
-            if (!colorHex) {
-              const color =
-                colorPalette.colors[
-                  groupKeyToColorString.size % colorPalette.colors.length
-                ];
-              colorHex = darkModeEnabled ? color.darkHex : color.lightHex;
-              groupKeyToColorString.set(groupId, colorHex);
+            for (const [groupId, runs] of Object.entries(groups.matches)) {
+              let colorHex: string | undefined =
+                groupKeyToColorString.get(groupId);
+              if (!colorHex) {
+                const color =
+                  colorPalette.colors[
+                    groupKeyToColorString.size % colorPalette.colors.length
+                  ];
+                colorHex = darkModeEnabled ? color.darkHex : color.lightHex;
+                groupKeyToColorString.set(groupId, colorHex);
+              }
+              colorRunPairList.push({groupId, color: colorHex, runs});
             }
-            colorRunPairList.push({groupId, color: colorHex, runs});
+            return colorRunPairList;
           }
-          return colorRunPairList;
-        }
-      )
-    );
-  }).pipe(startWith([]));
+        )
+      );
+    }
+  ).pipe(startWith([]));
+
+  readonly colorRunPairList: Signal<ColorGroup[]>;
 
   constructor() {
     const data = inject<{
@@ -162,10 +177,10 @@ export class RegexEditDialogContainer {
     }>(MAT_DIALOG_DATA);
 
     this.expNameByExpId$ = this.store.select(getDashboardExperimentNames);
-    this.enableColorByExperiment$ = this.store.select(
+    this.enableColorByExperiment = this.store.selectSignal(
       getEnableColorByExperiment
     );
-    this.groupByRegexType$ = merge(
+    this.groupByRegexTypeObs$ = merge(
       this.store.select(getRunGroupBy).pipe(
         take(1),
         map((group) => group.key)
@@ -207,6 +222,16 @@ export class RegexEditDialogContainer {
         return runsList.flat();
       })
     );
+
+    // Assigned last: both derived signals subscribe eagerly, and depend on
+    // fields assigned above (groupByRegexTypeObs$, allRuns$, runIdToEid$,
+    // expNameByExpId$) via the lazy `defer()` in colorRunPairListObs$.
+    this.groupByRegexType = toSignal(this.groupByRegexTypeObs$, {
+      requireSync: true,
+    });
+    this.colorRunPairList = toSignal(this.colorRunPairListObs$, {
+      requireSync: true,
+    });
   }
 
   onRegexInputOnChange(regexString: string) {
@@ -219,8 +244,8 @@ export class RegexEditDialogContainer {
 
   onSave(): void {
     combineLatest([
-      this.groupByRegexString$,
-      this.groupByRegexType$,
+      this.groupByRegexStringObs$,
+      this.groupByRegexTypeObs$,
       this.expNameByExpId$,
     ]).subscribe(([regexString, key, expNameByExpId]) => {
       if (regexString) {

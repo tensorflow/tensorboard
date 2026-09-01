@@ -12,10 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Signal} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
 import {filter, map, take, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
@@ -54,51 +53,49 @@ import {
   template: `
     <metrics-dashboard-settings-component
       [isImageSupportEnabled]="isImageSupportEnabled$ | async"
-      [tooltipSort]="tooltipSort$ | async"
+      [tooltipSort]="tooltipSort()"
       (tooltipSortChanged)="onTooltipSortChanged($event)"
-      [ignoreOutliers]="ignoreOutliers$ | async"
+      [ignoreOutliers]="ignoreOutliers()"
       (ignoreOutliersChanged)="onIgnoreOutliersChanged()"
-      [isTooltipRowsLimitEnabled]="isTooltipRowsLimitEnabled$ | async"
+      [isTooltipRowsLimitEnabled]="isTooltipRowsLimitEnabled()"
       (isTooltipRowsLimitEnabledChanged)="onIsTooltipRowsLimitEnabledChanged()"
-      [tooltipRowsLimit]="tooltipRowsLimit$ | async"
+      [tooltipRowsLimit]="tooltipRowsLimit()"
       (tooltipRowsLimitChanged)="onTooltipRowsLimitChanged($event)"
-      [xAxisType]="xAxisType$ | async"
+      [xAxisType]="xAxisType()"
       (xAxisTypeChanged)="onXAxisTypeChanged($event)"
-      [cardMinWidth]="cardMinWidth$ | async"
+      [cardMinWidth]="cardMinWidth()"
       (cardWidthChanged)="onCardWidthChanged($event)"
       (cardWidthReset)="onCardWidthReset()"
-      [histogramMode]="histogramMode$ | async"
+      [histogramMode]="histogramMode()"
       (histogramModeChanged)="onHistogramModeChanged($event)"
-      [scalarSmoothing]="scalarSmoothing$ | async"
+      [scalarSmoothing]="scalarSmoothing()"
       (scalarSmoothingChanged)="onScalarSmoothingChanged($event)"
-      [scalarPartitionX]="scalarPartitionX$ | async"
+      [scalarPartitionX]="scalarPartitionX()"
       (scalarPartitionXToggled)="onScalarPartitionXToggled()"
-      [imageBrightnessInMilli]="imageBrightnessInMilli$ | async"
+      [imageBrightnessInMilli]="imageBrightnessInMilli()"
       (imageBrightnessInMilliChanged)="onImageBrightnessInMilliChanged($event)"
       (imageBrightnessReset)="onImageBrightnessReset()"
-      [imageContrastInMilli]="imageContrastInMilli$ | async"
+      [imageContrastInMilli]="imageContrastInMilli()"
       (imageContrastInMilliChanged)="onImageContrastInMilliChanged($event)"
       (imageContrastReset)="onImageContrastReset()"
-      [imageShowActualSize]="imageShowActualSize$ | async"
+      [imageShowActualSize]="imageShowActualSize()"
       (imageShowActualSizeChanged)="onImageShowActualSizeChanged()"
-      [isScalarStepSelectorEnabled]="isScalarStepSelectorEnabled$ | async"
-      [isScalarStepSelectorRangeEnabled]="
-        isScalarStepSelectorRangeEnabled$ | async
-      "
-      [isLinkedTimeEnabled]="isLinkedTimeEnabled$ | async"
+      [isScalarStepSelectorEnabled]="isScalarStepSelectorEnabled()"
+      [isScalarStepSelectorRangeEnabled]="isScalarStepSelectorRangeEnabled()"
+      [isLinkedTimeEnabled]="isLinkedTimeEnabled()"
       [isScalarColumnCustomizationEnabled]="
-        isScalarColumnCustomizationEnabled$ | async
+        isScalarColumnCustomizationEnabled()
       "
-      [linkedTimeSelection]="linkedTimeSelection$ | async"
-      [stepMinMax]="stepMinMax$ | async"
-      [isSlideOutMenuOpen]="isSlideOutMenuOpen$ | async"
+      [linkedTimeSelection]="linkedTimeSelection()"
+      [stepMinMax]="stepMinMax()"
+      [isSlideOutMenuOpen]="isSlideOutMenuOpen()"
       (linkedTimeToggled)="onLinkedTimeToggled()"
       (stepSelectorToggled)="onStepSelectorToggled()"
       (rangeSelectionToggled)="onRangeSelectionToggled()"
       (onSlideOutToggled)="onSlideOutToggled()"
-      [isSavingPinsEnabled]="isSavingPinsEnabled$ | async"
+      [isSavingPinsEnabled]="isSavingPinsEnabled()"
       (onEnableSavingPinsToggled)="onEnableSavingPinsToggled($event)"
-      [globalPinsFeatureEnabled]="globalPinsFeatureEnabled$ | async"
+      [globalPinsFeatureEnabled]="globalPinsFeatureEnabled()"
     >
     </metrics-dashboard-settings-component>
   `,
@@ -109,25 +106,29 @@ export class SettingsViewContainer {
     private readonly store: Store<State>,
     private readonly dialog: MatDialog
   ) {
-    this.isScalarStepSelectorEnabled$ = this.store.select(
+    this.isScalarStepSelectorEnabled = this.store.selectSignal(
       selectors.getMetricsStepSelectorEnabled
     );
-    this.isScalarStepSelectorRangeEnabled$ = this.store.select(
+    this.isScalarStepSelectorRangeEnabled = this.store.selectSignal(
       selectors.getMetricsRangeSelectionEnabled
     );
-    this.isLinkedTimeEnabled$ = this.store.select(
+    this.isLinkedTimeEnabled = this.store.selectSignal(
       selectors.getMetricsLinkedTimeEnabled
     );
-    this.isScalarColumnCustomizationEnabled$ = this.store.select(
+    this.isScalarColumnCustomizationEnabled = this.store.selectSignal(
       selectors.getIsScalarColumnCustomizationEnabled
     );
-    this.linkedTimeSelection$ = this.store.select(
+    this.linkedTimeSelection = this.store.selectSignal(
       selectors.getMetricsLinkedTimeSelectionSetting
     );
-    this.stepMinMax$ = this.store.select(selectors.getMetricsStepMinMax);
-    this.isSlideOutMenuOpen$ = this.store.select(
+    this.stepMinMax = this.store.selectSignal(selectors.getMetricsStepMinMax);
+    this.isSlideOutMenuOpen = this.store.selectSignal(
       selectors.isMetricsSlideoutMenuOpen
     );
+    // Genuinely async: filter(Boolean) + take(1) waits for feature flags to
+    // load, so there is no synchronous value on subscribe. Stays on
+    // AsyncPipe; see isImageSupportEnabled's nullable widening in
+    // settings_view_component.ts.
     this.isImageSupportEnabled$ = this.store
       .select(selectors.getIsFeatureFlagsLoaded)
       .pipe(
@@ -140,67 +141,71 @@ export class SettingsViewContainer {
           return isImagesSupported;
         })
       );
-    this.tooltipSort$ = this.store.select(selectors.getMetricsTooltipSort);
-    this.ignoreOutliers$ = this.store.select(
+    this.tooltipSort = this.store.selectSignal(selectors.getMetricsTooltipSort);
+    this.ignoreOutliers = this.store.selectSignal(
       selectors.getMetricsIgnoreOutliers
     );
-    this.isTooltipRowsLimitEnabled$ = this.store.select(
+    this.isTooltipRowsLimitEnabled = this.store.selectSignal(
       selectors.getMetricsIsTooltipRowsLimitEnabled
     );
-    this.tooltipRowsLimit$ = this.store.select(
+    this.tooltipRowsLimit = this.store.selectSignal(
       selectors.getMetricsTooltipRowsLimit
     );
-    this.xAxisType$ = this.store.select(selectors.getMetricsXAxisType);
-    this.cardMinWidth$ = this.store.select(selectors.getMetricsCardMinWidth);
-    this.histogramMode$ = this.store.select(selectors.getMetricsHistogramMode);
-    this.scalarSmoothing$ = this.store.select(
+    this.xAxisType = this.store.selectSignal(selectors.getMetricsXAxisType);
+    this.cardMinWidth = this.store.selectSignal(
+      selectors.getMetricsCardMinWidth
+    );
+    this.histogramMode = this.store.selectSignal(
+      selectors.getMetricsHistogramMode
+    );
+    this.scalarSmoothing = this.store.selectSignal(
       selectors.getMetricsScalarSmoothing
     );
-    this.scalarPartitionX$ = this.store.select(
+    this.scalarPartitionX = this.store.selectSignal(
       selectors.getMetricsScalarPartitionNonMonotonicX
     );
-    this.imageBrightnessInMilli$ = this.store.select(
+    this.imageBrightnessInMilli = this.store.selectSignal(
       selectors.getMetricsImageBrightnessInMilli
     );
-    this.imageContrastInMilli$ = this.store.select(
+    this.imageContrastInMilli = this.store.selectSignal(
       selectors.getMetricsImageContrastInMilli
     );
-    this.imageShowActualSize$ = this.store.select(
+    this.imageShowActualSize = this.store.selectSignal(
       selectors.getMetricsImageShowActualSize
     );
-    this.isSavingPinsEnabled$ = this.store.select(
+    this.isSavingPinsEnabled = this.store.selectSignal(
       selectors.getMetricsSavingPinsEnabled
     );
-    this.globalPinsFeatureEnabled$ = this.store.select(
+    this.globalPinsFeatureEnabled = this.store.selectSignal(
       selectors.getEnableGlobalPins
     );
   }
 
-  readonly isScalarStepSelectorEnabled$: Observable<boolean>;
-  readonly isScalarStepSelectorRangeEnabled$: Observable<boolean>;
-  readonly isLinkedTimeEnabled$: Observable<boolean>;
-  readonly isScalarColumnCustomizationEnabled$;
-  readonly linkedTimeSelection$;
-  readonly stepMinMax$;
-  readonly isSlideOutMenuOpen$;
+  readonly isScalarStepSelectorEnabled: Signal<boolean>;
+  readonly isScalarStepSelectorRangeEnabled: Signal<boolean>;
+  readonly isLinkedTimeEnabled: Signal<boolean>;
+  readonly isScalarColumnCustomizationEnabled;
+  readonly linkedTimeSelection;
+  readonly stepMinMax;
+  readonly isSlideOutMenuOpen;
 
   readonly isImageSupportEnabled$;
 
-  readonly tooltipSort$;
-  readonly ignoreOutliers$;
-  readonly isTooltipRowsLimitEnabled$;
-  readonly tooltipRowsLimit$;
-  readonly xAxisType$;
-  readonly cardMinWidth$;
-  readonly histogramMode$;
-  readonly scalarSmoothing$;
-  readonly scalarPartitionX$;
-  readonly imageBrightnessInMilli$;
-  readonly imageContrastInMilli$;
-  readonly imageShowActualSize$;
-  readonly isSavingPinsEnabled$;
+  readonly tooltipSort;
+  readonly ignoreOutliers;
+  readonly isTooltipRowsLimitEnabled;
+  readonly tooltipRowsLimit;
+  readonly xAxisType;
+  readonly cardMinWidth;
+  readonly histogramMode;
+  readonly scalarSmoothing;
+  readonly scalarPartitionX;
+  readonly imageBrightnessInMilli;
+  readonly imageContrastInMilli;
+  readonly imageShowActualSize;
+  readonly isSavingPinsEnabled;
   // Feature flag for global pins.
-  readonly globalPinsFeatureEnabled$;
+  readonly globalPinsFeatureEnabled;
 
   onTooltipSortChanged(sort: TooltipSort) {
     this.store.dispatch(metricsChangeTooltipSort({sort}));

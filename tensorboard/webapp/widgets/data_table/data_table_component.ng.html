@@ -26,7 +26,7 @@ limitations under the License.
 
 <ng-template #columnSelectorModalTemplate>
   <tb-data-table-column-selector-component
-    [selectableColumns]="selectableColumns"
+    [selectableColumns]="selectableColumns ?? []"
     [numColumnsLoaded]="numColumnsLoaded"
     [hasMoreColumnsToLoad]="hasMoreColumnsToLoad"
     (columnSelected)="onColumnAdded($event)"
@@ -36,7 +36,7 @@ limitations under the License.
 
 <ng-template #filterModalTemplate>
   <tb-data-table-filter
-    [filter]="getCurrentColumnFilter()"
+    [filter]="getCurrentColumnFilter()!"
     (intervalFilterChanged)="intervalFilterChanged($event)"
     (discreteFilterChanged)="discreteFilterChanged($event)"
     (includeUndefinedToggled)="includeUndefinedToggled()"

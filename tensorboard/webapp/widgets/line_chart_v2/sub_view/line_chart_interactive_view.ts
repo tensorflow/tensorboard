@@ -132,9 +132,9 @@ export class LineChartInteractiveViewComponent
   tooltipOriginEl!: CdkOverlayOrigin;
 
   @Input()
-  tooltipTemplate?: TooltipTemplate;
+  tooltipTemplate: TooltipTemplate | undefined;
 
-  @Input() disableTooltip?: boolean;
+  @Input() disableTooltip: boolean | undefined;
 
   @Output()
   onViewExtentChange = new EventEmitter<{dataExtent: Extent}>();

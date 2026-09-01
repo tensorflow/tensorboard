@@ -17,11 +17,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  Injector,
   Input,
   OnDestroy,
   OnInit,
   Output,
+  Signal,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {combineLatest, from, Observable, of, Subject} from 'rxjs';
 import {
@@ -170,38 +173,38 @@ function areSeriesEqual(
   template: `
     <scalar-card-component
       [cardId]="cardId"
-      [chartMetadataMap]="chartMetadataMap$ | async"
+      [chartMetadataMap]="chartMetadataMap()"
       [DataDownloadComponent]="DataDownloadComponent"
-      [dataSeries]="dataSeries$ | async"
-      [ignoreOutliers]="ignoreOutliers$ | async"
-      [isTooltipRowsLimitEnabled]="isTooltipRowsLimitEnabled$ | async"
-      [tooltipRowsLimit]="tooltipRowsLimit$ | async"
+      [dataSeries]="dataSeries()"
+      [ignoreOutliers]="ignoreOutliers()"
+      [isTooltipRowsLimitEnabled]="isTooltipRowsLimitEnabled()"
+      [tooltipRowsLimit]="tooltipRowsLimit()"
       [isCardVisible]="isVisible"
-      [isPinned]="isPinned$ | async"
-      [loadState]="loadState$ | async"
-      [showFullWidth]="showFullWidth$ | async"
-      [smoothingEnabled]="smoothingEnabled$ | async"
+      [isPinned]="isPinned()"
+      [loadState]="loadState()"
+      [showFullWidth]="showFullWidth()"
+      [smoothingEnabled]="smoothingEnabled()"
       [tag]="tag$ | async"
       [title]="title$ | async"
-      [cardState]="cardState$ | async"
-      [tooltipSort]="tooltipSort$ | async"
-      [xAxisType]="xAxisType$ | async"
-      [xScaleType]="xScaleType$ | async"
-      [useDarkMode]="useDarkMode$ | async"
+      [cardState]="cardState()"
+      [tooltipSort]="tooltipSort()"
+      [xAxisType]="xAxisType()"
+      [xScaleType]="xScaleType()"
+      [useDarkMode]="useDarkMode()"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
-      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection$ | async"
-      [forceSvg]="forceSvg$ | async"
-      [columnCustomizationEnabled]="columnCustomizationEnabled$ | async"
-      [columnContextMenusEnabled]="columnContextMenusEnabled$ | async"
+      [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection()"
+      [forceSvg]="forceSvg()"
+      [columnCustomizationEnabled]="columnCustomizationEnabled()"
+      [columnContextMenusEnabled]="columnContextMenusEnabled()"
       [minMaxStep]="minMaxSteps$ | async"
-      [userViewBox]="userViewBox$ | async"
-      [columnHeaders]="columnHeaders$ | async"
-      [rangeEnabled]="rangeEnabled$ | async"
-      [columnFilters]="columnFilters$ | async"
-      [runToHparamMap]="runToHparamMap$ | async"
-      [selectableColumns]="selectableColumns$ | async"
-      [numColumnsLoaded]="numColumnsLoaded$ | async"
-      [numColumnsToLoad]="numColumnsToLoad$ | async"
+      [userViewBox]="userViewBox()"
+      [columnHeaders]="columnHeaders()"
+      [rangeEnabled]="rangeEnabled()"
+      [columnFilters]="columnFilters()"
+      [runToHparamMap]="runToHparamMap()"
+      [selectableColumns]="selectableColumns()"
+      [numColumnsLoaded]="numColumnsLoaded()"
+      [numColumnsToLoad]="numColumnsToLoad()"
       (onFullSizeToggle)="onFullSizeToggle()"
       (onPinClicked)="pinStateChanged.emit($event)"
       observeIntersection
@@ -230,50 +233,62 @@ function areSeriesEqual(
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
-  constructor(private readonly store: Store<State>) {
-    this.columnFilters$ = this.store.select(getCurrentColumnFilters);
-    this.numColumnsLoaded$ = this.store.select(
+  constructor(
+    private readonly store: Store<State>,
+    private readonly injector: Injector
+  ) {
+    this.columnFilters = this.store.selectSignal(getCurrentColumnFilters);
+    this.numColumnsLoaded = this.store.selectSignal(
       hparamsSelectors.getNumDashboardHparamsLoaded
     );
-    this.numColumnsToLoad$ = this.store.select(
+    this.numColumnsToLoad = this.store.selectSignal(
       hparamsSelectors.getNumDashboardHparamsToLoad
     );
-    this.useDarkMode$ = this.store.select(getDarkModeEnabled);
-    this.ignoreOutliers$ = this.store.select(getMetricsIgnoreOutliers);
-    this.isTooltipRowsLimitEnabled$ = this.store.select(
+    this.useDarkMode = this.store.selectSignal(getDarkModeEnabled);
+    this.ignoreOutliers = this.store.selectSignal(getMetricsIgnoreOutliers);
+    this.isTooltipRowsLimitEnabled = this.store.selectSignal(
       getMetricsIsTooltipRowsLimitEnabled
     );
-    this.tooltipRowsLimit$ = this.store.select(getMetricsTooltipRowsLimit);
-    this.tooltipSort$ = this.store.select(getMetricsTooltipSort);
-    this.xAxisType$ = this.store.select(getMetricsXAxisType);
-    this.forceSvg$ = this.store.select(getForceSvgFeatureFlag);
-    this.columnCustomizationEnabled$ = this.store.select(
+    this.tooltipRowsLimit = this.store.selectSignal(getMetricsTooltipRowsLimit);
+    this.tooltipSort = this.store.selectSignal(getMetricsTooltipSort);
+    this.xAxisType = this.store.selectSignal(getMetricsXAxisType);
+    this.forceSvg = this.store.selectSignal(getForceSvgFeatureFlag);
+    this.columnCustomizationEnabled = this.store.selectSignal(
       getIsScalarColumnCustomizationEnabled
     );
-    this.columnContextMenusEnabled$ = this.store.select(
+    this.columnContextMenusEnabled = this.store.selectSignal(
       getIsScalarColumnContextMenusEnabled
     );
-    this.xScaleType$ = this.store.select(getMetricsXAxisType).pipe(
-      map((xAxisType) => {
-        switch (xAxisType) {
-          case XAxisType.STEP:
-          case XAxisType.RELATIVE:
-            return ScaleType.LINEAR;
-          case XAxisType.WALL_TIME:
-            return ScaleType.TIME;
-          default:
-            const neverType = xAxisType as never;
-            throw new Error(`Invalid xAxisType for line chart. ${neverType}`);
-        }
-      })
+    this.xScaleType = toSignal(
+      this.store.select(getMetricsXAxisType).pipe(
+        map((xAxisType) => {
+          switch (xAxisType) {
+            case XAxisType.STEP:
+            case XAxisType.RELATIVE:
+              return ScaleType.LINEAR;
+            case XAxisType.WALL_TIME:
+              return ScaleType.TIME;
+            default:
+              const neverType = xAxisType as never;
+              throw new Error(`Invalid xAxisType for line chart. ${neverType}`);
+          }
+        })
+      ),
+      {requireSync: true}
     );
     this.scalarSmoothing$ = this.store.select(getMetricsScalarSmoothing);
-    this.smoothingEnabled$ = this.store
-      .select(getMetricsScalarSmoothing)
-      .pipe(map((smoothing) => smoothing > 0));
-    this.showFullWidth$ = this.store
-      .select(getCardStateMap)
-      .pipe(map((map) => map[this.cardId]?.fullWidth));
+    this.smoothingEnabled = toSignal(
+      this.store
+        .select(getMetricsScalarSmoothing)
+        .pipe(map((smoothing) => smoothing > 0)),
+      {requireSync: true}
+    );
+    this.showFullWidth = toSignal(
+      this.store
+        .select(getCardStateMap)
+        .pipe(map((map) => map[this.cardId]?.fullWidth ?? false)),
+      {requireSync: true}
+    );
   }
 
   // Angular Component constructor for DataDownload dialog. It is customizable for
@@ -286,45 +301,45 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
   @Output() pinStateChanged = new EventEmitter<boolean>();
 
   isVisible: boolean = false;
-  loadState$?: Observable<DataLoadState>;
+  loadState!: Signal<DataLoadState>;
   title$?: Observable<string>;
   tag$?: Observable<string>;
-  isPinned$?: Observable<boolean>;
-  dataSeries$?: Observable<ScalarCardDataSeries[]>;
-  chartMetadataMap$?: Observable<ScalarCardSeriesMetadataMap>;
+  isPinned!: Signal<boolean>;
+  dataSeries!: Signal<ScalarCardDataSeries[]>;
+  chartMetadataMap!: Signal<ScalarCardSeriesMetadataMap>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
-  columnHeaders$?: Observable<ColumnHeader[]>;
+  columnHeaders!: Signal<ColumnHeader[]>;
   minMaxSteps$?: Observable<MinMaxStep | undefined>;
-  userViewBox$?: Observable<Extent | null>;
-  stepOrLinkedTimeSelection$?: Observable<TimeSelection | undefined>;
-  cardState$?: Observable<Partial<CardState>>;
-  rangeEnabled$?: Observable<boolean>;
+  userViewBox!: Signal<Extent | null>;
+  stepOrLinkedTimeSelection!: Signal<TimeSelection | undefined>;
+  cardState!: Signal<Partial<CardState>>;
+  rangeEnabled!: Signal<boolean>;
   hparamsEnabled$?: Observable<boolean>;
-  columnFilters$;
-  runToHparamMap$?: Observable<RunToHparamMap>;
-  selectableColumns$?: Observable<ColumnHeader[]>;
-  numColumnsLoaded$;
-  numColumnsToLoad$;
+  readonly columnFilters;
+  runToHparamMap!: Signal<RunToHparamMap>;
+  selectableColumns!: Signal<ColumnHeader[]>;
+  readonly numColumnsLoaded;
+  readonly numColumnsToLoad;
 
   onVisibilityChange({visible}: {visible: boolean}) {
     this.isVisible = visible;
   }
 
-  readonly useDarkMode$;
-  readonly ignoreOutliers$;
-  readonly isTooltipRowsLimitEnabled$;
-  readonly tooltipRowsLimit$;
-  readonly tooltipSort$;
-  readonly xAxisType$;
-  readonly forceSvg$;
-  readonly columnCustomizationEnabled$;
-  readonly columnContextMenusEnabled$;
-  readonly xScaleType$;
+  readonly useDarkMode;
+  readonly ignoreOutliers;
+  readonly isTooltipRowsLimitEnabled;
+  readonly tooltipRowsLimit;
+  readonly tooltipSort;
+  readonly xAxisType;
+  readonly forceSvg;
+  readonly columnCustomizationEnabled;
+  readonly columnContextMenusEnabled;
+  readonly xScaleType;
 
   readonly scalarSmoothing$;
-  readonly smoothingEnabled$;
+  readonly smoothingEnabled;
 
-  readonly showFullWidth$;
+  readonly showFullWidth;
 
   private readonly ngUnsubscribe = new Subject<void>();
 
@@ -440,9 +455,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.userViewBox$ = this.store.select(
-      getMetricsCardUserViewBox,
-      this.cardId
+    this.userViewBox = toSignal(
+      this.store.select(getMetricsCardUserViewBox, this.cardId),
+      {injector: this.injector, requireSync: true}
     );
 
     this.minMaxSteps$ = combineLatest([
@@ -460,38 +475,41 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
-    this.dataSeries$ = partitionedSeries$.pipe(
-      // Smooth
-      combineLatestWith(this.store.select(getMetricsScalarSmoothing)),
-      switchMap<
-        [PartitionedSeries[], number],
-        Observable<ScalarCardDataSeries[]>
-      >(([runsData, smoothing]) => {
-        const cleanedRunsData = runsData.map(({seriesId, points}) => ({
-          id: seriesId,
-          points,
-        }));
-        if (smoothing <= 0) {
-          return of(cleanedRunsData);
-        }
+    this.dataSeries = toSignal(
+      partitionedSeries$.pipe(
+        // Smooth
+        combineLatestWith(this.store.select(getMetricsScalarSmoothing)),
+        switchMap<
+          [PartitionedSeries[], number],
+          Observable<ScalarCardDataSeries[]>
+        >(([runsData, smoothing]) => {
+          const cleanedRunsData = runsData.map(({seriesId, points}) => ({
+            id: seriesId,
+            points,
+          }));
+          if (smoothing <= 0) {
+            return of(cleanedRunsData);
+          }
 
-        return from(classicSmoothing(cleanedRunsData, smoothing)).pipe(
-          map((smoothedDataSeriesList) => {
-            const smoothedList = cleanedRunsData.map((dataSeries, index) => {
-              return {
-                id: getSmoothedSeriesId(dataSeries.id),
-                points: smoothedDataSeriesList[index].points.map(
-                  ({y}, pointIndex) => {
-                    return {...dataSeries.points[pointIndex], y};
-                  }
-                ),
-              };
-            });
-            return [...cleanedRunsData, ...smoothedList];
-          })
-        );
-      }),
-      startWith([] as ScalarCardDataSeries[])
+          return from(classicSmoothing(cleanedRunsData, smoothing)).pipe(
+            map((smoothedDataSeriesList) => {
+              const smoothedList = cleanedRunsData.map((dataSeries, index) => {
+                return {
+                  id: getSmoothedSeriesId(dataSeries.id),
+                  points: smoothedDataSeriesList[index].points.map(
+                    ({y}, pointIndex) => {
+                      return {...dataSeries.points[pointIndex], y};
+                    }
+                  ),
+                };
+              });
+              return [...cleanedRunsData, ...smoothedList];
+            })
+          );
+        }),
+        startWith([] as ScalarCardDataSeries[])
+      ),
+      {injector: this.injector, requireSync: true}
     );
 
     this.linkedTimeSelection$ = combineLatest([
@@ -518,113 +536,120 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
-    this.stepOrLinkedTimeSelection$ = this.store.select(
-      getMetricsCardTimeSelection,
-      this.cardId
+    this.stepOrLinkedTimeSelection = toSignal(
+      this.store.select(getMetricsCardTimeSelection, this.cardId),
+      {injector: this.injector, requireSync: true}
     );
 
-    this.columnHeaders$ = this.store.select(
-      getGroupedHeadersForCard(this.cardId)
+    this.columnHeaders = toSignal(
+      this.store.select(getGroupedHeadersForCard(this.cardId)),
+      {injector: this.injector, requireSync: true}
     );
 
-    this.chartMetadataMap$ = partitionedSeries$.pipe(
-      switchMap<
-        PartitionedSeries[],
-        Observable<
-          Array<
-            PartitionedSeries & {
-              displayName: string;
-              alias: ExperimentAlias | null;
-            }
+    this.chartMetadataMap = toSignal(
+      partitionedSeries$.pipe(
+        switchMap<
+          PartitionedSeries[],
+          Observable<
+            Array<
+              PartitionedSeries & {
+                displayName: string;
+                alias: ExperimentAlias | null;
+              }
+            >
           >
-        >
-      >((partitioned) => {
-        return combineLatest(
-          partitioned.map((series) => {
-            return this.getRunDisplayNameAndAlias(series.runId).pipe(
-              map((displayNameAndAlias) => {
-                return {...series, ...displayNameAndAlias};
-              })
-            );
-          })
-        );
-      }),
-      combineLatestWith(
-        this.store.select(getCurrentRouteRunSelection),
-        this.store.select(getFilteredRenderableRunsIds),
-        this.store.select(getRunColorMap),
-        this.store.select(getMetricsScalarSmoothing)
-      ),
-      // When the `fetchRunsSucceeded` action fires, the run selection
-      // map and the metadata change. To prevent quick fire of changes,
-      // debounce by a microtask to emit only single change for the runs
-      // store change.
-      debounceTime(0),
-      map(
-        ([
-          namedPartitionedSeries,
-          runSelectionMap,
-          renderableRuns,
-          colorMap,
-          smoothing,
-        ]) => {
-          const metadataMap: ScalarCardSeriesMetadataMap = {};
-          const shouldSmooth = smoothing > 0;
+        >((partitioned) => {
+          return combineLatest(
+            partitioned.map((series) => {
+              return this.getRunDisplayNameAndAlias(series.runId).pipe(
+                map((displayNameAndAlias) => {
+                  return {...series, ...displayNameAndAlias};
+                })
+              );
+            })
+          );
+        }),
+        combineLatestWith(
+          this.store.select(getCurrentRouteRunSelection),
+          this.store.select(getFilteredRenderableRunsIds),
+          this.store.select(getRunColorMap),
+          this.store.select(getMetricsScalarSmoothing)
+        ),
+        // When the `fetchRunsSucceeded` action fires, the run selection
+        // map and the metadata change. To prevent quick fire of changes,
+        // debounce by a microtask to emit only single change for the runs
+        // store change.
+        debounceTime(0),
+        map(
+          ([
+            namedPartitionedSeries,
+            runSelectionMap,
+            renderableRuns,
+            colorMap,
+            smoothing,
+          ]) => {
+            const metadataMap: ScalarCardSeriesMetadataMap = {};
+            const shouldSmooth = smoothing > 0;
 
-          for (const partitioned of namedPartitionedSeries) {
-            const {
-              seriesId,
-              runId,
-              displayName,
-              alias,
-              partitionIndex,
-              partitionSize,
-            } = partitioned;
+            for (const partitioned of namedPartitionedSeries) {
+              const {
+                seriesId,
+                runId,
+                displayName,
+                alias,
+                partitionIndex,
+                partitionSize,
+              } = partitioned;
 
-            metadataMap[seriesId] = {
-              type: SeriesType.ORIGINAL,
-              id: seriesId,
-              alias,
-              displayName:
-                partitionSize > 1
-                  ? `${displayName}: ${partitionIndex}`
-                  : displayName,
-              visible: Boolean(
-                runSelectionMap &&
-                  runSelectionMap.get(runId) &&
-                  renderableRuns.has(runId)
-              ),
-              color: colorMap[runId] ?? '#fff',
-              aux: false,
-              opacity: 1,
-            };
-          }
+              metadataMap[seriesId] = {
+                type: SeriesType.ORIGINAL,
+                id: seriesId,
+                alias,
+                displayName:
+                  partitionSize > 1
+                    ? `${displayName}: ${partitionIndex}`
+                    : displayName,
+                visible: Boolean(
+                  runSelectionMap &&
+                    runSelectionMap.get(runId) &&
+                    renderableRuns.has(runId)
+                ),
+                color: colorMap[runId] ?? '#fff',
+                aux: false,
+                opacity: 1,
+              };
+            }
 
-          if (!shouldSmooth) {
+            if (!shouldSmooth) {
+              return metadataMap;
+            }
+
+            for (const [id, metadata] of Object.entries(metadataMap)) {
+              const smoothedSeriesId = getSmoothedSeriesId(id);
+              metadataMap[smoothedSeriesId] = {
+                ...metadata,
+                id: smoothedSeriesId,
+                type: SeriesType.DERIVED,
+                aux: false,
+                originalSeriesId: id,
+              };
+
+              metadata.aux = true;
+              metadata.opacity = 0.25;
+            }
+
             return metadataMap;
           }
-
-          for (const [id, metadata] of Object.entries(metadataMap)) {
-            const smoothedSeriesId = getSmoothedSeriesId(id);
-            metadataMap[smoothedSeriesId] = {
-              ...metadata,
-              id: smoothedSeriesId,
-              type: SeriesType.DERIVED,
-              aux: false,
-              originalSeriesId: id,
-            };
-
-            metadata.aux = true;
-            metadata.opacity = 0.25;
-          }
-
-          return metadataMap;
-        }
+        ),
+        startWith({} as ScalarCardSeriesMetadataMap)
       ),
-      startWith({} as ScalarCardSeriesMetadataMap)
+      {injector: this.injector, requireSync: true}
     );
 
-    this.loadState$ = this.store.select(getCardLoadState, this.cardId);
+    this.loadState = toSignal(
+      this.store.select(getCardLoadState, this.cardId),
+      {injector: this.injector, requireSync: true}
+    );
 
     this.tag$ = cardMetadata$.pipe(
       map((cardMetadata) => {
@@ -632,10 +657,13 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
-    this.cardState$ = this.store.select(getCardStateMap).pipe(
-      map((cardStateMap) => {
-        return cardStateMap[this.cardId] || {};
-      })
+    this.cardState = toSignal(
+      this.store.select(getCardStateMap).pipe(
+        map((cardStateMap) => {
+          return cardStateMap[this.cardId] || {};
+        })
+      ),
+      {injector: this.injector, requireSync: true}
     );
 
     this.title$ = this.tag$.pipe(
@@ -644,15 +672,25 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       })
     );
 
-    this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
-
-    this.rangeEnabled$ = this.store.select(
-      getMetricsCardRangeSelectionEnabled(this.cardId)
+    this.isPinned = toSignal(
+      this.store.select(getCardPinnedState, this.cardId),
+      {injector: this.injector, requireSync: true}
     );
 
-    this.runToHparamMap$ = this.store.select(getRunToHparamMap);
+    this.rangeEnabled = toSignal(
+      this.store.select(getMetricsCardRangeSelectionEnabled(this.cardId)),
+      {injector: this.injector, requireSync: true}
+    );
 
-    this.selectableColumns$ = this.store.select(getSelectableColumns);
+    this.runToHparamMap = toSignal(this.store.select(getRunToHparamMap), {
+      injector: this.injector,
+      requireSync: true,
+    });
+
+    this.selectableColumns = toSignal(this.store.select(getSelectableColumns), {
+      injector: this.injector,
+      requireSync: true,
+    });
   }
 
   ngOnDestroy() {

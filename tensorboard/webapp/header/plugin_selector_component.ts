@@ -38,7 +38,7 @@ export class PluginSelectorComponent {
   disabledPlugins!: UiPluginMetadata[];
 
   @Input()
-  selectedPlugin!: PluginId;
+  selectedPlugin!: PluginId | null;
 
   @Output()
   onPluginSelectionChanged = new EventEmitter<PluginId>();

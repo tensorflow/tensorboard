@@ -33,7 +33,7 @@ limitations under the License.
 
 <ng-template #filterModalTemplate>
   <tb-data-table-filter
-    [filter]="selectedFilter"
+    [filter]="selectedFilter!"
     (intervalFilterChanged)="emitIntervalFilterChanged($event)"
     (discreteFilterChanged)="emitDiscreteFilterChanged($event)"
     (includeUndefinedToggled)="emitIncludeUndefinedToggled()"

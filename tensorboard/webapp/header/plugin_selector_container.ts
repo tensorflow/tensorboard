@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {createSelector, select, Store} from '@ngrx/store';
+import {createSelector, Store} from '@ngrx/store';
 import {changePlugin} from '../core/actions';
 import {getActivePlugin, getPlugins, State} from '../core/store';
 import {PluginId} from '../types/api';
@@ -34,22 +34,22 @@ const getDisabledPlugins = createSelector(
   selector: 'plugin-selector',
   template: `
     <plugin-selector-component
-      [activePlugins]="plugins$ | async"
-      [disabledPlugins]="disabledPlugins$ | async"
-      [selectedPlugin]="activePlugin$ | async"
+      [activePlugins]="plugins()"
+      [disabledPlugins]="disabledPlugins()"
+      [selectedPlugin]="activePlugin()"
       (onPluginSelectionChanged)="onPluginSelectionChange($event)"
     ></plugin-selector-component>
   `,
 })
 export class PluginSelectorContainer {
-  readonly activePlugin$;
-  readonly plugins$;
-  readonly disabledPlugins$;
+  readonly activePlugin;
+  readonly plugins;
+  readonly disabledPlugins;
 
   constructor(private readonly store: Store<State>) {
-    this.activePlugin$ = this.store.pipe(select(getActivePlugin));
-    this.plugins$ = this.store.pipe(select(getUiPlugins));
-    this.disabledPlugins$ = this.store.pipe(select(getDisabledPlugins));
+    this.activePlugin = this.store.selectSignal(getActivePlugin);
+    this.plugins = this.store.selectSignal(getUiPlugins);
+    this.disabledPlugins = this.store.selectSignal(getDisabledPlugins);
   }
 
   onPluginSelectionChange(pluginId: PluginId) {

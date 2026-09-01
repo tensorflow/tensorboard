@@ -23,14 +23,14 @@ import {State} from '../_redux/settings_types';
   selector: 'settings-button',
   template: `
     <settings-button-component
-      [settingsLoadState]="settingsLoadState$ | async"
+      [settingsLoadState]="settingsLoadState()"
     ></settings-button-component>
   `,
 })
 export class SettingsButtonContainer {
-  readonly settingsLoadState$;
+  readonly settingsLoadState;
 
   constructor(private store: Store<State>) {
-    this.settingsLoadState$ = this.store.select(getSettingsLoadState);
+    this.settingsLoadState = this.store.selectSignal(getSettingsLoadState);
   }
 }

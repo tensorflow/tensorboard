@@ -931,13 +931,7 @@ describe('metrics main view', () => {
       });
 
       it('resets the card min width', () => {
-        const getMetricsCardMinWidthSubject = new ReplaySubject<number | null>(
-          1
-        );
-        getMetricsCardMinWidthSubject.next(500);
-        selectSpy
-          .withArgs(getMetricsCardMinWidth)
-          .and.returnValue(getMetricsCardMinWidthSubject);
+        store.overrideSelector(getMetricsCardMinWidth, 500);
         let fixture = TestBed.createComponent(MainViewContainer);
         fixture.detectChanges();
 
@@ -947,7 +941,8 @@ describe('metrics main view', () => {
           ]
         ).toBe('repeat(auto-fill, minmax(500px, 1fr))');
 
-        getMetricsCardMinWidthSubject.next(null);
+        store.overrideSelector(getMetricsCardMinWidth, null);
+        store.refreshState();
         fixture.detectChanges();
 
         expect(

@@ -55,7 +55,7 @@ export class CardFobControllerComponent {
   @ViewChild('prospectiveFobWrapper')
   readonly prospectiveFobWrapper!: ElementRef;
   @Input() axisDirection!: AxisDirection;
-  @Input() timeSelection?: TimeSelection;
+  @Input() timeSelection: TimeSelection | undefined;
   @Input() cardFobHelper!: CardFobGetStepFromPositionHelper;
   @Input() startStepAxisPosition!: number;
   @Input() endStepAxisPosition!: number | null;
@@ -64,7 +64,7 @@ export class CardFobControllerComponent {
   @Input() showExtendedLine?: Boolean = false;
   @Input() prospectiveStep: number | null = null;
   @Input() prospectiveStepAxisPosition?: number | null = null;
-  @Input() allowFobRemoval?: boolean = true;
+  @Input() allowFobRemoval: boolean | undefined = true;
 
   @Output() onTimeSelectionChanged =
     new EventEmitter<TimeSelectionWithAffordance>();

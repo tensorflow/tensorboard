@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {createSelector, Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {combineLatestWith, map} from 'rxjs/operators';
@@ -42,11 +43,11 @@ const isReloadDisabledByPlugin = createSelector(
   template: `
     <button
       class="reload-button"
-      [class.loading]="isReloading$ | async"
+      [class.loading]="isReloading()"
       mat-icon-button
       (click)="triggerReload()"
       [title]="getReloadTitle(lastLoadedTimeInMs$ | async | date: 'medium')"
-      [disabled]="reloadDisabled$ | async"
+      [disabled]="reloadDisabled()"
     >
       <mat-icon class="refresh-icon" svgIcon="refresh_24px"></mat-icon>
     </button>
@@ -79,19 +80,22 @@ const isReloadDisabledByPlugin = createSelector(
   ],
 })
 export class ReloadContainer {
-  readonly reloadDisabled$: Observable<boolean>;
-
-  isReloading$: Observable<boolean>;
+  readonly reloadDisabled;
+  readonly isReloading;
 
   lastLoadedTimeInMs$: Observable<number | null>;
 
   constructor(private readonly store: Store<State>) {
-    this.reloadDisabled$ = this.store.select(isReloadDisabledByPlugin);
-    this.isReloading$ = this.store.select(getCoreDataLoadedState).pipe(
-      combineLatestWith(this.reloadDisabled$),
-      map(([loadState, reloadDisabled]) => {
-        return !reloadDisabled && loadState === DataLoadState.LOADING;
-      })
+    const reloadDisabled$ = this.store.select(isReloadDisabledByPlugin);
+    this.reloadDisabled = toSignal(reloadDisabled$, {requireSync: true});
+    this.isReloading = toSignal(
+      this.store.select(getCoreDataLoadedState).pipe(
+        combineLatestWith(reloadDisabled$),
+        map(([loadState, reloadDisabled]) => {
+          return !reloadDisabled && loadState === DataLoadState.LOADING;
+        })
+      ),
+      {requireSync: true}
     );
     this.lastLoadedTimeInMs$ = this.store.select(getAppLastLoadedTimeInMs);
   }

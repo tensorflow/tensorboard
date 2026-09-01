@@ -14,7 +14,6 @@ limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
 import {State as OtherAppState} from '../../../../../webapp/app_state';
 import {getDarkModeEnabled} from '../../../../../webapp/selectors';
 import {
@@ -29,24 +28,26 @@ import {State as DebuggerState} from '../../store/debugger_types';
   selector: 'tf-debugger-v2-source-files',
   template: `
     <source-files-component
-      [focusedSourceFileContent]="focusedSourceFileContent$ | async"
-      [focusedSourceLineSpec]="focusedSourceLineSpec$ | async"
-      [useDarkMode]="useDarkMode$ | async"
+      [focusedSourceFileContent]="focusedSourceFileContent()"
+      [focusedSourceLineSpec]="focusedSourceLineSpec()"
+      [useDarkMode]="useDarkMode()"
     ></source-files-component>
   `,
 })
 export class SourceFilesContainer {
   constructor(private readonly store: Store<DebuggerState & OtherAppState>) {
-    this.focusedSourceFileContent$ = this.store.select(
+    this.focusedSourceFileContent = this.store.selectSignal(
       getFocusedSourceFileContent
     );
-    this.focusedSourceLineSpec$ = this.store.select(getFocusedSourceLineSpec);
-    this.useDarkMode$ = this.store.select(getDarkModeEnabled);
+    this.focusedSourceLineSpec = this.store.selectSignal(
+      getFocusedSourceLineSpec
+    );
+    this.useDarkMode = this.store.selectSignal(getDarkModeEnabled);
   }
 
-  readonly focusedSourceFileContent$;
+  readonly focusedSourceFileContent;
 
-  readonly focusedSourceLineSpec$;
+  readonly focusedSourceLineSpec;
 
-  readonly useDarkMode$: Observable<boolean>;
+  readonly useDarkMode;
 }

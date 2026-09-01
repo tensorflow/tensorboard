@@ -33,8 +33,6 @@
   },
   "angularCompilerOptions": {
     "strictTemplates": true,
-    // TODO(@cdavalos): Set this back to true after these containers stop using AsyncPipe
-    // for inputs. AsyncPipe can return null, so Angular currently rejects these bindings.
-    "strictNullInputTypes": false
+    "strictNullInputTypes": true
   }
 }

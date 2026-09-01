@@ -18,6 +18,7 @@ import {
   Inject,
   Optional,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {
   combineLatestWith,
@@ -45,9 +46,7 @@ const DEFAULT_BRAND_NAME = 'TensorBoard';
 @Component({
   standalone: false,
   selector: 'page-title',
-  template: `
-    <page-title-component [title]="title$ | async"></page-title-component>
-  `,
+  template: ` <page-title-component [title]="title()"></page-title-component> `,
   styles: [
     `
       :host {
@@ -62,7 +61,7 @@ export class PageTitleContainer {
 
   private readonly experimentName$;
 
-  readonly title$;
+  readonly title;
 
   constructor(
     private readonly store: Store<State>,
@@ -85,21 +84,27 @@ export class PageTitleContainer {
       }),
       map((experiment) => (experiment ? experiment.name : null))
     );
-    this.title$ = this.store.select(getEnvironment).pipe(
-      combineLatestWith(this.store.select(getRouteKind), this.experimentName$),
-      map(([env, routeKind, experimentName]) => {
-        const tbBrandName = this.customBrandName || DEFAULT_BRAND_NAME;
-        if (env.window_title) {
-          // (it's an empty string when the `--window_title` flag is not set)
-          return env.window_title;
-        }
-        if (routeKind === RouteKind.EXPERIMENT && experimentName) {
-          return `${experimentName} - ${tbBrandName}`;
-        }
-        return tbBrandName;
-      }),
-      startWith(this.customBrandName || DEFAULT_BRAND_NAME),
-      distinctUntilChanged()
+    this.title = toSignal(
+      this.store.select(getEnvironment).pipe(
+        combineLatestWith(
+          this.store.select(getRouteKind),
+          this.experimentName$
+        ),
+        map(([env, routeKind, experimentName]) => {
+          const tbBrandName = this.customBrandName || DEFAULT_BRAND_NAME;
+          if (env.window_title) {
+            // (it's an empty string when the `--window_title` flag is not set)
+            return env.window_title;
+          }
+          if (routeKind === RouteKind.EXPERIMENT && experimentName) {
+            return `${experimentName} - ${tbBrandName}`;
+          }
+          return tbBrandName;
+        }),
+        startWith(this.customBrandName || DEFAULT_BRAND_NAME),
+        distinctUntilChanged()
+      ),
+      {requireSync: true}
     );
   }
 }

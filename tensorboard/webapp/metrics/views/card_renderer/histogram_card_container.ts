@@ -16,10 +16,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  Injector,
   Input,
   OnInit,
   Output,
+  Signal,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {combineLatest, Observable} from 'rxjs';
 import {filter, map} from 'rxjs/operators';
@@ -69,16 +72,16 @@ type HistogramCardMetadata = CardMetadata & {
   selector: 'histogram-card',
   template: `
     <histogram-card-component
-      [loadState]="loadState$ | async"
+      [loadState]="loadState()"
       [title]="title$ | async"
       [tag]="tag$ | async"
       [runId]="runId$ | async"
       [data]="data$ | async"
-      [mode]="mode$ | async"
-      [xAxisType]="xAxisType$ | async"
+      [mode]="mode()"
+      [xAxisType]="xAxisType()"
       [runColorScale]="runColorScale"
-      [showFullWidth]="showFullWidth$ | async"
-      [isPinned]="isPinned$ | async"
+      [showFullWidth]="showFullWidth()"
+      [isPinned]="isPinned()"
       [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       (onFullSizeToggle)="onFullSizeToggle()"
@@ -99,12 +102,18 @@ type HistogramCardMetadata = CardMetadata & {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HistogramCardContainer implements CardRenderer, OnInit {
-  constructor(private readonly store: Store<State>) {
-    this.mode$ = this.store.select(getMetricsHistogramMode);
-    this.xAxisType$ = this.store.select(getMetricsXAxisType);
-    this.showFullWidth$ = this.store
-      .select(getCardStateMap)
-      .pipe(map((map) => map[this.cardId]?.fullWidth));
+  constructor(
+    private readonly store: Store<State>,
+    private readonly injector: Injector
+  ) {
+    this.mode = this.store.selectSignal(getMetricsHistogramMode);
+    this.xAxisType = this.store.selectSignal(getMetricsXAxisType);
+    this.showFullWidth = toSignal(
+      this.store
+        .select(getCardStateMap)
+        .pipe(map((map) => map[this.cardId]?.fullWidth ?? false)),
+      {requireSync: true}
+    );
   }
 
   @Input() cardId!: CardId;
@@ -112,15 +121,15 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
   @Input() runColorScale!: RunColorScale;
   @Output() pinStateChanged = new EventEmitter<boolean>();
 
-  loadState$?: Observable<DataLoadState>;
+  loadState!: Signal<DataLoadState>;
   title$?: Observable<string>;
   tag$?: Observable<string>;
   runId$?: Observable<string>;
   data$?: Observable<HistogramDatum[]>;
-  mode$;
-  xAxisType$;
-  readonly showFullWidth$;
-  isPinned$?: Observable<boolean>;
+  readonly mode;
+  readonly xAxisType;
+  readonly showFullWidth;
+  isPinned!: Signal<boolean>;
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   isClosestStepHighlighted$?: Observable<boolean | null>;
   isTimeSelectionClipped$?: Observable<boolean>;
@@ -220,7 +229,10 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
       })
     );
 
-    this.loadState$ = this.store.select(getCardLoadState, this.cardId);
+    this.loadState = toSignal(
+      this.store.select(getCardLoadState, this.cardId),
+      {injector: this.injector, requireSync: true}
+    );
 
     this.tag$ = cardMetadata$.pipe(
       map((cardMetadata) => {
@@ -240,7 +252,10 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
       })
     );
 
-    this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
+    this.isPinned = toSignal(
+      this.store.select(getCardPinnedState, this.cardId),
+      {injector: this.injector, requireSync: true}
+    );
   }
 
   onLinkedTimeSelectionChanged(

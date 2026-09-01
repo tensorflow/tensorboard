@@ -38,6 +38,6 @@ export type TimeSelectionWithClipped = TimeSelection & {clipped: boolean};
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class VisLinkedTimeSelectionWarningComponent {
-  @Input() isClipped?: boolean = false;
-  @Input() isClosestStepHighlighted?: boolean = false;
+  @Input() isClipped: boolean | undefined = false;
+  @Input() isClosestStepHighlighted: boolean | null | undefined = false;
 }

@@ -18,9 +18,10 @@ import {
   EventEmitter,
   Input,
   Output,
+  Signal,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
 import {map, take, throttleTime, withLatestFrom} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import * as selectors from '../../../selectors';
@@ -44,7 +45,7 @@ const RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS = 350;
       [cardId]="cardId"
       [groupName]="groupName"
       [pluginType]="pluginType"
-      [runColorScale]="runColorScale$ | async"
+      [runColorScale]="runColorScale()"
       (fullWidthChanged)="onFullWidthChanged($event)"
       (fullHeightChanged)="onFullHeightChanged($event)"
       (pinStateChanged)="onPinStateChanged()"
@@ -59,21 +60,24 @@ const RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS = 350;
 })
 export class CardViewContainer {
   constructor(private readonly store: Store<State>) {
-    this.runColorScale$ = this.store.select(selectors.getRunColorMap).pipe(
-      throttleTime(RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS, undefined, {
-        leading: true,
-        trailing: true,
-      }),
-      map((colorMap) => {
-        return (runId: string) => {
-          if (!colorMap.hasOwnProperty(runId)) {
-            // Assign white when no colors are assigned to a run by user or
-            // by color grouping scheme.
-            return '#fff';
-          }
-          return colorMap[runId];
-        };
-      })
+    this.runColorScale = toSignal(
+      this.store.select(selectors.getRunColorMap).pipe(
+        throttleTime(RUN_COLOR_UPDATE_THROTTLE_TIME_IN_MS, undefined, {
+          leading: true,
+          trailing: true,
+        }),
+        map((colorMap) => {
+          return (runId: string) => {
+            if (!colorMap.hasOwnProperty(runId)) {
+              // Assign white when no colors are assigned to a run by user or
+              // by color grouping scheme.
+              return '#fff';
+            }
+            return colorMap[runId];
+          };
+        })
+      ),
+      {requireSync: true}
     );
   }
 
@@ -90,7 +94,7 @@ export class CardViewContainer {
     this.isEverVisible = this.isEverVisible || visible;
   }
 
-  readonly runColorScale$: Observable<RunColorScale>;
+  readonly runColorScale: Signal<RunColorScale>;
 
   onFullWidthChanged(showFullWidth: boolean) {
     this.fullWidthChanged.emit(showFullWidth);

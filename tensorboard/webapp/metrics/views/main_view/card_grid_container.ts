@@ -20,6 +20,7 @@ import {
   OnDestroy,
   SimpleChanges,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {BehaviorSubject, combineLatest, Observable, of, Subject} from 'rxjs';
 import {map, shareReplay, switchMap, takeUntil, tap} from 'rxjs/operators';
@@ -38,14 +39,14 @@ import {CardIdWithMetadata} from '../metrics_view_types';
   selector: 'metrics-card-grid',
   template: `
     <metrics-card-grid-component
-      [isGroupExpanded]="isGroupExpanded$ | async"
-      [pageIndex]="normalizedPageIndex$ | async"
-      [numPages]="numPages$ | async"
-      [showPaginationControls]="showPaginationControls$ | async"
-      [cardIdsWithMetadata]="pagedItems$ | async"
-      [cardMinWidth]="cardMinWidth$ | async"
+      [isGroupExpanded]="isGroupExpanded()"
+      [pageIndex]="normalizedPageIndex()"
+      [numPages]="numPages()"
+      [showPaginationControls]="showPaginationControls()"
+      [cardIdsWithMetadata]="pagedItems()"
+      [cardMinWidth]="cardMinWidth()"
       [cardObserver]="cardObserver"
-      [cardStateMap]="cardStateMap$ | async"
+      [cardStateMap]="cardStateMap()"
       [groupName]="groupName"
       (pageIndexChanged)="onPageIndexChanged($event)"
     >
@@ -63,22 +64,25 @@ export class CardGridContainer implements OnChanges, OnDestroy {
   readonly pageIndex$ = new BehaviorSubject<number>(0);
   private readonly items$ = new BehaviorSubject<CardIdWithMetadata[]>([]);
   private readonly ngUnsubscribe = new Subject<void>();
-  readonly cardStateMap$;
+  readonly cardStateMap;
 
   readonly numPages$;
+  readonly numPages;
 
   readonly isGroupExpanded$: Observable<boolean>;
+  readonly isGroupExpanded;
 
-  readonly showPaginationControls$: Observable<boolean>;
+  readonly showPaginationControls;
 
   readonly normalizedPageIndex$;
+  readonly normalizedPageIndex;
 
-  readonly pagedItems$;
+  readonly pagedItems;
 
-  readonly cardMinWidth$;
+  readonly cardMinWidth;
 
   constructor(private readonly store: Store<State>) {
-    this.cardStateMap$ = this.store.select(selectors.getCardStateMap);
+    this.cardStateMap = this.store.selectSignal(selectors.getCardStateMap);
     this.numPages$ = combineLatest([
       this.items$,
       this.store.select(settingsSelectors.getPageSize),
@@ -87,6 +91,7 @@ export class CardGridContainer implements OnChanges, OnDestroy {
         return Math.ceil(items.length / pageSize);
       })
     );
+    this.numPages = toSignal(this.numPages$, {requireSync: true});
     this.isGroupExpanded$ = this.groupName$.pipe(
       switchMap((groupName) => {
         return groupName !== null
@@ -94,8 +99,12 @@ export class CardGridContainer implements OnChanges, OnDestroy {
           : of(true);
       })
     );
-    this.showPaginationControls$ = this.numPages$.pipe(
-      map((numPages) => numPages > 1)
+    this.isGroupExpanded = toSignal(this.isGroupExpanded$, {
+      requireSync: true,
+    });
+    this.showPaginationControls = toSignal(
+      this.numPages$.pipe(map((numPages) => numPages > 1)),
+      {requireSync: true}
     );
     this.normalizedPageIndex$ = combineLatest([
       this.pageIndex$,
@@ -119,7 +128,10 @@ export class CardGridContainer implements OnChanges, OnDestroy {
       }),
       shareReplay(1)
     );
-    this.pagedItems$ = combineLatest([
+    this.normalizedPageIndex = toSignal(this.normalizedPageIndex$, {
+      requireSync: true,
+    });
+    const pagedItems$ = combineLatest([
       this.items$,
       this.store.select(settingsSelectors.getPageSize),
       this.normalizedPageIndex$,
@@ -131,7 +143,8 @@ export class CardGridContainer implements OnChanges, OnDestroy {
         return items.slice(startIndex, endIndex);
       })
     );
-    this.cardMinWidth$ = this.store.select(getMetricsCardMinWidth);
+    this.pagedItems = toSignal(pagedItems$, {requireSync: true});
+    this.cardMinWidth = this.store.selectSignal(getMetricsCardMinWidth);
   }
 
   ngOnChanges(changes: SimpleChanges) {

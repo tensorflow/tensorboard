@@ -12,9 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input, Signal} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
 import {map, skip, startWith} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {getEnableGlobalPins} from '../../../selectors';
@@ -29,10 +29,10 @@ import {CardIdWithMetadata} from '../metrics_view_types';
   selector: 'metrics-pinned-view',
   template: `
     <metrics-pinned-view-component
-      [cardIdsWithMetadata]="cardIdsWithMetadata$ | async"
+      [cardIdsWithMetadata]="cardIdsWithMetadata()"
       [lastPinnedCardTime]="lastPinnedCardTime$ | async"
       [cardObserver]="cardObserver"
-      [globalPinsEnabled]="globalPinsEnabled$ | async"
+      [globalPinsEnabled]="globalPinsEnabled()"
       (onClearAllPinsClicked)="onClearAllPinsClicked()"
     ></metrics-pinned-view-component>
   `,
@@ -42,25 +42,29 @@ export class PinnedViewContainer {
   @Input() cardObserver!: CardObserver;
 
   constructor(private readonly store: Store<State>) {
-    this.cardIdsWithMetadata$ = this.store
-      .select(getPinnedCardsWithMetadata)
-      .pipe(
+    this.cardIdsWithMetadata = toSignal(
+      this.store.select(getPinnedCardsWithMetadata).pipe(
         map((cards) => cards as DeepReadonly<CardIdWithMetadata>[]),
         startWith([] as DeepReadonly<CardIdWithMetadata>[])
-      );
+      ),
+      {requireSync: true}
+    );
+    // Genuinely async: skip(1) means no synchronous value on subscribe, so
+    // this stays on AsyncPipe. See lastPinnedCardTime's nullable widening in
+    // pinned_view_component.ts.
     this.lastPinnedCardTime$ = this.store.select(getLastPinnedCardTime).pipe(
       // Ignore the first value on component load, only reacting to new
       // pins after page load.
       skip(1)
     );
-    this.globalPinsEnabled$ = this.store.select(getEnableGlobalPins);
+    this.globalPinsEnabled = this.store.selectSignal(getEnableGlobalPins);
   }
 
-  readonly cardIdsWithMetadata$: Observable<DeepReadonly<CardIdWithMetadata>[]>;
+  readonly cardIdsWithMetadata: Signal<DeepReadonly<CardIdWithMetadata>[]>;
 
   readonly lastPinnedCardTime$;
 
-  readonly globalPinsEnabled$;
+  readonly globalPinsEnabled;
 
   onClearAllPinsClicked() {
     this.store.dispatch(metricsClearAllPinnedCards());

@@ -16,13 +16,16 @@ limitations under the License.
 -->
 <div class="heading">
   <div class="tag">
-    <tb-truncated-path [title]="tag" [value]="title"></tb-truncated-path>
+    <tb-truncated-path
+      title="{{ tag }}"
+      value="{{ title }}"
+    ></tb-truncated-path>
     <vis-linked-time-selection-warning
-      [isClipped]="linkedTimeSelection && linkedTimeSelection.clipped"
+      [isClipped]="(linkedTimeSelection && linkedTimeSelection.clipped) ?? false"
       [isClosestStepHighlighted]="isClosestStepHighlighted"
     ></vis-linked-time-selection-warning>
   </div>
-  <div class="run">
+  <div class="run" *ngIf="runId !== null">
     <span
       class="dot"
       [ngStyle]="{backgroundColor: runColorScale(runId)}"
@@ -58,7 +61,7 @@ limitations under the License.
   </span>
 </div>
 <tb-histogram
-  *ngIf="data && data.length; else noData"
+  *ngIf="runId !== null && data && data.length; else noData"
   [data]="data"
   [mode]="mode"
   [timeProperty]="timeProperty(xAxisType)"

@@ -56,7 +56,7 @@ import {memoize} from '../../../util/memoize';
 export class ScalarCardDataTable {
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
   @Input() dataSeries!: ScalarCardDataSeries[];
-  @Input() stepOrLinkedTimeSelection!: TimeSelection;
+  @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;
   @Input() columnHeaders!: ColumnHeader[];
   @Input() sortingInfo!: SortingInfo;
   @Input() columnCustomizationEnabled!: boolean;
@@ -326,7 +326,7 @@ export class ScalarCardDataTable {
   }
 
   private getDataTableMode(): DataTableMode {
-    return this.stepOrLinkedTimeSelection.end
+    return this.stepOrLinkedTimeSelection?.end
       ? DataTableMode.RANGE
       : DataTableMode.SINGLE;
   }

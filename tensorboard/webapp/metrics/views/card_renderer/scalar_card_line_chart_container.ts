@@ -20,6 +20,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {Observable, of, Subject} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -68,16 +69,16 @@ import {TimeSelectionView} from './utils';
     <scalar-card-line-chart-component
       [seriesMetadataMap]="seriesMetadataMap"
       [seriesData]="seriesData"
-      [ignoreOutliers]="ignoreOutliers$ | async"
+      [ignoreOutliers]="resolvedIgnoreOutliers()"
       [disableUpdate]="disableUpdate"
-      [xAxisType]="xAxisType$ | async"
-      [xScaleType]="xScaleType$ | async"
+      [xAxisType]="resolvedXAxisType()"
+      [xScaleType]="xScaleType()"
       [yScaleType]="yScaleType"
-      [useDarkMode]="useDarkMode$ | async"
+      [useDarkMode]="useDarkMode()"
       [tooltipTemplate]="tooltipTemplate"
       [minMaxStep]="minMaxStep"
       [stepOrLinkedTimeSelection]="stepOrLinkedTimeSelection"
-      [forceSvg]="forceSvg$ | async"
+      [forceSvg]="forceSvg()"
       [userViewBox]="userViewBox$ | async"
       [disableTooltip]="disableTooltip"
       [allowFobRemoval]="allowFobRemoval"
@@ -100,33 +101,42 @@ export class ScalarCardLineChartContainer
   implements CardRenderer, OnInit, OnDestroy
 {
   constructor(private readonly store: Store<State>) {
-    this.useDarkMode$ = this.store.select(getDarkModeEnabled);
+    this.useDarkMode = this.store.selectSignal(getDarkModeEnabled);
     this.tooltipSort$ = this.store.select(getMetricsTooltipSort);
-    this.forceSvg$ = this.store.select(getForceSvgFeatureFlag);
-    this.ignoreOutliers$ = this.ignoreOutliers
-      ? of(this.ignoreOutliers)
-      : this.store.select(getMetricsIgnoreOutliers);
-    this.xAxisType$ = this.xAxisType
-      ? of(this.xAxisType)
-      : this.store.select(getMetricsXAxisType);
-    this.xScaleType$ = this.xAxisType
-      ? of(ScaleType.LINEAR)
-      : this.store.select(getMetricsXAxisType).pipe(
-          map((xAxisType) => {
-            switch (xAxisType) {
-              case XAxisType.STEP:
-              case XAxisType.RELATIVE:
-                return ScaleType.LINEAR;
-              case XAxisType.WALL_TIME:
-                return ScaleType.TIME;
-              default:
-                const neverType = xAxisType as never;
-                throw new Error(
-                  `Invalid xAxisType for line chart. ${neverType}`
-                );
-            }
-          })
-        );
+    this.forceSvg = this.store.selectSignal(getForceSvgFeatureFlag);
+    this.resolvedIgnoreOutliers = toSignal(
+      this.ignoreOutliers
+        ? of(this.ignoreOutliers)
+        : this.store.select(getMetricsIgnoreOutliers),
+      {requireSync: true}
+    );
+    this.resolvedXAxisType = toSignal(
+      this.xAxisType
+        ? of(this.xAxisType)
+        : this.store.select(getMetricsXAxisType),
+      {requireSync: true}
+    );
+    this.xScaleType = toSignal(
+      this.xAxisType
+        ? of(ScaleType.LINEAR)
+        : this.store.select(getMetricsXAxisType).pipe(
+            map((xAxisType) => {
+              switch (xAxisType) {
+                case XAxisType.STEP:
+                case XAxisType.RELATIVE:
+                  return ScaleType.LINEAR;
+                case XAxisType.WALL_TIME:
+                  return ScaleType.TIME;
+                default:
+                  const neverType = xAxisType as never;
+                  throw new Error(
+                    `Invalid xAxisType for line chart. ${neverType}`
+                  );
+              }
+            })
+          ),
+      {requireSync: true}
+    );
     this.ngUnsubscribe = new Subject<void>();
   }
 
@@ -151,14 +161,14 @@ export class ScalarCardLineChartContainer
   userViewBox$?: Observable<Extent | null>;
   rangeEnabled$?: Observable<boolean>;
 
-  readonly useDarkMode$;
+  readonly useDarkMode;
   readonly tooltipSort$;
-  readonly forceSvg$;
+  readonly forceSvg;
 
-  readonly ignoreOutliers$;
+  readonly resolvedIgnoreOutliers;
 
-  readonly xAxisType$;
-  readonly xScaleType$;
+  readonly resolvedXAxisType;
+  readonly xScaleType;
 
   private readonly ngUnsubscribe;
 

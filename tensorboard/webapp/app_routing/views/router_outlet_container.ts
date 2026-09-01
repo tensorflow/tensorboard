@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
@@ -29,33 +30,36 @@ import {
   selector: 'router-outlet',
   template: `
     <router-outlet-component
-      [activeNgComponent]="activeNgComponent$ | async"
+      [activeNgComponent]="activeNgComponent()"
     ></router-outlet-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RouterOutletContainer {
-  activeNgComponent$;
+  activeNgComponent;
 
   constructor(
     private readonly store: Store<State>,
     private readonly registry: RouteRegistryModule
   ) {
-    this.activeNgComponent$ = combineLatest([
-      this.store.select(getActiveRoute),
-      this.store.select(getNextRouteForRouterOutletOnly),
-    ]).pipe(
-      map(([activeRoute, nextRoute]) => {
-        if (!activeRoute) {
-          return null;
-        }
-        const isRouteTransitioning =
-          nextRoute !== null &&
-          !areSameRouteKindAndExperiments(activeRoute, nextRoute);
-        return isRouteTransitioning
-          ? null
-          : this.registry.getNgComponentByRouteKind(activeRoute.routeKind);
-      })
+    this.activeNgComponent = toSignal(
+      combineLatest([
+        this.store.select(getActiveRoute),
+        this.store.select(getNextRouteForRouterOutletOnly),
+      ]).pipe(
+        map(([activeRoute, nextRoute]) => {
+          if (!activeRoute) {
+            return null;
+          }
+          const isRouteTransitioning =
+            nextRoute !== null &&
+            !areSameRouteKindAndExperiments(activeRoute, nextRoute);
+          return isRouteTransitioning
+            ? null
+            : this.registry.getNgComponentByRouteKind(activeRoute.routeKind);
+        })
+      ),
+      {requireSync: true}
     );
   }
 }

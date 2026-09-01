@@ -35,13 +35,13 @@ import {
 })
 export class GraphComponent {
   @Input()
-  opInfo!: GraphOpInfo;
+  opInfo!: GraphOpInfo | null;
 
   @Input()
-  inputOps!: GraphOpInputSpec[];
+  inputOps!: GraphOpInputSpec[] | null;
 
   @Input()
-  consumerOps!: GraphOpConsumerSpec[][];
+  consumerOps!: GraphOpConsumerSpec[][] | null;
 
   @Output()
   onGraphOpNavigate = new EventEmitter<{graph_id: string; op_name: string}>();
@@ -50,14 +50,14 @@ export class GraphComponent {
    * Get the ID of the immediately-enclosing graph of the op.
    */
   get graphId() {
-    return this.opInfo.graph_ids[this.opInfo.graph_ids.length - 1];
+    return this.opInfo!.graph_ids[this.opInfo!.graph_ids.length - 1];
   }
 
   /**
    * Total number of consumers of all output tensors of the op.
    */
   get totalNumConsumers() {
-    return this.consumerOps.reduce((count, slotConsumers) => {
+    return this.consumerOps!.reduce((count, slotConsumers) => {
       return count + slotConsumers.length;
     }, 0);
   }

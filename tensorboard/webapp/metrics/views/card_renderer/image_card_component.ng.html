@@ -23,7 +23,7 @@ limitations under the License.
         value="{{ title }}"
       ></tb-truncated-path>
       <vis-linked-time-selection-warning
-        [isClipped]="linkedTimeSelection && linkedTimeSelection.clipped"
+        [isClipped]="(linkedTimeSelection && linkedTimeSelection.clipped) ?? false"
         [isClosestStepHighlighted]="isClosestStepHighlighted"
       ></vis-linked-time-selection-warning>
     </span>
@@ -52,7 +52,7 @@ limitations under the License.
     </span>
   </div>
   <div class="line">
-    <span class="run">
+    <span class="run" *ngIf="runId !== null">
       <span
         class="dot"
         [ngStyle]="{backgroundColor: runColorScale(runId)}"
@@ -63,7 +63,9 @@ limitations under the License.
       <span class="step" *ngIf="stepIndex !== null && stepIndex < steps.length"
         >Step {{ steps[stepIndex] | number }}</span
       >
-      <span class="sample" *ngIf="numSample > 1"
+      <span
+        class="sample"
+        *ngIf="sample !== null && numSample !== null && numSample > 1"
         >Sample {{ sample + 1 | number }}/{{ numSample | number}}</span
       >
       <mat-spinner
@@ -106,7 +108,7 @@ limitations under the License.
       alt="Image at step {{ steps[stepIndex] }}"
       src="{{ imageUrl }}"
       [ngStyle]="{'filter': cssFilter()}"
-      [includeFeatureFlags]
+      [includeFeatureFlags]="true"
     />
   </div>
 </ng-container>

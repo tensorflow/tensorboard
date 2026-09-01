@@ -52,13 +52,13 @@ import {MinMaxStep} from './scalar_card_types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ScalarCardFobController {
-  @Input() timeSelection?: TimeSelection;
+  @Input() timeSelection: TimeSelection | undefined;
   @Input() scale!: Scale;
   @Input() minMaxHorizontalViewExtend!: [number, number];
   @Input() minMaxStep!: MinMaxStep;
   @Input() axisSize!: number;
   @Input() disableInteraction: boolean = false;
-  @Input() allowFobRemoval?: boolean = true;
+  @Input() allowFobRemoval: boolean | undefined = true;
 
   @Output() onTimeSelectionChanged = new EventEmitter<{
     timeSelection: TimeSelection;

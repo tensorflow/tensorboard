@@ -74,7 +74,7 @@ import {CardIdWithMetadata} from '../metrics_view_types';
 export class PinnedViewComponent {
   @Input() cardObserver!: CardObserver;
   @Input() cardIdsWithMetadata!: CardIdWithMetadata[];
-  @Input() lastPinnedCardTime!: number;
+  @Input() lastPinnedCardTime: number | null = null;
   @Input() globalPinsEnabled: boolean = false;
   @Output() onClearAllPinsClicked = new EventEmitter<void>();
 }

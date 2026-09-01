@@ -12,9 +12,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Injector,
+  Input,
+  Signal,
+} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {Observable, of} from 'rxjs';
+import {of} from 'rxjs';
 import {State} from '../../../app_state';
 import {getMetricsTagGroupExpansionState} from '../../../selectors';
 import {metricsTagGroupExpansionChanged} from '../../actions';
@@ -25,7 +32,7 @@ import {metricsTagGroupExpansionChanged} from '../../actions';
   template: `
     <metrics-card-group-toolbar-component
       [numberOfCards]="numberOfCards"
-      [isGroupExpanded]="isGroupExpanded$ | async"
+      [isGroupExpanded]="isGroupExpanded()"
       [groupName]="groupName"
       (groupExpansionToggled)="onGroupExpansionToggled()"
     ></metrics-card-group-toolbar-component>
@@ -35,15 +42,22 @@ import {metricsTagGroupExpansionChanged} from '../../actions';
 export class CardGroupToolBarContainer {
   @Input() groupName: string | null = null;
   @Input() numberOfCards!: number;
-  isGroupExpanded$: Observable<boolean> = of(false);
+  isGroupExpanded!: Signal<boolean>;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(
+    private readonly store: Store<State>,
+    private readonly injector: Injector
+  ) {}
 
   ngOnInit() {
-    this.isGroupExpanded$ =
+    const isGroupExpanded$ =
       this.groupName !== null
         ? this.store.select(getMetricsTagGroupExpansionState, this.groupName)
         : of(false);
+    this.isGroupExpanded = toSignal(isGroupExpanded$, {
+      injector: this.injector,
+      requireSync: true,
+    });
   }
 
   onGroupExpansionToggled() {

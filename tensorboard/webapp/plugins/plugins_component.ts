@@ -100,16 +100,16 @@ export class PluginsComponent implements OnChanges {
   featureFlags!: FeatureFlags;
 
   @Input()
-  lastUpdated?: number;
+  lastUpdated: number | null | undefined;
 
   @Input()
-  environmentFailureNotFoundTemplate?: TemplateRef<any>;
+  environmentFailureNotFoundTemplate: TemplateRef<any> | undefined;
 
   @Input()
-  environmentFailurePermissionDeniedTemplate?: TemplateRef<any>;
+  environmentFailurePermissionDeniedTemplate: TemplateRef<any> | undefined;
 
   @Input()
-  environmentFailureUnknownTemplate?: TemplateRef<any>;
+  environmentFailureUnknownTemplate: TemplateRef<any> | undefined;
 
   readonly PluginLoadState = PluginLoadState;
   readonly LoadingMechanismType = LoadingMechanismType;

@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {map} from 'rxjs/operators';
 import {State} from '../../../app_state';
@@ -24,29 +25,35 @@ import {RunsTableColumn} from '../runs_table/types';
   selector: 'runs-selector',
   template: `
     <runs-selector-component
-      [experimentIds]="experimentIds$ | async"
-      [columns]="columns$ | async"
+      [experimentIds]="experimentIds()"
+      [columns]="columns()"
     ></runs-selector-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RunsSelectorContainer {
-  readonly experimentIds$;
-  readonly columns$;
+  readonly experimentIds;
+  readonly columns;
 
   constructor(private readonly store: Store<State>) {
-    this.experimentIds$ = this.store
-      .select(getExperimentIdsFromRoute)
-      .pipe(map((experimentIdsOrNull) => experimentIdsOrNull ?? []));
-    this.columns$ = this.store.select(getExperimentIdsFromRoute).pipe(
-      map((ids) => {
-        return [
-          RunsTableColumn.CHECKBOX,
-          RunsTableColumn.RUN_NAME,
-          ids && ids.length > 1 ? RunsTableColumn.EXPERIMENT_NAME : null,
-          RunsTableColumn.RUN_COLOR,
-        ].filter((col) => col !== null) as RunsTableColumn[];
-      })
+    this.experimentIds = toSignal(
+      this.store
+        .select(getExperimentIdsFromRoute)
+        .pipe(map((experimentIdsOrNull) => experimentIdsOrNull ?? [])),
+      {requireSync: true}
+    );
+    this.columns = toSignal(
+      this.store.select(getExperimentIdsFromRoute).pipe(
+        map((ids) => {
+          return [
+            RunsTableColumn.CHECKBOX,
+            RunsTableColumn.RUN_NAME,
+            ids && ids.length > 1 ? RunsTableColumn.EXPERIMENT_NAME : null,
+            RunsTableColumn.RUN_COLOR,
+          ].filter((col) => col !== null) as RunsTableColumn[];
+        })
+      ),
+      {requireSync: true}
     );
   }
 }

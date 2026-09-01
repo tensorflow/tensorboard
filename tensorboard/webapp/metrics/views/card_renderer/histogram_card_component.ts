@@ -41,10 +41,10 @@ export class HistogramCardComponent {
   readonly DataLoadState = DataLoadState;
 
   @Input() loadState!: DataLoadState;
-  @Input() title!: string;
-  @Input() tag!: string;
-  @Input() runId!: string;
-  @Input() data!: HistogramDatum[];
+  @Input() title: string | null = null;
+  @Input() tag: string | null = null;
+  @Input() runId: string | null = null;
+  @Input() data: HistogramDatum[] | null = null;
   @Input() mode!: HistogramMode;
   @Input() xAxisType!: XAxisType;
   @Input() runColorScale!: RunColorScale;

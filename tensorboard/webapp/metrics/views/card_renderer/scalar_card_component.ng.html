@@ -23,7 +23,7 @@ limitations under the License.
         value="{{ title }}"
       ></tb-truncated-path>
       <vis-linked-time-selection-warning
-        [isClipped]="linkedTimeSelection && linkedTimeSelection.clipped"
+        [isClipped]="(linkedTimeSelection && linkedTimeSelection.clipped) ?? false"
       ></vis-linked-time-selection-warning>
     </span>
     <span class="controls">
@@ -287,7 +287,7 @@ limitations under the License.
       [timeSelection]="stepOrLinkedTimeSelection"
       [scale]="xScale"
       [minMaxHorizontalViewExtend]="viewExtent.x"
-      [minMaxStep]="minMaxStep"
+      [minMaxStep]="minMaxStep!"
       [axisSize]="domDim.width"
       (onTimeSelectionChanged)="onTimeSelectionChanged.emit($event)"
       (onTimeSelectionToggled)="onFobRemoved()"

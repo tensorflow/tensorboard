@@ -32,7 +32,7 @@ import {CardMetadata} from '../../types';
 })
 export class DataDownloadDialogComponent {
   @Input()
-  cardMetadata!: CardMetadata;
+  cardMetadata: CardMetadata | null = null;
 
   @Input()
   runs!: Run[];

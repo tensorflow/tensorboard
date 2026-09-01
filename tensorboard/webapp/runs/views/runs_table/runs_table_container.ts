@@ -15,10 +15,13 @@ limitations under the License.
 import {
   ChangeDetectionStrategy,
   Component,
+  Injector,
   Input,
   OnDestroy,
   OnInit,
+  Signal,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {createSelector, Store} from '@ngrx/store';
 import {combineLatest, Observable, of, Subject} from 'rxjs';
 import {
@@ -92,16 +95,16 @@ const getRunsLoading = createSelector<
   selector: 'runs-table',
   template: `
     <runs-data-table
-      [headers]="runsColumns$ | async"
-      [data]="sortedRunsTableData$ | async"
-      [selectableColumns]="selectableColumns$ | async"
-      [numColumnsLoaded]="numColumnsLoaded$ | async"
-      [numColumnsToLoad]="numColumnsToLoad$ | async"
-      [columnFilters]="columnFilters$ | async"
-      [sortingInfo]="sortingInfo$ | async"
+      [headers]="runsColumns()"
+      [data]="sortedRunsTableData()"
+      [selectableColumns]="selectableColumns()"
+      [numColumnsLoaded]="numColumnsLoaded()"
+      [numColumnsToLoad]="numColumnsToLoad()"
+      [columnFilters]="columnFilters()"
+      [sortingInfo]="sortingInfo()"
       [experimentIds]="experimentIds"
-      [regexFilter]="regexFilter$ | async"
-      [loading]="loading$ | async"
+      [regexFilter]="regexFilter()"
+      [loading]="loading()"
       (sortDataBy)="sortDataBy($event)"
       (orderColumns)="orderColumns($event)"
       (onSelectionToggle)="onRunSelectionToggle($event)"
@@ -131,9 +134,10 @@ const getRunsLoading = createSelector<
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RunsTableContainer implements OnInit, OnDestroy {
-  sortedRunsTableData$: Observable<TableData[]> = of([]);
-  loading$: Observable<boolean> | null = null;
-  sortingInfo$;
+  sortedRunsTableData!: Signal<TableData[]>;
+  loading!: Signal<boolean>;
+  private readonly sortingInfoObs$;
+  sortingInfo;
 
   // Column to disable in the table. The columns are rendered in the order as
   // defined by this input.
@@ -142,31 +146,35 @@ export class RunsTableContainer implements OnInit, OnDestroy {
 
   @Input() experimentIds!: string[];
 
-  regexFilter$;
-  runsColumns$;
-  selectableColumns$;
-  numColumnsLoaded$;
-  numColumnsToLoad$;
+  regexFilter;
+  runsColumns;
+  selectableColumns;
+  numColumnsLoaded;
+  numColumnsToLoad;
 
-  columnFilters$;
+  columnFilters;
 
   allRunsTableData$;
 
   private readonly ngUnsubscribe;
 
-  constructor(private readonly store: Store<State>) {
-    this.sortingInfo$ = this.store.select(getRunsTableSortingInfo);
+  constructor(
+    private readonly store: Store<State>,
+    private readonly injector: Injector
+  ) {
+    this.sortingInfoObs$ = this.store.select(getRunsTableSortingInfo);
+    this.sortingInfo = toSignal(this.sortingInfoObs$, {requireSync: true});
     this.columns = [RunsTableColumn.RUN_NAME];
-    this.regexFilter$ = this.store.select(getRunSelectorRegexFilter);
-    this.runsColumns$ = this.store.select(getGroupedRunsTableHeaders);
-    this.selectableColumns$ = this.store.select(getSelectableColumns);
-    this.numColumnsLoaded$ = this.store.select(
+    this.regexFilter = this.store.selectSignal(getRunSelectorRegexFilter);
+    this.runsColumns = this.store.selectSignal(getGroupedRunsTableHeaders);
+    this.selectableColumns = this.store.selectSignal(getSelectableColumns);
+    this.numColumnsLoaded = this.store.selectSignal(
       hparamsSelectors.getNumDashboardHparamsLoaded
     );
-    this.numColumnsToLoad$ = this.store.select(
+    this.numColumnsToLoad = this.store.selectSignal(
       hparamsSelectors.getNumDashboardHparamsToLoad
     );
-    this.columnFilters$ = this.store.select(getCurrentColumnFilters);
+    this.columnFilters = this.store.selectSignal(getCurrentColumnFilters);
     this.allRunsTableData$ = this.store.select(getFilteredRenderableRuns).pipe(
       map((filteredRenderableRuns) => {
         return filteredRenderableRuns.map((runTableItem) => {
@@ -191,13 +199,13 @@ export class RunsTableContainer implements OnInit, OnDestroy {
       this.getRunTableItemsForExperiment(id)
     );
 
-    this.sortedRunsTableData$ = combineLatest([
-      this.allRunsTableData$,
-      this.sortingInfo$,
-    ]).pipe(
-      map(([items, sortingInfo]) => {
-        return sortTableDataItems(items, sortingInfo);
-      })
+    this.sortedRunsTableData = toSignal(
+      combineLatest([this.allRunsTableData$, this.sortingInfoObs$]).pipe(
+        map(([items, sortingInfo]) => {
+          return sortTableDataItems(items, sortingInfo);
+        })
+      ),
+      {injector: this.injector, requireSync: true}
     );
 
     const rawAllUnsortedRunTableItems$ = combineLatest(
@@ -212,11 +220,19 @@ export class RunsTableContainer implements OnInit, OnDestroy {
     const getRunsLoadingPerExperiment = this.experimentIds.map((id) => {
       return this.store.select(getRunsLoading, {experimentId: id});
     });
-    this.loading$ = combineLatest(getRunsLoadingPerExperiment).pipe(
-      map((experimentsLoading) => {
-        return experimentsLoading.some((isLoading) => isLoading);
-      })
-    );
+    // combineLatest([]) never emits, so short-circuit when there are no
+    // experiments rather than breaking the requireSync guarantee below.
+    const loading$ = getRunsLoadingPerExperiment.length
+      ? combineLatest(getRunsLoadingPerExperiment).pipe(
+          map((experimentsLoading) => {
+            return experimentsLoading.some((isLoading) => isLoading);
+          })
+        )
+      : of(false);
+    this.loading = toSignal(loading$, {
+      injector: this.injector,
+      requireSync: true,
+    });
 
     /**
      * For consumers who show checkboxes, notify users that new runs may not be
