@@ -328,7 +328,7 @@ describe('metrics effects', () => {
         specs: Array<Partial<CardFetchInfo> & {id: CardId}>
       ) {
         for (const {id, ...rest} of specs) {
-          selectSpy.withArgs(TEST_ONLY.getCardFetchInfo, id).and.returnValue(
+          selectSpy.withArgs(TEST_ONLY.getCardFetchInfo(id)).and.returnValue(
             of({
               id,
               plugin: PluginType.SCALARS,
@@ -544,7 +544,7 @@ describe('metrics effects', () => {
           'fetchTimeSeries'
         ).and.returnValue(of(sampleBackendResponses));
         store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
-        store.overrideSelector(TEST_ONLY.getCardFetchInfo, {
+        store.overrideSelector(TEST_ONLY.getCardFetchInfo('card1'), {
           id: 'card1',
           plugin: PluginType.SCALARS,
           tag: 'tagA',
@@ -567,7 +567,7 @@ describe('metrics effects', () => {
           'fetchTimeSeries'
         ).and.returnValue(of(sampleBackendResponses));
         store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
-        store.overrideSelector(TEST_ONLY.getCardFetchInfo, {
+        store.overrideSelector(TEST_ONLY.getCardFetchInfo('card1'), {
           id: 'card1',
           plugin: PluginType.SCALARS,
           tag: 'tagA',
@@ -622,7 +622,7 @@ describe('metrics effects', () => {
           'fetchTimeSeries'
         ).and.returnValue(of(sampleBackendResponses));
         store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
-        store.overrideSelector(TEST_ONLY.getCardFetchInfo, {
+        store.overrideSelector(TEST_ONLY.getCardFetchInfo('card1'), {
           id: 'card1',
           plugin: PluginType.SCALARS,
           tag: 'tagA',
@@ -680,7 +680,7 @@ describe('metrics effects', () => {
       it('fetches multiple card data', () => {
         store.overrideSelector(selectors.getExperimentIdsFromRoute, ['exp1']);
         const selectSpy = spyOn(store, 'select').and.callThrough();
-        selectSpy.withArgs(TEST_ONLY.getCardFetchInfo, 'card1').and.returnValue(
+        selectSpy.withArgs(TEST_ONLY.getCardFetchInfo('card1')).and.returnValue(
           of({
             id: 'card1',
             plugin: PluginType.SCALARS,
@@ -690,7 +690,7 @@ describe('metrics effects', () => {
             loadState: DataLoadState.NOT_LOADED,
           })
         );
-        selectSpy.withArgs(TEST_ONLY.getCardFetchInfo, 'card2').and.returnValue(
+        selectSpy.withArgs(TEST_ONLY.getCardFetchInfo('card2')).and.returnValue(
           of({
             id: 'card2',
             plugin: PluginType.IMAGES,
@@ -759,7 +759,7 @@ describe('metrics effects', () => {
         it(title, () => {
           const selectSpy = spyOn(store, 'select').and.callThrough();
           selectSpy
-            .withArgs(TEST_ONLY.getCardFetchInfo, 'card1')
+            .withArgs(TEST_ONLY.getCardFetchInfo('card1'))
             .and.returnValue(
               of({
                 id: 'card1',
@@ -797,7 +797,7 @@ describe('metrics effects', () => {
         removeScalarPinSpy = spyOn(savedPinsDataSource, 'removeScalarPin');
 
         store.overrideSelector(selectors.getEnableGlobalPins, true);
-        store.overrideSelector(TEST_ONLY.getCardFetchInfo, {
+        store.overrideSelector(TEST_ONLY.getCardFetchInfo('card1'), {
           id: 'card1',
           plugin: PluginType.SCALARS,
           tag: 'tagA',
@@ -851,7 +851,7 @@ describe('metrics effects', () => {
       });
 
       it('does not pin the card if the plugin type is not a scalar', () => {
-        store.overrideSelector(TEST_ONLY.getCardFetchInfo, {
+        store.overrideSelector(TEST_ONLY.getCardFetchInfo('card2'), {
           id: 'card2',
           plugin: PluginType.HISTOGRAMS,
           tag: 'tagA',

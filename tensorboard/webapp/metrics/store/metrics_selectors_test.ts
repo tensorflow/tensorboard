@@ -65,7 +65,7 @@ describe('metrics selectors', () => {
 
   describe('getCardLoadState', () => {
     it('returns a card load state', () => {
-      selectors.getCardLoadState.release();
+      selectors.getCardLoadState('<card_id>').release();
 
       const loadable = {
         runToSeries: {run1: createScalarStepData()},
@@ -86,13 +86,13 @@ describe('metrics selectors', () => {
       });
       metricsState.tagMetadata.scalars.tagToRuns = {tagA: ['run1']};
       const state = appStateFromMetricsState(metricsState);
-      expect(selectors.getCardLoadState(state, '<card_id>')).toBe(
+      expect(selectors.getCardLoadState('<card_id>')(state)).toBe(
         DataLoadState.LOADED
       );
     });
 
     it('returns a card load state for a specific run', () => {
-      selectors.getCardLoadState.release();
+      selectors.getCardLoadState('<card_id>').release();
 
       const loadable = {
         runToSeries: {},
@@ -122,13 +122,13 @@ describe('metrics selectors', () => {
         },
       };
       const state = appStateFromMetricsState(metricsState);
-      expect(selectors.getCardLoadState(state, '<card_id>')).toBe(
+      expect(selectors.getCardLoadState('<card_id>')(state)).toBe(
         DataLoadState.FAILED
       );
     });
 
     it('returns not-loaded when no time series is available', () => {
-      selectors.getCardLoadState.release();
+      selectors.getCardLoadState('<card_id>').release();
 
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -141,22 +141,22 @@ describe('metrics selectors', () => {
           },
         })
       );
-      expect(selectors.getCardLoadState(state, '<card_id>')).toBe(
+      expect(selectors.getCardLoadState('<card_id>')(state)).toBe(
         DataLoadState.NOT_LOADED
       );
     });
 
     it('returns not-loaded when card is not available', () => {
-      selectors.getCardLoadState.release();
+      selectors.getCardLoadState('<card_id>').release();
 
       const state = appStateFromMetricsState(buildMetricsState());
-      expect(selectors.getCardLoadState(state, '<card_id>')).toBe(
+      expect(selectors.getCardLoadState('<card_id>')(state)).toBe(
         DataLoadState.NOT_LOADED
       );
     });
 
     it('returns loading when some runs are loading', () => {
-      selectors.getCardLoadState.release();
+      selectors.getCardLoadState('<card_id>').release();
 
       const loadable = {
         runToSeries: {run1: createScalarStepData()},
@@ -180,7 +180,7 @@ describe('metrics selectors', () => {
       });
       metricsState.tagMetadata.scalars.tagToRuns = {tagA: ['run1', 'run2']};
       const state = appStateFromMetricsState(metricsState);
-      expect(selectors.getCardLoadState(state, '<card_id>')).toBe(
+      expect(selectors.getCardLoadState('<card_id>')(state)).toBe(
         DataLoadState.LOADING
       );
     });
@@ -189,7 +189,7 @@ describe('metrics selectors', () => {
       'returns not-loaded when some runs are not loaded and nothing is ' +
         'loading',
       () => {
-        selectors.getCardLoadState.release();
+        selectors.getCardLoadState('<card_id>').release();
 
         const loadable = {
           runToSeries: {run1: createScalarStepData()},
@@ -215,7 +215,7 @@ describe('metrics selectors', () => {
           tagA: ['run1', 'run2'],
         };
         const state = appStateFromMetricsState(metricsState);
-        expect(selectors.getCardLoadState(state, '<card_id>')).toBe(
+        expect(selectors.getCardLoadState('<card_id>')(state)).toBe(
           DataLoadState.NOT_LOADED
         );
       }
@@ -462,25 +462,25 @@ describe('metrics selectors', () => {
 
   describe('getCardStepIndex', () => {
     it('returns null if no card exists', () => {
-      selectors.getCardStepIndexMetaData.release();
+      selectors.getCardStepIndexMetaData('card1').release();
 
       const state = appStateFromMetricsState(
         buildMetricsState({
           cardStepIndex: {},
         })
       );
-      expect(selectors.getCardStepIndexMetaData(state, 'card1')).toBe(null);
+      expect(selectors.getCardStepIndexMetaData('card1')(state)).toBe(null);
     });
 
     it('properly returns card ids', () => {
-      selectors.getCardStepIndexMetaData.release();
+      selectors.getCardStepIndexMetaData('card1').release();
 
       const state = appStateFromMetricsState(
         buildMetricsState({
           cardStepIndex: {card1: buildStepIndexMetadata({index: 5})},
         })
       );
-      expect(selectors.getCardStepIndexMetaData(state, 'card1')).toEqual(
+      expect(selectors.getCardStepIndexMetaData('card1')(state)).toEqual(
         buildStepIndexMetadata({index: 5})
       );
     });
@@ -1062,7 +1062,7 @@ describe('metrics selectors', () => {
 
   describe('getCardPinnedState', () => {
     it('returns false if no card exists', () => {
-      selectors.getCardPinnedState.release();
+      selectors.getCardPinnedState('card1').release();
 
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -1070,11 +1070,11 @@ describe('metrics selectors', () => {
           cardList: [],
         })
       );
-      expect(selectors.getCardPinnedState(state, 'card1')).toBe(false);
+      expect(selectors.getCardPinnedState('card1')(state)).toBe(false);
     });
 
     it('returns false if the card is not pinned', () => {
-      selectors.getCardPinnedState.release();
+      selectors.getCardPinnedState('card1').release();
 
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -1085,11 +1085,11 @@ describe('metrics selectors', () => {
           cardList: ['card1'],
         })
       );
-      expect(selectors.getCardPinnedState(state, 'card1')).toBe(false);
+      expect(selectors.getCardPinnedState('card1')(state)).toBe(false);
     });
 
     it('returns true if the card has a pinned copy', () => {
-      selectors.getCardPinnedState.release();
+      selectors.getCardPinnedState('card1').release();
 
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -1101,11 +1101,11 @@ describe('metrics selectors', () => {
           cardList: ['card1'],
         })
       );
-      expect(selectors.getCardPinnedState(state, 'card1')).toBe(true);
+      expect(selectors.getCardPinnedState('card1')(state)).toBe(true);
     });
 
     it('returns true if the card is a pinned copy', () => {
-      selectors.getCardPinnedState.release();
+      selectors.getCardPinnedState('pinnedCopy1').release();
 
       const state = appStateFromMetricsState(
         buildMetricsState({
@@ -1117,7 +1117,7 @@ describe('metrics selectors', () => {
           cardList: ['card1'],
         })
       );
-      expect(selectors.getCardPinnedState(state, 'pinnedCopy1')).toBe(true);
+      expect(selectors.getCardPinnedState('pinnedCopy1')(state)).toBe(true);
     });
   });
 

@@ -101,11 +101,11 @@ export class PluginsContainer {
     this.activeKnownPlugin = this.store.selectSignal(activePlugin);
     this.activePluginId = this.store.selectSignal(getActivePlugin);
     this.pluginLoadState = toSignal(
-      combineLatest(
+      combineLatest([
         this.store.select(activePlugin),
         this.store.select(getActivePlugin),
-        this.store.select(getPluginsListLoaded)
-      ).pipe(
+        this.store.select(getPluginsListLoaded),
+      ]).pipe(
         map(([activePlugin, activePluginId, loadState]) => {
           if (loadState.failureCode !== null) {
             // Despite its 'Plugins'-specific name, getPluginsListLoaded

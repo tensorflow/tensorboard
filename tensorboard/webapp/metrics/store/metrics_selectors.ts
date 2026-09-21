@@ -75,9 +75,8 @@ const getCardIds = createSelector(selectMetricsState, (state): CardId[] => {
   return state.cardList;
 });
 
-export const getCardLoadState = createSelector(
-  selectMetricsState,
-  (state: MetricsState, cardId: CardId): DataLoadState => {
+export const getCardLoadState = memoize((cardId: CardId) =>
+  createSelector(selectMetricsState, (state: MetricsState): DataLoadState => {
     if (!state.cardMetadataMap.hasOwnProperty(cardId)) {
       return DataLoadState.NOT_LOADED;
     }
@@ -112,7 +111,7 @@ export const getCardLoadState = createSelector(
     )
       ? DataLoadState.LOADING
       : DataLoadState.NOT_LOADED;
-  }
+  })
 );
 
 export const getLoadableTimeSeries = memoize((cardMetadata: CardMetadata) => {
@@ -208,28 +207,29 @@ export const getNonEmptyCardIdsWithMetadata = createSelector(
  * The index metadata into the step values array for a card's UI. This may be greater
  * than the number of step values available, if time series data is not loaded.
  */
-export const getCardStepIndexMetaData = createSelector(
-  selectMetricsState,
-  (state: MetricsState, cardId: CardId): CardStepIndexMetaData | null => {
-    if (!state.cardStepIndex.hasOwnProperty(cardId)) {
-      return null;
+export const getCardStepIndexMetaData = memoize((cardId: CardId) =>
+  createSelector(
+    selectMetricsState,
+    (state: MetricsState): CardStepIndexMetaData | null => {
+      if (!state.cardStepIndex.hasOwnProperty(cardId)) {
+        return null;
+      }
+      return state.cardStepIndex[cardId];
     }
-    return state.cardStepIndex[cardId];
-  }
+  )
 );
 
 /**
  * Returns step values of an image card.
  */
-export const getMetricsImageCardSteps = createSelector(
-  selectMetricsState,
-  (state: MetricsState, cardId: CardId): number[] => {
+export const getMetricsImageCardSteps = memoize((cardId: CardId) =>
+  createSelector(selectMetricsState, (state: MetricsState): number[] => {
     return storeUtils.getImageCardSteps(
       cardId,
       state.cardMetadataMap,
       state.timeSeriesData
     );
-  }
+  })
 );
 
 const getCardToPinnedCopy = createSelector(
@@ -270,16 +270,18 @@ export const getPinnedCardsWithMetadata = createSelector(
  * Returns true if a card is pinned or a separate card exists that is a pinned
  * copy of this card. Defaults to false if the card is unknown.
  */
-export const getCardPinnedState = createSelector(
-  getCardToPinnedCopy,
-  getPinnedCardToOriginal,
-  (
-    cardToPinnedCopy: Map<NonPinnedCardId, PinnedCardId>,
-    pinnedCardToOriginal: Map<PinnedCardId, NonPinnedCardId>,
-    cardId: NonPinnedCardId | PinnedCardId
-  ): boolean => {
-    return cardToPinnedCopy.has(cardId) || pinnedCardToOriginal.has(cardId);
-  }
+export const getCardPinnedState = memoize(
+  (cardId: NonPinnedCardId | PinnedCardId) =>
+    createSelector(
+      getCardToPinnedCopy,
+      getPinnedCardToOriginal,
+      (
+        cardToPinnedCopy: Map<NonPinnedCardId, PinnedCardId>,
+        pinnedCardToOriginal: Map<PinnedCardId, NonPinnedCardId>
+      ): boolean => {
+        return cardToPinnedCopy.has(cardId) || pinnedCardToOriginal.has(cardId);
+      }
+    )
 );
 
 export const getUnresolvedImportedPinnedCards = createSelector(

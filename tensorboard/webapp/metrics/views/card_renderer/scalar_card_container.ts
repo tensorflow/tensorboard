@@ -647,7 +647,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.loadState = toSignal(
-      this.store.select(getCardLoadState, this.cardId),
+      this.store.select(getCardLoadState(this.cardId)),
       {injector: this.injector, requireSync: true}
     );
 
@@ -673,7 +673,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
 
     this.isPinned = toSignal(
-      this.store.select(getCardPinnedState, this.cardId),
+      this.store.select(getCardPinnedState(this.cardId)),
       {injector: this.injector, requireSync: true}
     );
 

@@ -231,25 +231,24 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.stepIndex$ = this.store
-      .select(getCardStepIndexMetaData, this.cardId)
-      .pipe(
-        map((stepIndexMetaData) =>
-          stepIndexMetaData ? stepIndexMetaData.index : null
-        )
-      );
+    const stepIndexMetaData$ = this.store.select(
+      getCardStepIndexMetaData(this.cardId)
+    );
+    this.stepIndex$ = stepIndexMetaData$.pipe(
+      map((stepIndexMetaData) =>
+        stepIndexMetaData ? stepIndexMetaData.index : null
+      )
+    );
     this.isClosestStepHighlighted = toSignal(
-      this.store
-        .select(getCardStepIndexMetaData, this.cardId)
-        .pipe(
-          map((stepIndexMetaData) =>
-            stepIndexMetaData ? stepIndexMetaData.isClosest ?? false : false
-          )
-        ),
+      stepIndexMetaData$.pipe(
+        map((stepIndexMetaData) =>
+          stepIndexMetaData ? stepIndexMetaData.isClosest ?? false : false
+        )
+      ),
       {injector: this.injector, requireSync: true}
     );
     this.loadState = toSignal(
-      this.store.select(getCardLoadState, this.cardId),
+      this.store.select(getCardLoadState(this.cardId)),
       {injector: this.injector, requireSync: true}
     );
 
@@ -281,14 +280,14 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       map((cardMetadata) => cardMetadata.numSample)
     );
 
-    const steps$ = this.store.select(getMetricsImageCardSteps, this.cardId);
+    const steps$ = this.store.select(getMetricsImageCardSteps(this.cardId));
     this.steps = toSignal(steps$, {
       injector: this.injector,
       requireSync: true,
     });
 
     this.isPinned = toSignal(
-      this.store.select(getCardPinnedState, this.cardId),
+      this.store.select(getCardPinnedState(this.cardId)),
       {injector: this.injector, requireSync: true}
     );
 

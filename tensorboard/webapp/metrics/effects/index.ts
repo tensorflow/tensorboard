@@ -33,6 +33,7 @@ import * as coreActions from '../../core/actions';
 import {getActivePlugin} from '../../core/store';
 import * as selectors from '../../selectors';
 import {DataLoadState} from '../../types/data';
+import {memoize} from '../../util/memoize';
 import * as actions from '../actions';
 import {
   isFailedTimeSeriesResponse,
@@ -57,15 +58,17 @@ export type CardFetchInfo = CardMetadata & {
   loadState: DataLoadState;
 };
 
-const getCardFetchInfo = createSelector(
-  getCardLoadState,
-  getCardMetadata,
-  (loadState, maybeMetadata, cardId /* props */): CardFetchInfo | null => {
-    if (!maybeMetadata) {
-      return null;
+const getCardFetchInfo = memoize((cardId: CardId) =>
+  createSelector(
+    getCardLoadState(cardId),
+    (state: State) => getCardMetadata(state, cardId),
+    (loadState, maybeMetadata): CardFetchInfo | null => {
+      if (!maybeMetadata) {
+        return null;
+      }
+      return {...maybeMetadata, loadState, id: cardId};
     }
-    return {...maybeMetadata, loadState, id: cardId};
-  }
+  )
 );
 
 const initAction = createAction('[Metrics Effects] Init');
@@ -104,7 +107,7 @@ export class MetricsEffects implements OnInitEffects {
           return of([]);
         }
         const observables = [...cardIds].map((cardId) => {
-          return this.store.select(getCardFetchInfo, cardId).pipe(take(1));
+          return this.store.select(getCardFetchInfo(cardId)).pipe(take(1));
         });
         return forkJoin(observables);
       }),

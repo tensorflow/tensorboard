@@ -107,7 +107,7 @@ export class StackTraceContainer {
           for (const stackFrame of stackFrames) {
             const {host_name, file_path, lineno, function_name} = stackFrame;
             const pathItems = file_path.split('/');
-            const concise_file_path = pathItems[pathItems.length - 1];
+            const conciseFilePath = pathItems[pathItems.length - 1];
             const belongsToFocusedFile =
               focusedSourceLineSpec !== null &&
               host_name === focusedSourceLineSpec.host_name &&
@@ -117,7 +117,7 @@ export class StackTraceContainer {
             output.push({
               host_name,
               file_path,
-              concise_file_path,
+              concise_file_path: conciseFilePath,
               lineno,
               function_name,
               belongsToFocusedFile,

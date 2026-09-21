@@ -106,7 +106,7 @@ export class CardViewContainer {
 
   onPinStateChanged() {
     this.store
-      .select(selectors.getCardPinnedState, this.cardId)
+      .select(selectors.getCardPinnedState(this.cardId))
       .pipe(
         take(1),
         withLatestFrom(this.store.select(selectors.getCanCreateNewPins))

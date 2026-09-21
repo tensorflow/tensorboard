@@ -231,7 +231,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
     );
 
     this.loadState = toSignal(
-      this.store.select(getCardLoadState, this.cardId),
+      this.store.select(getCardLoadState(this.cardId)),
       {injector: this.injector, requireSync: true}
     );
 
@@ -254,7 +254,7 @@ export class HistogramCardContainer implements CardRenderer, OnInit {
     );
 
     this.isPinned = toSignal(
-      this.store.select(getCardPinnedState, this.cardId),
+      this.store.select(getCardPinnedState(this.cardId)),
       {injector: this.injector, requireSync: true}
     );
   }

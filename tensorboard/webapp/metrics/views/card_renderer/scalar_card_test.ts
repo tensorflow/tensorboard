@@ -449,7 +449,7 @@ describe('scalar card', () => {
     it('renders loading spinner when loading', fakeAsync(() => {
       provideMockCardRunToSeriesData(selectSpy, PluginType.SCALARS, 'card1');
       store.overrideSelector(
-        selectors.getCardLoadState,
+        selectors.getCardLoadState('card1'),
         DataLoadState.NOT_LOADED
       );
       triggerStoreUpdate();
@@ -458,19 +458,28 @@ describe('scalar card', () => {
       let loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
       expect(loadingEl).not.toBeTruthy();
 
-      store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADING);
+      store.overrideSelector(
+        selectors.getCardLoadState('card1'),
+        DataLoadState.LOADING
+      );
       triggerStoreUpdate();
       fixture.detectChanges();
       loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
       expect(loadingEl).toBeTruthy();
 
-      store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADED);
+      store.overrideSelector(
+        selectors.getCardLoadState('card1'),
+        DataLoadState.LOADED
+      );
       triggerStoreUpdate();
       fixture.detectChanges();
       loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
       expect(loadingEl).not.toBeTruthy();
 
-      store.overrideSelector(selectors.getCardLoadState, DataLoadState.FAILED);
+      store.overrideSelector(
+        selectors.getCardLoadState('card1'),
+        DataLoadState.FAILED
+      );
       triggerStoreUpdate();
       fixture.detectChanges();
       loadingEl = fixture.debugElement.query(By.css('mat-spinner'));

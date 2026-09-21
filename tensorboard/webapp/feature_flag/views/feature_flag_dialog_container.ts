@@ -24,6 +24,7 @@ import {
 } from '../actions/feature_flag_actions';
 import {
   AdvancedFeatureFlagMetadata,
+  FeatureFlagMetadataMapType,
   FeatureFlagType,
 } from '../store/feature_flag_metadata';
 import {
@@ -84,28 +85,12 @@ export class FeatureFlagDialogContainer {
             flagMetadata,
             showFlagsFilter,
           ]) => {
-            return Object.entries(defaultFeatureFlags)
-              .filter(([flagName]) => {
-                if (!showFlagsFilter) {
-                  return true;
-                }
-                return flagName.toLowerCase().includes(showFlagsFilter);
-              })
-              .map(([flagName, defaultValue]) => {
-                const status = getFlagStatus(
-                  flagName as keyof FeatureFlags,
-                  overriddenFeatureFlags
-                );
-                const metadata = flagMetadata[flagName as keyof FeatureFlags];
-                return {
-                  flag: flagName,
-                  defaultValue,
-                  status,
-                  sendToServerWhenOverridden: (
-                    metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>
-                  ).sendToServerWhenOverridden,
-                } as FeatureFlagStatus<keyof FeatureFlags>;
-              });
+            return buildFeatureFlagStatuses(
+              defaultFeatureFlags,
+              overriddenFeatureFlags,
+              flagMetadata,
+              showFlagsFilter
+            ) as FeatureFlagStatus<keyof FeatureFlags>[];
           }
         )
       ),
@@ -154,6 +139,35 @@ function getFlagStatus(
   return overriddenFeatureFlags[flagName]
     ? FeatureFlagOverrideStatus.ENABLED
     : FeatureFlagOverrideStatus.DISABLED;
+}
+
+function buildFeatureFlagStatuses<T extends {}>(
+  defaultFlags: T,
+  overriddenFlags: Partial<T>,
+  flagMetadata: FeatureFlagMetadataMapType<T>,
+  showFlagsFilter: string | undefined
+) {
+  return Object.entries(defaultFlags)
+    .filter(([flagName]) => {
+      if (!showFlagsFilter) {
+        return true;
+      }
+      return flagName.toLowerCase().includes(showFlagsFilter);
+    })
+    .map(([flagName, defaultValue]) => {
+      const metadata = flagMetadata[flagName as keyof T];
+      return {
+        flag: flagName,
+        defaultValue,
+        status: getFlagStatus(
+          flagName as keyof FeatureFlags,
+          overriddenFlags as Partial<FeatureFlags>
+        ),
+        sendToServerWhenOverridden: (
+          metadata as AdvancedFeatureFlagMetadata<FeatureFlagType>
+        ).sendToServerWhenOverridden,
+      };
+    });
 }
 
 export const TEST_ONLY = {

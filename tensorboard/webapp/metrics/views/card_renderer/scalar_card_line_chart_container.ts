@@ -178,7 +178,7 @@ export class ScalarCardLineChartContainer
       this.cardId
     );
 
-    this.loadState$ = this.store.select(getCardLoadState, this.cardId);
+    this.loadState$ = this.store.select(getCardLoadState(this.cardId));
 
     this.rangeEnabled$ = this.store.select(
       getMetricsCardRangeSelectionEnabled(this.cardId)
