@@ -45,6 +45,27 @@ tb_proto_library(
 ts_library(
     name = "strict_types",
     srcs = ["strict_type_check.d.ts"],
+    compiler = ":tsc_wrapped",
+)
+
+# Custom ts_library compiler for non-Angular targets.
+#
+# Bazel's generated tsc_wrapped binary needs the `typescript` package at runtime,
+# but does not include it in its runfiles. This may work locally because the
+# execroot's node_modules directory is available, but fails in the sandbox.
+# Define the binary here and add `typescript` explicitly so the compiler works
+# reliably in both local and sandboxed builds.
+#
+# Angular targets use tsc_wrapped_with_angular below, which declares the Angular
+# compiler dependencies separately.
+nodejs_binary(
+    name = "tsc_wrapped",
+    data = [
+        "@npm//@bazel/concatjs",
+        "@npm//typescript",
+    ],
+    entry_point = "@npm//:node_modules/@bazel/concatjs/internal/tsc_wrapped/tsc_wrapped.js",
+    visibility = ["//tensorboard:__subpackages__"],
 )
 
 # Custom ts_library compiler that runs tsc_wrapped with angular/compiler-cli statically linked
@@ -57,6 +78,7 @@ nodejs_binary(
         "@npm//@angular/compiler-cli",
         "@npm//@bazel/concatjs",
         "@npm//@bazel/typescript",
+        "@npm//typescript",
     ],
     entry_point = "@npm//:node_modules/@bazel/concatjs/internal/tsc_wrapped/tsc_wrapped.js",
     # Disables the Bazel node modules linker. The node module linker is unreliable for the

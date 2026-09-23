@@ -29,10 +29,10 @@ index fed787a..377915a 100755
          closure_js = closure_js_files,
          devmode_js = devmode_js_files,
 diff --git a/node_modules/@bazel/concatjs/internal/common/tsconfig.bzl b/node_modules/@bazel/concatjs/internal/common/tsconfig.bzl
-index b01c999..86d61d4 100755
+index b01c999..8187cfc 100755
 --- a/node_modules/@bazel/concatjs/internal/common/tsconfig.bzl
 +++ b/node_modules/@bazel/concatjs/internal/common/tsconfig.bzl
-@@ -110,6 +110,48 @@ def create_tsconfig(
+@@ -110,6 +110,52 @@ def create_tsconfig(
              "*": node_modules_mappings,
              ctx.workspace_name + "/*": base_path_mappings,
          }
@@ -50,6 +50,10 @@ index b01c999..86d61d4 100755
 +                "@angular/cdk",
 +                "@angular/common",
 +                "@angular/core",
++                # TypeScript 6.0 added error TS2882 for side-effect imports whose types
++                # do not resolve, and bootstrap.ts imports "@angular/localize/init" for
++                # its side effect only.
++                "@angular/localize",
 +                "@angular/material",
 +                "@angular/platform-browser",
 +                "@angular/platform-browser-dynamic",
@@ -115,17 +119,3 @@ index e049d15..9ebeec4 100755
      if (bazelOpts.angularCompilerOptions && bazelOpts.angularCompilerOptions.assets) {
          bazelOpts.angularCompilerOptions.assets = bazelOpts.angularCompilerOptions.assets.map(f => resolveNormalizedPath(options.rootDir, f));
      }
-diff --git a/node_modules/@bazel/concatjs/package.json b/node_modules/@bazel/concatjs/package.json
-index dbc7cee..1129289 100755
---- a/node_modules/@bazel/concatjs/package.json
-+++ b/node_modules/@bazel/concatjs/package.json
-@@ -24,7 +24,8 @@
-     "dependencies": {
-         "protobufjs": "6.8.8",
-         "source-map-support": "0.5.9",
--        "tsutils": "3.21.0"
-+        "tsutils": "3.21.0",
-+        "typescript": "5.9.3"
-     },
-     "peerDependencies": {
-         "karma": ">=4.0.0",

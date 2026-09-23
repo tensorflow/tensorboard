@@ -3,6 +3,8 @@
     "downlevelIteration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    // See tsconfig.json for why this is needed.
+    "ignoreDeprecations": "6.0",
     "importHelpers": true,
     "inlineSourceMap": true,
     "inlineSources": true,
@@ -22,7 +24,11 @@
     "plugins": [
       {
         "name": "@bazel/tsetse",
-        "disabledRules": ["ban-promise-as-condition", "must-use-promises"]
+        "disabledRules": [
+          "ban-promise-as-condition",
+          "must-use-promises",
+          "ban-expect-truthy-promise"
+        ]
       }
     ],
   }

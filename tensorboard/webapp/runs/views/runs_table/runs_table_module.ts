@@ -29,7 +29,7 @@ import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSortModule} from '@angular/material/sort';
 import {MatTableModule} from '@angular/material/table';
-import {ColorPickerModule} from 'ngx-color-picker';
+import {ColorPickerDirective} from 'ngx-color-picker';
 import {MatSelectModule} from '@angular/material/select';
 import {AlertModule} from '../../../alert/alert_module';
 import {DataTableModule} from '../../../widgets/data_table/data_table_module';
@@ -49,7 +49,7 @@ import {ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
   imports: [
-    ColorPickerModule,
+    ColorPickerDirective,
     CommonModule,
     DataTableModule,
     ExperimentAliasModule,
