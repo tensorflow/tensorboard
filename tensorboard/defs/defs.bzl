@@ -144,6 +144,10 @@ def tf_ts_library(srcs = [], strict_checks = True, **kwargs):
         tsconfig = "//:tsconfig-lax"
     kwargs.setdefault("deps", []).extend(["@npm//tslib", "//tensorboard/defs:strict_types"])
 
+    # Default to tsc_wrapped from tensorboard/defs/BUILD, see why there.
+    # tf_ng_module overrides it with tsc_wrapped_with_angular.
+    kwargs.setdefault("compiler", "//tensorboard/defs:tsc_wrapped")
+
     new_srcs = []
 
     # Find test.ts and testbed.ts files and rename to test.spec.ts to be

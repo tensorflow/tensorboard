@@ -4,6 +4,9 @@
     "emitDecoratorMetadata": true,
     "exactOptionalPropertyTypes": true,
     "experimentalDecorators": true,
+    // TODO(@cdavalos): Remove this after migrating from @bazel/concatjs to rules_js/rules_ts.
+    // TypeScript 6.0 rejects deprecated options added by concatjs.
+    "ignoreDeprecations": "6.0",
     "importHelpers": true,
     "inlineSourceMap": true,
     "lib": ["dom", "es2021", "dom.iterable"],
@@ -23,11 +26,13 @@
     "plugins": [
       {
         "name": "@bazel/tsetse",
-        // disabled: concatjs pins tsutils to 3.21.0, which predates TS 5.9 and
-        // is incompatible with these two rules. ban-promise-as-condition
-        // crashes the compiler, must-use-promises misfires on the one
-        // awaited call in alert_display_snackbar_container.ts.
-        "disabledRules": ["ban-promise-as-condition", "must-use-promises"]
+        // TODO(@cdavalos): Re-enable these rules after upgrading concatjs and tsutils.
+        // The current versions are incompatible with TypeScript 6.0.
+        "disabledRules": [
+          "ban-promise-as-condition",
+          "must-use-promises",
+          "ban-expect-truthy-promise"
+        ]
       }
     ]
   },
