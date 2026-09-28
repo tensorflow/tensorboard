@@ -23,7 +23,7 @@ limitations under the License.
         value="{{ title }}"
       ></tb-truncated-path>
       <vis-linked-time-selection-warning
-        [isClipped]="(linkedTimeSelection && linkedTimeSelection.clipped) ?? false"
+        [isClipped]="!!linkedTimeSelection?.clipped"
       ></vis-linked-time-selection-warning>
     </span>
     <span class="controls">

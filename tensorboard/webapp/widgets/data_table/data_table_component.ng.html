@@ -35,12 +35,14 @@ limitations under the License.
 </ng-template>
 
 <ng-template #filterModalTemplate>
+  @if (getCurrentColumnFilter(); as filter) {
   <tb-data-table-filter
-    [filter]="getCurrentColumnFilter()!"
+    [filter]="filter"
     (intervalFilterChanged)="intervalFilterChanged($event)"
     (discreteFilterChanged)="discreteFilterChanged($event)"
     (includeUndefinedToggled)="includeUndefinedToggled()"
   ></tb-data-table-filter>
+  }
 </ng-template>
 
 <div class="data-table-wrapper" [class.should-add-borders]="shouldAddBorders">
@@ -52,10 +54,8 @@ limitations under the License.
       <ng-content select="[content]"></ng-content>
     </div>
   </div>
-  <div
-    class="right-section"
-    *ngIf="selectableColumns && selectableColumns.length"
-  >
+  @if (selectableColumns && selectableColumns.length) {
+  <div class="right-section">
     <div
       class="add-button-column"
       [class.small-add-button]="addColumnSize === AddColumnSize.SMALL"
@@ -70,7 +70,10 @@ limitations under the License.
       </button>
     </div>
   </div>
+  }
 </div>
-<div *ngIf="loading" class="loading">
+@if (loading) {
+<div class="loading">
   <mat-spinner mode="indeterminate" diameter="28"></mat-spinner>
 </div>
+}

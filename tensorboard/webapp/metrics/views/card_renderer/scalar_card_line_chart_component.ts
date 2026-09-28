@@ -72,7 +72,7 @@ export class ScalarCardLineChartComponent {
   @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;
   @Input() minMaxStep!: MinMaxStep;
   @Input() userViewBox!: Extent | null;
-  @Input() tooltipTemplate!: TooltipTemplate | null | undefined;
+  @Input() tooltipTemplate: TooltipTemplate | undefined;
   @Input() allowFobRemoval!: boolean | undefined;
   @Input() disableTooltip!: boolean | undefined;
 

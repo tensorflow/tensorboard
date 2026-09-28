@@ -35,13 +35,13 @@ import {
 })
 export class GraphComponent {
   @Input()
-  opInfo!: GraphOpInfo | null;
+  opInfo: GraphOpInfo | null = null;
 
   @Input()
-  inputOps!: GraphOpInputSpec[] | null;
+  inputOps: GraphOpInputSpec[] | null = null;
 
   @Input()
-  consumerOps!: GraphOpConsumerSpec[][] | null;
+  consumerOps: GraphOpConsumerSpec[][] | null = null;
 
   @Output()
   onGraphOpNavigate = new EventEmitter<{graph_id: string; op_name: string}>();

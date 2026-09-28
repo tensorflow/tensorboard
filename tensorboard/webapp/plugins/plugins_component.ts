@@ -100,7 +100,7 @@ export class PluginsComponent implements OnChanges {
   featureFlags!: FeatureFlags;
 
   @Input()
-  lastUpdated: number | null | undefined;
+  lastUpdated: number | null = null;
 
   @Input()
   environmentFailureNotFoundTemplate: TemplateRef<any> | undefined;

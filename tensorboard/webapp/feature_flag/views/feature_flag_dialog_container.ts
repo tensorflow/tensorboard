@@ -149,10 +149,9 @@ function buildFeatureFlagStatuses<T extends {}>(
 ) {
   return Object.entries(defaultFlags)
     .filter(([flagName]) => {
-      if (!showFlagsFilter) {
-        return true;
-      }
-      return flagName.toLowerCase().includes(showFlagsFilter);
+      return (
+        !showFlagsFilter || flagName.toLowerCase().includes(showFlagsFilter)
+      );
     })
     .map(([flagName, defaultValue]) => {
       const metadata = flagMetadata[flagName as keyof T];
