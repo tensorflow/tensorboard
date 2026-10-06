@@ -47,7 +47,6 @@ import {CardIdWithMetadata} from '../metrics_view_types';
       [cardMinWidth]="cardMinWidth()"
       [cardObserver]="cardObserver"
       [cardStateMap]="cardStateMap()"
-      [groupName]="groupName"
       (pageIndexChanged)="onPageIndexChanged($event)"
     >
     </metrics-card-grid-component>
