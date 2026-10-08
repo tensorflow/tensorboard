@@ -6,6 +6,7 @@
 # to define integration tests for TensorBoard itself.
 
 load("@rules_python//python:py_test.bzl", "py_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
 package(default_visibility = ["//tensorboard:internal"])
 
@@ -22,11 +23,9 @@ sh_test(
     # test.
     data = [
         "setup.py",
+        "//tensorboard/examples/plugins/example_raw_scalars/tensorboard_plugin_example_raw_scalars:package_files",
         "//tensorboard/pip_package",
-    ] + glob([
-        "tensorboard_plugin_example_raw_scalars/*.py",
-        "tensorboard_plugin_example_raw_scalars/static/**",
-    ]),
+    ],
     tags = [
         "manual",  # https://github.com/tensorflow/tensorboard/issues/2987
     ],

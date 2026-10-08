@@ -1,0 +1,9 @@
+# Minimal package workspace for targets migrated to rules_js. Keeping this
+# separate avoids translating TensorBoard's entire legacy Yarn graph during
+# every Bazel analysis phase.
+packages: []
+hoist: false
+
+# Lifecycle hooks are opt-in under rules_js. Add packages here only after their
+# install scripts have been reviewed and proven necessary in Bazel actions.
+allowBuilds: {}

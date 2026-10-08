@@ -13,6 +13,7 @@
 # limitations under the License.
 """External-only delegates for various BUILD rules."""
 
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@npm//@angular/build-tooling/bazel:extract_js_module_output.bzl", "extract_js_module_output")
 load("@npm//@angular/build-tooling/bazel/app-bundling:index.bzl", "app_bundle")
@@ -178,6 +179,30 @@ def tf_ts_library(srcs = [], strict_checks = True, **kwargs):
         **kwargs
     )
 
+def tf_ts_project(srcs = [], strict_checks = True, **kwargs):
+    """TensorBoard wrapper for TypeScript targets migrated to rules_ts.
+
+    This wrapper intentionally coexists with tf_ts_library while the legacy
+    concatjs and Angular provider graph is still in use. Start with leaf
+    targets; modern JsInfo outputs cannot be consumed by legacy ts_library.
+
+    Args:
+      srcs: TypeScript sources compiled by ts_project.
+      strict_checks: whether to use TensorBoard's strict TypeScript config.
+      **kwargs: keyword arguments forwarded to ts_project.
+    """
+    tsconfig = "//:tsconfig-rules-ts"
+    if strict_checks == False:
+        tsconfig = "//:tsconfig-lax-rules-ts"
+    kwargs.setdefault("deps", []).append("//third_party/npm_modern:node_modules/tslib")
+
+    ts_project(
+        srcs = srcs,
+        transpiler = "tsc",
+        tsconfig = tsconfig,
+        **kwargs
+    )
+
 # The external list is used to exclude node-fetch from the browser bundle since it is not compatible with browsers. This allows us to use tfjs in our web application without running into issues caused by node-fetch. @tensorflow/tfjs-core is used by vz_projector plugin.
 def tf_ng_web_test_suite(name, deps = [], external = [], **kwargs):
     """TensorBoard wrapper for the rule for a Karma web test suite.
@@ -215,7 +240,7 @@ def tf_ng_web_test_suite(name, deps = [], external = [], **kwargs):
     spec_bundle(
         name = "%s_bundle" % name,
         deps = ["%s_devmode_deps" % name],
-        # Bazel 7 Bzlmod uses `_main` as the main repository's canonical
+        # Bzlmod uses `_main` as the main repository's canonical
         # runfiles name. This must match the paths that karma_web_test_suite
         # asks RequireJS to load.
         workspace_name = "_main",
@@ -243,7 +268,7 @@ def tf_ng_web_test_suite(name, deps = [], external = [], **kwargs):
         ],
         # rules_nodejs passes this through to rules_webtesting. An empty dict
         # avoids forwarding a stray None-valued attribute to web_test under
-        # Bazel 7.7.0 with the currently pinned rules_webtesting stack.
+        # the currently pinned rules_webtesting stack.
         browser_overrides = {},
     )
 

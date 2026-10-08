@@ -154,7 +154,7 @@ where
         // `HashMap::drain_filter`, but that's not yet stabilized.)
         let mut removed: Vec<Run> = Vec::new();
         self.runs.retain(|run, _| {
-            if discoveries.get(run).map_or(false, |fs| !fs.is_empty()) {
+            if discoveries.get(run).is_some_and(|fs| !fs.is_empty()) {
                 true
             } else {
                 removed.push(run.clone());

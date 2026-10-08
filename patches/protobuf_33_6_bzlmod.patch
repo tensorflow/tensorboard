@@ -1,0 +1,48 @@
+diff --git a/MODULE.bazel b/MODULE.bazel
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -149,23 +149,20 @@
+-# TODO: Replace system_python with hermetic_python.
+-# TODO: Remove dev_dependency once system_python is no longer used and we support
+-# python/upb in Bazel.
+-system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension", dev_dependency = True)
+-system_python.find(
+-    name = "system_python",
+-    minimum = "3.9",
++system_python_repository = use_repo_rule(
++    "//python/dist:system_python.bzl",
++    "system_python",
+ )
+-use_repo(system_python, "system_python")
++system_python_repository(name = "system_python")
+ 
+-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
++pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+ 
+ [
+     pip.parse(
+         hub_name = "protobuf_pip_deps",
+         python_interpreter_target = "@system_python//:interpreter",
+         python_version = python_version,
+         requirements_lock = "//python:requirements.txt",
+     )
+     for python_version in SUPPORTED_PYTHON_VERSIONS
+ ]
+ 
+ use_repo(pip, "protobuf_pip_deps")
+@@ -236,13 +233,14 @@
+ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+ maven.install(
++    name = "protobuf_maven",
+     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
+     lock_file = "//:maven_install.json",
+     repositories = [
+         "https://repo1.maven.org/maven2",
+         "https://repo.maven.apache.org/maven2",
+     ],
+ )
+ 
+ # Use the default "maven" namespace because protobuf java targets are exposed to users
+ # See https://github.com/protocolbuffers/protobuf/issues/21177
+-use_repo(maven, "maven")
++use_repo(maven, maven = "protobuf_maven")

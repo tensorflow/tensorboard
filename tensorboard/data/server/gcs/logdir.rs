@@ -138,9 +138,9 @@ impl crate::logdir::Logdir for Logdir {
                 }
             };
             let path = PathBuf::from(name);
-            let is_event_file = path.file_name().map_or(false, |n| {
-                n.to_string_lossy().contains(EVENT_FILE_BASENAME_INFIX)
-            });
+            let is_event_file = path
+                .file_name()
+                .is_some_and(|n| n.to_string_lossy().contains(EVENT_FILE_BASENAME_INFIX));
             if !is_event_file {
                 continue;
             }

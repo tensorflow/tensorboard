@@ -2,6 +2,7 @@ load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load("@npm//@bazel/concatjs:index.bzl", "ts_library")
 load("@rules_python//python:py_binary.bzl", "py_binary")
 load("@rules_python//python:py_test.bzl", "py_test")
+load("//tensorboard/defs:defs.bzl", "tf_ts_project")
 load("//tensorboard/defs:protos.bzl", "tb_proto_library")
 
 package(default_visibility = ["//tensorboard:internal"])
@@ -45,6 +46,15 @@ tb_proto_library(
 ts_library(
     name = "strict_types",
     srcs = ["strict_type_check.d.ts"],
+)
+
+# Isolated canary for the modern rules_ts/rules_js stack. Production
+# TypeScript targets remain on tf_ts_library until their complete downstream
+# provider chain can migrate together.
+tf_ts_project(
+    name = "rules_ts_canary",
+    testonly = True,
+    srcs = ["rules_ts_canary.ts"],
 )
 
 # Custom ts_library compiler that runs tsc_wrapped with angular/compiler-cli statically linked

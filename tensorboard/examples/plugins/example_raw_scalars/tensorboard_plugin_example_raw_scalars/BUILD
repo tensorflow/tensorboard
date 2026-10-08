@@ -6,6 +6,14 @@ package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])
 
+filegroup(
+    name = "package_files",
+    srcs = glob([
+        "*.py",
+        "static/**",
+    ]),
+)
+
 py_library(
     name = "plugin",
     srcs = ["plugin.py"],

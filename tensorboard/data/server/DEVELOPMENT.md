@@ -12,22 +12,19 @@ might want to use Cargo:
 -   …to use the `rust-analyzer` language server in your editor of choice.
 -   …to use tools like `cargo clippy` (a linter) or `cargo geiger` (an auditor
     for unsafe code) or `cargo tree` (to show the crate dependency graph).
--   …to use `cargo raze` to generate Bazel build files from the Cargo package
-    structure.
 -   …to use other Rust toolchains, like the beta or nightly channels.
 -   …to cross-compile.
 -   …simply because you’re more familiar with it or prefer it.
 
 The easiest way to get and use Cargo is with <https://rustup.rs>. Cargo resolves
 subcommands by looking for executables called `cargo-*` (analogous to Git), so
-you may want to `cargo install cargo-raze cargo-watch cargo-geiger` for some
+you may want to `cargo install cargo-watch cargo-geiger` for some
 useful tools.
 
 To build with Cargo, change into the `tensorboard/data/server/` directory and
 use standard Cargo commands, like `cargo build --release` or `cargo test`.
-Running `cargo raze` from within `tensorboard/data/server/` will update the
-build files under `third_party/rust/`, using `Cargo.toml` as the source of
-truth.
+Bazel resolves the same `Cargo.toml` and `Cargo.lock` graph through
+rules_rust's crate_universe module extension.
 
 You should be able to use `rust-analyzer` without doing anything special or
 changing into the `tensorboard/data/server/` subdirectory: just open one of the
@@ -98,53 +95,33 @@ is:
 
 ## Adding or updating third-party dependencies
 
-Rust dependencies are usually hosted on [crates.io]. We use [`cargo-raze`][raze]
-to automatically generate Bazel build files for these third-party dependencies.
+Rust dependencies are usually hosted on [crates.io]. rules_rust's
+crate_universe extension generates their Bazel targets from `Cargo.toml` and
+the checked-in `Cargo.lock`. To add a new dependency or modify an existing
+dependency:
 
-The source of truth for `cargo-raze` is the `Cargo.toml` file. To add a new
-dependency or modify an existing dependency:
-
-1.  Run `cargo install cargo-raze` to ensure that you have [`cargo-raze`][raze]
-    installed.
-2.  Add or modify an entry in the `[dependencies]` section of `Cargo.toml`.
+1.  Add or modify an entry in the `[dependencies]` section of `Cargo.toml`.
     The new line should look like `rand = "0.7.3"`. You can find the most recent
     version of a package on <https://crates.io/>.
-3.  Change into the `tensorboard/data/server/` directory.
-4.  For new dependencies, run `cargo fetch` to update `Cargo.lock`. For updated
+2.  Change into the `tensorboard/data/server/` directory.
+3.  For new dependencies, run `cargo fetch` to update `Cargo.lock`. For updated
     dependencies, run `cargo update -p <dependency name>` to update
-    `Cargo.lock`. Running these before `cargo raze` ensures that the
-    `http_archive` workspace rules in the generated build files will have
-    `sha256` checksums.
-4.  Cross reference the updates in `Cargo.lock` with crate-specific metadata in
-    `Cargo.toml`. For each section of type `[raze.crates.CRATE-NAME.VERSION]`
-    in `Cargo.toml`, see if the `Cargo.lock` file now refers to a more recent
-    version and make the corresponding updates to `Cargo.toml`.
-5.  Run `cargo raze` to update `third_party/rust/...`. This will add or update a
-    target like `//tensorboard/data/server/cargo:rand`.
-6.  Manually build the crate with Bazel to ensure that it works:
-    `bazel build //tensorboard/data/server/cargo:rand`. If the build fails, you
-    likely need to teach `cargo-raze` how to handle this package by adding new
-    crate-specific metadata to a `[raze.crates.CRATE-NAME.VERSION]` section of
-    the `Cargo.toml` file and running `cargo raze` again.
-
-    Failure modes may include:
-
-    -   The package uses a `build.rs` script to generate code at compile time.
-        Solution: add `gen_buildrs = true`.
-    -   The package needs certain features to be enabled. Solution: add
-        `additional_flags = ["--cfg=FEATURE_NAME"]`.
-
-    See `Cargo.toml` for prior art. Googlers: you may be able to glean some hints
-    from the corresponding Google-internal build files.
-7.  Run `bazel test tensorboard/data/server:update_protos_test` to determine if
+    `Cargo.lock`.
+4.  Add an alias in `tensorboard/data/server/cargo/BUILD.bazel` if TensorBoard
+    needs to reference the crate directly. crate_universe exposes it as
+    `@rust_crates//:<crate-name>`.
+5.  Build the data server with Bazel to validate the generated crate graph:
+    `bazel build //tensorboard/data/server:server --noenable_workspace`.
+    Crates that need custom build-script tools or environment variables should
+    be configured with a crate annotation in `MODULE.bazel`.
+6.  Run `bazel test tensorboard/data/server:update_protos_test` to determine if
     the proto source files need to be updated. If this test fails then its logs
     will contain instructions on how to update the protos.
 
-When done, commit the changes to `Cargo.toml`, `Cargo.lock`, and the
-`third_party/rust/` directory.
+When done, commit the changes to `Cargo.toml`, `Cargo.lock`,
+`tensorboard/data/server/cargo/BUILD.bazel`, and `MODULE.bazel` as applicable.
 
 [crates.io]: https://crates.io/
-[raze]: https://github.com/google/cargo-raze
 
 ## Test data
 

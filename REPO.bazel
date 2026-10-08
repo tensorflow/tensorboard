@@ -1,0 +1,2 @@
+# Bazel 8 replacement for the deprecated .bazelignore node_modules handling.
+ignore_directories(["**/node_modules"])

@@ -5,6 +5,8 @@
 # demonstrate that Bazel is not required); we use this BUILD file only
 # to define integration tests for TensorBoard itself.
 
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 package(default_visibility = ["//tensorboard:internal"])
 
 licenses(["notice"])

@@ -126,7 +126,7 @@ mod access_token {
         /// This exists as an optimization so that a [`TokenStore`] doesn't need to check locks all the
         /// time when the credential is anonymous, anyway.
         pub fn anonymous(&self) -> bool {
-            !matches!(&self.0, Some(_))
+            self.0.is_none()
         }
     }
     impl Debug for AccessToken {

@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn test_valid_values() {
-        let mut ts = TimeSeries::<&str>::new(Box::new(pb::SummaryMetadata::default()));
+        let mut ts = TimeSeries::<&str>::new(Box::default());
 
         let mut rsv = crate::reservoir::StageReservoir::new(10);
         let wall_time = WallTime::new(0.0).unwrap(); // don't really care

@@ -16,13 +16,14 @@
 # Non-vendored runtime dependencies of TensorBoard.
 
 absl-py >= 0.4
-# NOTE: this version should be >= the grpc version in our WORKSPACE file.
+# This runtime floor follows supported TensorFlow releases and is independent
+# of the C++ gRPC module version used by the Bazel build stack.
 grpcio >= 1.74.0, < 2.0
 markdown >= 2.6.8
 numpy >= 1.12.0
 packaging
 pillow
-# NOTE: this version must be >= the protoc version in our WORKSPACE file.
+# This runtime range is independent of the protoc module used at build time.
 # TensorFlow 2.21 requires protobuf >= 6.31.1, < 8.0.0, so keep our open-source
 # runtime floor aligned with that range.
 protobuf >= 6.31.1, < 8.0.0

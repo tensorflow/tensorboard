@@ -119,7 +119,7 @@ impl DynLogdir {
 ///
 /// [rfc]: https://tools.ietf.org/html/rfc3986#section-3.1
 fn is_protocol(s: &str) -> bool {
-    if !s.chars().next().map_or(false, |c| c.is_ascii_alphabetic()) {
+    if !s.chars().next().is_some_and(|c| c.is_ascii_alphabetic()) {
         return false;
     }
     s.chars()

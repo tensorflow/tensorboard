@@ -244,13 +244,13 @@ To get this test passing, follow these steps:
     workflow):
 
     ```
-    $ git ls-files -z '*BUILD' third_party/js.bzl third_party/workspace.bzl WORKSPACE | xargs -0 ~/tb_buildifier/buildifier --mode=check --lint=warn --warnings=-native-py,-native-java
+    $ git ls-files -z '*BUILD' third_party/js.bzl MODULE.bazel | xargs -0 ~/tb_buildifier/buildifier --mode=check --lint=warn --warnings=-native-py,-native-java
     ```
 
     To reformat, execute the command without the "mode" and "lint" parameters:
 
     ```
-    $ git ls-files -z '*BUILD' third_party/js.bzl third_party/workspace.bzl WORKSPACE | xargs -0 ~/tb_buildifier/buildifier
+    $ git ls-files -z '*BUILD' third_party/js.bzl MODULE.bazel | xargs -0 ~/tb_buildifier/buildifier
     ```
 
 7. Review and commit any changes.
