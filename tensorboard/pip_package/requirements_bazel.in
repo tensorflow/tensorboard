@@ -5,4 +5,4 @@
 # package (currently tf-nightly).
 -r requirements.txt
 -r requirements_dev.txt
-tensorflow==2.21.0
+tensorflow==2.22.0rc0

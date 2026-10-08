@@ -13,14 +13,18 @@ Developing a custom plugin does not require Bazel or building TensorBoard.
 
 # How to Develop TensorBoard
 
-TensorBoard at HEAD relies on the nightly installation of TensorFlow: this allows plugin authors to use the latest features of TensorFlow, but it means release versions of TensorFlow may not suffice for development. We recommend installing TensorFlow nightly in a [Python virtualenv](https://virtualenv.pypa.io), and then running your modified development copy of TensorBoard within that virtualenv. To install TensorFlow nightly within the virtualenv, as well as TensorBoard's runtime and tooling dependencies, you can run:
+TensorBoard at HEAD currently uses TensorFlow 2.22.0rc0 as its compatibility
+baseline. We recommend installing that version in a [Python
+virtualenv](https://virtualenv.pypa.io), and then running your modified
+development copy of TensorBoard within that virtualenv. To install TensorFlow
+and TensorBoard's runtime and tooling dependencies, run:
 
 ```sh
 $ virtualenv -p python3 tf
 $ source tf/bin/activate
 (tf)$ pip install --upgrade pip
-(tf)$ pip install tf-nightly -r tensorboard/pip_package/requirements.txt -r tensorboard/pip_package/requirements_dev.txt
-(tf)$ pip uninstall -y tb-nightly
+(tf)$ pip install "tensorflow==2.22.0rc0" -r tensorboard/pip_package/requirements.txt -r tensorboard/pip_package/requirements_dev.txt
+(tf)$ pip uninstall -y tensorboard tb-nightly
 ```
 
 TensorBoard builds are done with [Bazel](https://bazel.build). The supported
@@ -53,9 +57,9 @@ Python packages imported by Bazel targets are resolved from
 `tensorboard/pip_package/requirements_bazel_lock.txt`. After changing either
 pip requirements file or the TensorFlow compatibility baseline, regenerate the
 lock on Linux with Python 3.10 and review the resulting version changes. Bazel
-tests use the stable TensorFlow version in `requirements_bazel.in`; the
-pip-package smoke test separately exercises the CI-selected version, currently
-`tf-nightly`.
+tests use the TensorFlow compatibility baseline in `requirements_bazel.in`;
+the pip-package smoke test separately exercises the CI-selected version,
+currently `tensorflow==2.22.0rc0`.
 
 ```sh
 (tf)$ python -m pip install "uv==0.5.31"

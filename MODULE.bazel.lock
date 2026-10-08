@@ -7010,6 +7010,10 @@
             "https://files.pythonhosted.org/packages/76/d4/81420972a676e8ffea40450d8c8c92943e7218a78fe9b64359836cc9876b/click-8.4.2.tar.gz": "sha256:9a6cea6e60b17ebe0a44c5cc636d94f09bd66142c1cd7d8b4cd731c4917a15f6",
             "https://files.pythonhosted.org/packages/fb/e2/79c688af8b210d232694e31e59da9f6ec747bae31c3f5946e4e9b98860d5/click-8.4.2-py3-none-any.whl": "sha256:e6f9f66136c816745b9d65817da91d61d957fb16e02e4dcd0552553c5a197b76"
           },
+          "colorama": {
+            "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl": "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+            "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz": "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"
+          },
           "constantly": {
             "https://files.pythonhosted.org/packages/4d/6f/cb2a94494ff74aa9528a36c5b1422756330a75a8367bf20bd63171fc324d/constantly-23.10.4.tar.gz": "sha256:aa92b70a33e2ac0bb33cd745eb61776594dc48764b06c35e0efd050b7f1c7cbd",
             "https://files.pythonhosted.org/packages/b8/40/c199d095151addf69efdb4b9ca3a4f20f70e20508d6222bffb9b76f58573/constantly-23.10.4-py3-none-any.whl": "sha256:3fd9b4d1c3dc1ec9757f3c52aef7e53ad9323dbe39f51dfd4c43853b68dfa3f9"
@@ -7409,9 +7413,9 @@
             "https://files.pythonhosted.org/packages/14/2f/967ba146e6d58cf6a652da73885f52fc68001525b4197effc174321d70b4/jmespath-1.1.0-py3-none-any.whl": "sha256:a5663118de4908c91729bea0acadca56526eb2698e83de10cd116ae0f4e97c64",
             "https://files.pythonhosted.org/packages/d3/59/322338183ecda247fb5d1763a6cbe46eff7222eaeebafd9fa65d4bf5cb11/jmespath-1.1.0.tar.gz": "sha256:472c87d80f36026ae83c6ddd0f1d05d4e510134ed462851fd5f754c8c3cbb88d"
           },
-          "keras": {
-            "https://files.pythonhosted.org/packages/35/67/c428764e9e4c624d3ef19dbf77121757d6ea33f66e23a94b65d0646cea55/keras-3.12.4.tar.gz": "sha256:4b192bc123854d5b70ccd07c79a77119fe20deb79ddd02c4c73f821bd838b1b3",
-            "https://files.pythonhosted.org/packages/6e/40/2c5215dfa118f3f1620035ef036532c462920ebef3e875bc127590c4cd2c/keras-3.12.4-py3-none-any.whl": "sha256:5570a3136a202ce1ea3956a697f3b085d2ab22e1102742cb22a3c6039c8db38e"
+          "keras-nightly": {
+            "https://files.pythonhosted.org/packages/64/b8/0a2794a47444c515b97a2af65e725927366100020505aaa50c1ef9f1159a/keras_nightly-3.12.0.dev2025100703.tar.gz": "sha256:e29434e49bac3360f86af6e1548d94b0a2fda4e793685bc43b49867132ab16e5",
+            "https://files.pythonhosted.org/packages/d3/11/2f4609534cba355851790c6b8a04edbc7cf3abd0aa2b13ca48d2cb204ae2/keras_nightly-3.12.0.dev2025100703-py3-none-any.whl": "sha256:6b9dfb3814d707abf5555f56268f072daec13f2540da3aeeb7531a819ebb4567"
           },
           "keyring": {
             "https://files.pythonhosted.org/packages/43/4b/674af6ef2f97d56f0ab5153bf0bfa28ccb6c3ed4d1babf4305449668807b/keyring-25.7.0.tar.gz": "sha256:fe01bd85eb3f8fb3dd0405defdeac9a5b4f6f0439edbb3149577f244a2e8245b",
@@ -8287,22 +8291,26 @@
             "https://files.pythonhosted.org/packages/b7/85/dabeaf902892922777492e1d253bb7e1264cadce3cea932f7ff599e53fea/tensorboard_data_server-0.7.2-py3-none-macosx_10_9_x86_64.whl": "sha256:9fe5d24221b29625dbc7328b0436ca7fc1c23de4acf4d272f1180856e32f9f60"
           },
           "tensorflow": {
-            "https://files.pythonhosted.org/packages/20/a5/f139fbbd4e81a2e556170718698acf518a71a84927fa1dc1f5935b6ab3d2/tensorflow-2.21.0-cp312-cp312-manylinux_2_27_aarch64.whl": "sha256:b07d15737406533898e36c7ef7944b1be18e9028dc521b9229952c537bbc5552",
-            "https://files.pythonhosted.org/packages/26/a1/23b9b39c046c723db63a1c2c93397703efa3400a36f98d9c717b473aafb8/tensorflow-2.21.0-cp311-cp311-manylinux_2_27_x86_64.whl": "sha256:9056fbc9ba04235810b71ae6cbd958a196e8804fb53bbcffbf3e23b56155f124",
-            "https://files.pythonhosted.org/packages/39/59/27adba20bbd1088b00fc0e9232aa21493b4800af2299eb6005017a6053f4/tensorflow-2.21.0-cp312-cp312-macosx_12_0_arm64.whl": "sha256:56ecd7d47429acbe1df2694d50b75bf9fc3995ac92cb367cd9af6c4780ead712",
-            "https://files.pythonhosted.org/packages/40/09/268b45a61be2bce136dabf3a3cd7099c8a984ae398198f71920b4c60c502/tensorflow-2.21.0-cp313-cp313-macosx_12_0_arm64.whl": "sha256:a145ed46c58192b7c3f9916d070caf4f6afc6dc7e5511f83dd97677f4c4947f4",
-            "https://files.pythonhosted.org/packages/51/b8/a5aba377db57aa08684816cd31a04291c750cde8fa30414ad0918ca47624/tensorflow-2.21.0-cp310-cp310-win_amd64.whl": "sha256:8ee4d30fca0249c441bf65e63994df848dc63c80730bd494a9aa9ce5e3f0dee5",
-            "https://files.pythonhosted.org/packages/72/72/343b86b4c9bfe28e81f749439f908c1e26aeac73d9f12b8dcdb996eb8ecb/tensorflow-2.21.0-cp313-cp313-manylinux_2_27_aarch64.whl": "sha256:a10abdfb8b1189210c251021a3f153b7ccc52a8e6521351f3dc3331e8ba593e0",
-            "https://files.pythonhosted.org/packages/7d/0d/4ee4bc074597b41c9c00dc97b4418ef1eb8736fe9186ffdb3961efdfb730/tensorflow-2.21.0-cp312-cp312-win_amd64.whl": "sha256:27ba0682572b1e50a0db1ee74cfb787eafcfdb1b751bbbf401fed62fe32a92e0",
-            "https://files.pythonhosted.org/packages/86/6c/10d075ffc09754c7f10e749ba3c9d46dd809fb007990c7f788128044180c/tensorflow-2.21.0-cp313-cp313-manylinux_2_27_x86_64.whl": "sha256:e9d8da8dcab9650efb45f032ba70af2f016f907e6e0c6bda29dd101bba945406",
-            "https://files.pythonhosted.org/packages/86/91/dedad8403e7b0036d99be4878987693b7b7f62097eb8537fa6ce62ea131c/tensorflow-2.21.0-cp313-cp313-win_amd64.whl": "sha256:76cccbe0a95d9392dee1ae501ae0656b6c73c1cac29a7f8f32d570e0670863f7",
-            "https://files.pythonhosted.org/packages/8f/a2/6d7e6a738e302530586d484895de2cf3fc158ad9c73b4504a670b2956dd9/tensorflow-2.21.0-cp311-cp311-win_amd64.whl": "sha256:0064a19bdc054a4b7c5e7e21cdf50ce38a114c2bada578b4f5267a37410f6784",
-            "https://files.pythonhosted.org/packages/9c/7c/57b7ee953b40d5d837136d20af6851b20ea6ca63753fc05699e8bcfab6d5/tensorflow-2.21.0-cp311-cp311-manylinux_2_27_aarch64.whl": "sha256:4b24aca16d527a3cf1c37f720c04c484c3d20f4d0fdfa98632ac8b9f3be6eb5c",
-            "https://files.pythonhosted.org/packages/9e/31/14a78add50edf9b171d0edad1d50afe1672cdaa8b9b60d30716307b4f188/tensorflow-2.21.0-cp310-cp310-macosx_12_0_arm64.whl": "sha256:6462632889e0e9ce1455b208c87b86a8c154e899407ef7d426ef1ec71647f565",
-            "https://files.pythonhosted.org/packages/ad/bc/94ab362f9309d41997d504f440c8ce3282fd0879a60b6b5fedf2605c05c7/tensorflow-2.21.0-cp310-cp310-manylinux_2_27_aarch64.whl": "sha256:7c97938b25cf70c80ae8619931f85abcdee2ab2eb256c2051202edb3b89e9a5d",
-            "https://files.pythonhosted.org/packages/c9/b7/df85669b3a862bc7704de206cc52801302c0441c67c3f382d621f173c93f/tensorflow-2.21.0-cp310-cp310-manylinux_2_27_x86_64.whl": "sha256:77c6f298e695ea1d283cdd7d30f8d97530cc6e92c1395a9ddbab9771c99233a4",
-            "https://files.pythonhosted.org/packages/ce/d7/6e71b4ded8ce99cd21add95611ca14af6e9ad4f2baeabdeb79a4a6b3cb1f/tensorflow-2.21.0-cp312-cp312-manylinux_2_27_x86_64.whl": "sha256:b3b95643c4e70eb925839938fb35cbe142f317ec84af6844ee61513713bb13c0",
-            "https://files.pythonhosted.org/packages/ec/76/b649b02a243c09f0348199dbd81408c1558cfbec2b6d77d820c428a95254/tensorflow-2.21.0-cp311-cp311-macosx_12_0_arm64.whl": "sha256:51f46f4806139d01fc7920cc72a4c75876f80649bf40ff083ab6212ceb43ca88"
+            "https://files.pythonhosted.org/packages/08/17/ff98a56b2167490277e7a384fbd961c5b0af365e879bbfcf6fb9ca521fc6/tensorflow-2.22.0rc0-cp314-cp314-manylinux_2_27_x86_64.whl": "sha256:ce5a28251457053a01e6d9acba03452257b7da01105d98ad16718700fe445deb",
+            "https://files.pythonhosted.org/packages/08/d8/3b9ee4fae8179cca38820d31cdd3660ca76c7add59cc781838e76b245022/tensorflow-2.22.0rc0-cp310-cp310-manylinux_2_27_aarch64.whl": "sha256:80696722effe8be39831612fbfbe2821e56bfcdbe775341aa61b716cdaf595aa",
+            "https://files.pythonhosted.org/packages/16/29/ef07b1775a9583a11aa3d9a6c1baee219b3539553827b4809ef2461ac94d/tensorflow-2.22.0rc0-cp314-cp314-manylinux_2_27_aarch64.whl": "sha256:1ec9395ba9fa69a03deba4f30db3b923eb8c8e8797dbef520ec732020b98e35c",
+            "https://files.pythonhosted.org/packages/22/e2/bc9603e2595363030a1c0687c347c164a8d0e8a54a9dcf79c3d8b9dfb1fe/tensorflow-2.22.0rc0-cp314-cp314-win_amd64.whl": "sha256:169de6519ec320139f67bf1ab063abcdfd314c874daf0285c450184c4412d4d2",
+            "https://files.pythonhosted.org/packages/25/b1/2501cb2566d8215d071a33e4834e1fd43055f3868f9cb2db98a39484e922/tensorflow-2.22.0rc0-cp310-cp310-manylinux_2_27_x86_64.whl": "sha256:f3667f4f5d26c71e3e773b9cbca03443091b2b65c31e0ecb6c4e750a7d300299",
+            "https://files.pythonhosted.org/packages/33/11/cee2d3e71b578618aff0f592c6c4065b9ce16c346b48a355ecdef32045ec/tensorflow-2.22.0rc0-cp314-cp314-macosx_12_0_arm64.whl": "sha256:7600251aa4c472976ccf32f80ac844cf20ae09d8b8d2d402d6e71fb256575e24",
+            "https://files.pythonhosted.org/packages/3c/4f/2c601e75135c74d7f9dee77558538a4502b92bc86667b77c5cd917306e2a/tensorflow-2.22.0rc0-cp310-cp310-macosx_12_0_arm64.whl": "sha256:d4a481d44ae36b74b6240e6eda12b9a8657b07def135967fe3f6bedfafef17e8",
+            "https://files.pythonhosted.org/packages/52/90/c67db6ce939073ec7b9c800010fd5dc8c3510136bf0c1a20fac24815bd71/tensorflow-2.22.0rc0-cp313-cp313-manylinux_2_27_aarch64.whl": "sha256:1c9f5f845ff306372828bf081a7367a771cbd6cb9d0ae1350bf3463fb2c849a5",
+            "https://files.pythonhosted.org/packages/56/b6/a8661dbc275376f6273435f8465d4d4330bb3c60e7522d096450412bd230/tensorflow-2.22.0rc0-cp312-cp312-manylinux_2_27_aarch64.whl": "sha256:f9875aebca660496ee7a3cfa058a2a741dcd3eccb9d88a1afdeb551d2109092a",
+            "https://files.pythonhosted.org/packages/65/fa/e5394892c7e5e47fb326859c6ad759987c896c46cbd9ecb36dc8ccf993d2/tensorflow-2.22.0rc0-cp313-cp313-win_amd64.whl": "sha256:4ffb36fe2a7ba04b36d4f7cfc9df84a1e7d007a33e5989cf665b3ab04050e37e",
+            "https://files.pythonhosted.org/packages/68/64/6fa4a7f9ed3b0bd3bba2dbfda498a9a3868b57ba6cdf6a1b112c548400aa/tensorflow-2.22.0rc0-cp313-cp313-macosx_12_0_arm64.whl": "sha256:a3b05c53dca4ff65edaf53994b85f9d90c4c3d1ffa6ec8667e333e11cfe7bc7f",
+            "https://files.pythonhosted.org/packages/7a/4e/c04f6255c037018edee8cec487a346f818785c6dc3b7f4e8ab69548cbb18/tensorflow-2.22.0rc0-cp310-cp310-win_amd64.whl": "sha256:1b196dfc40deaa2bf69dfd30c6219ae9fab4e0458f0b03798a2516ec2b7314c4",
+            "https://files.pythonhosted.org/packages/92/4b/5775ded46f8ccaa69426ea5557d8e2056b0ca0fee79b335df5caed7656df/tensorflow-2.22.0rc0-cp313-cp313-manylinux_2_27_x86_64.whl": "sha256:c3910219e57acf584437376433e020e6f662c0de1c9862819f62b863e2149da8",
+            "https://files.pythonhosted.org/packages/b5/29/ebfbefb6b1378b8a28b8a4b408859a2d7281b7b34a04a1ca43c355fa2b43/tensorflow-2.22.0rc0-cp312-cp312-macosx_12_0_arm64.whl": "sha256:5185c2ad9554b5c3a3c6d1717a5749e017231adb381dda826f720d208ca7fbdb",
+            "https://files.pythonhosted.org/packages/c6/dc/7a7ceb47c2b2ada2486f615c6246a16c9bf32cae56c984232ab6e4b82ae9/tensorflow-2.22.0rc0-cp311-cp311-manylinux_2_27_x86_64.whl": "sha256:b5bf07b0c7b834eb3dfe35aacb94a1b03b1b6e1a54a18bcb562b0512f2e26e09",
+            "https://files.pythonhosted.org/packages/cd/8e/7551100d1ba3e83ed7132cfb053e97fe4dc7ebe8a5f852a6d1a1bba96248/tensorflow-2.22.0rc0-cp311-cp311-win_amd64.whl": "sha256:ec9e2dc378533853c1ce98b4cb5fe1eb316aba587be77327810e339c9c6b0924",
+            "https://files.pythonhosted.org/packages/d0/0b/467c8801544416fb88d6f4d8b0038450589ebf2a8fc3919ede4219bc9405/tensorflow-2.22.0rc0-cp312-cp312-manylinux_2_27_x86_64.whl": "sha256:525b0ed004a1e1373a329e84aca8329c89556e89731da7ba9f4d5025b2d6ad22",
+            "https://files.pythonhosted.org/packages/d2/1a/b45ca4f4a00027d92747c8f37dd4597b2fc45a145d67a4f7d46152c51a73/tensorflow-2.22.0rc0-cp311-cp311-manylinux_2_27_aarch64.whl": "sha256:3faf349bb14e71473f1ee87d081b973892ccfce0268aed12ce133767a5edbc0c",
+            "https://files.pythonhosted.org/packages/df/29/0dc639570a7de344edfcf9817e6875630c34929e95a5fd90738163a22b21/tensorflow-2.22.0rc0-cp312-cp312-win_amd64.whl": "sha256:8f522b074a1dc74c4eaa90bab5c9f8223610b45348f95f2f2c10494e6ec16a84",
+            "https://files.pythonhosted.org/packages/fb/70/46ed674e238ba720a603826de9f8b7b79073950a25a67cd22e29e4be475f/tensorflow-2.22.0rc0-cp311-cp311-macosx_12_0_arm64.whl": "sha256:6370038ad9ebe999cf5a1c81f774415327d0224d5f5131fe7855cd0970561176"
           },
           "termcolor": {
             "https://files.pythonhosted.org/packages/33/d1/8bb87d21e9aeb323cc03034f5eaf2c8f69841e40e4853c2627edf8111ed3/termcolor-3.3.0-py3-none-any.whl": "sha256:cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5",

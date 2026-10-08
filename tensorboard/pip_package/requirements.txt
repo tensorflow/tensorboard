@@ -24,7 +24,7 @@ numpy >= 1.12.0
 packaging
 pillow
 # This runtime range is independent of the protoc module used at build time.
-# TensorFlow 2.21 requires protobuf >= 6.31.1, < 8.0.0, so keep our open-source
+# TensorFlow 2.22 requires protobuf >= 6.31.1, < 8.0.0, so keep our open-source
 # runtime floor aligned with that range.
 protobuf >= 6.31.1, < 8.0.0
 setuptools >= 41.0.0  # Note: provides pkg_resources as well as setuptools
