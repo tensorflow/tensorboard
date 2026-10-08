@@ -12,7 +12,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  Input,
+  Signal,
+} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {Observable} from 'rxjs';
 import {
@@ -21,7 +28,6 @@ import {
   distinctUntilChanged,
   filter,
   map,
-  share,
   startWith,
 } from 'rxjs/operators';
 import {State} from '../../../app_state';
@@ -41,8 +47,8 @@ export const FILTER_VIEW_DEBOUNCE_IN_MS = 200;
   selector: 'metrics-filtered-view',
   template: `
     <metrics-filtered-view-component
-      [isEmptyMatch]="isEmptyMatch$ | async"
-      [cardIdsWithMetadata]="cardIdsWithMetadata$ | async"
+      [isEmptyMatch]="isEmptyMatch()"
+      [cardIdsWithMetadata]="cardIdsWithMetadata()"
       [cardObserver]="cardObserver"
     ></metrics-filtered-view-component>
   `,
@@ -85,20 +91,23 @@ export class FilteredViewContainer {
             });
           }
         ),
-        share(),
         startWith([])
       ) as Observable<DeepReadonly<CardIdWithMetadata>[]>;
-    this.isEmptyMatch$ = this.cardIdsWithMetadata$.pipe(
-      combineLatestWith(
-        this.store.select(getSortedRenderableCardIdsWithMetadata)
-      ),
-      map(([filteredCardList, fullCardList]) => {
-        return Boolean(fullCardList.length) && filteredCardList.length === 0;
-      })
+    this.cardIdsWithMetadata = toSignal(this.cardIdsWithMetadata$, {
+      requireSync: true,
+    });
+    const fullCardIds = this.store.selectSignal(
+      getSortedRenderableCardIdsWithMetadata
     );
+    this.isEmptyMatch = computed(() => {
+      return (
+        Boolean(fullCardIds().length) && this.cardIdsWithMetadata().length === 0
+      );
+    });
   }
 
   readonly cardIdsWithMetadata$: Observable<DeepReadonly<CardIdWithMetadata>[]>;
+  readonly cardIdsWithMetadata: Signal<DeepReadonly<CardIdWithMetadata>[]>;
 
-  readonly isEmptyMatch$: Observable<boolean>;
+  readonly isEmptyMatch: Signal<boolean>;
 }

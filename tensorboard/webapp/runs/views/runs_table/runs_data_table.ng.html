@@ -32,7 +32,7 @@ limitations under the License.
     [numColumnsLoaded]="numColumnsLoaded"
     [hasMoreColumnsToLoad]="numColumnsLoaded === numColumnsToLoad"
     [columnFilters]="columnFilters"
-    [loading]="loading"
+    [loading]="loading ?? false"
     [shouldAddBorders]="true"
     (sortDataBy)="sortDataBy.emit($event)"
     (orderColumns)="orderColumns.emit($event)"

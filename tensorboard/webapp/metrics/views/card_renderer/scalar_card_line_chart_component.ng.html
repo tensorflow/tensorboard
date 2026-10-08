@@ -20,7 +20,7 @@ limitations under the License.
   [seriesData]="seriesData"
   [seriesMetadataMap]="seriesMetadataMap"
   [xScaleType]="xScaleType"
-  [yScaleType]="yScaleType"
+  [yScaleType]="yScaleType ?? ScaleType.LINEAR"
   [customXFormatter]="getCustomXFormatter()"
   [tooltipTemplate]="tooltipTemplate"
   [ignoreYOutliers]="ignoreOutliers"

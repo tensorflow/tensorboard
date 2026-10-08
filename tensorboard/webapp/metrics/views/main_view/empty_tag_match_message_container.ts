@@ -12,9 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Signal} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {PluginType} from '../../data_source';
@@ -29,27 +29,28 @@ import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
   selector: 'metrics-empty-tag-match',
   template: `
     <metrics-empty-tag-match-component
-      [pluginTypes]="pluginTypes$ | async"
-      [tagFilterRegex]="tagFilterRegex$ | async"
-      [tagCounts]="tagCounts$ | async"
+      [pluginTypes]="pluginTypes()"
+      [tagFilterRegex]="tagFilterRegex()"
+      [tagCounts]="tagCounts()"
     ></metrics-empty-tag-match-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmptyTagMatchMessageContainer {
   constructor(private readonly store: Store<State>) {
-    this.pluginTypes$ = this.store.select(getMetricsFilteredPluginTypes);
-    this.tagFilterRegex$ = this.store.select(getMetricsTagFilter);
-    this.tagCounts$ = this.store
-      .select(getSortedRenderableCardIdsWithMetadata)
-      .pipe(
+    this.pluginTypes = this.store.selectSignal(getMetricsFilteredPluginTypes);
+    this.tagFilterRegex = this.store.selectSignal(getMetricsTagFilter);
+    this.tagCounts = toSignal(
+      this.store.select(getSortedRenderableCardIdsWithMetadata).pipe(
         map((cardList) => {
           return new Set(cardList.map(({tag}) => tag)).size;
         })
-      );
+      ),
+      {requireSync: true}
+    );
   }
 
-  readonly pluginTypes$: Observable<Set<PluginType>>;
-  readonly tagFilterRegex$: Observable<string>;
-  readonly tagCounts$: Observable<number>;
+  readonly pluginTypes: Signal<Set<PluginType>>;
+  readonly tagFilterRegex: Signal<string>;
+  readonly tagCounts: Signal<number>;
 }

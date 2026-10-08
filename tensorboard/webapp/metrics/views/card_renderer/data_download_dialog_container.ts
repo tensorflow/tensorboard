@@ -12,7 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Inject,
+  Signal,
+} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
@@ -36,21 +42,22 @@ export interface DataDownloadDialogData {
   selector: 'data_download_dialog',
   template: `<data_download_dialog_component
     [cardMetadata]="cardMetadata$ | async"
-    [runs]="runs$ | async"
-    [selectedRunId]="selectedRunId$ | async"
-    [downloadUrlCsv]="downloadUrlCsv$ | async"
-    [downloadUrlJson]="downloadUrlJson$ | async"
+    [runs]="runs()"
+    [selectedRunId]="selectedRunId()"
+    [downloadUrlCsv]="downloadUrlCsv()"
+    [downloadUrlJson]="downloadUrlJson()"
     (runSelected)="selectedRunId$.next($event)"
   ></data_download_dialog_component>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DataDownloadDialogContainer {
-  readonly runs$: Observable<Run[]>;
+  readonly runs: Signal<Run[]>;
   readonly cardMetadata$: Observable<CardMetadata>;
 
   readonly selectedRunId$ = new BehaviorSubject<string | null>(null);
-  readonly downloadUrlCsv$: Observable<string | null>;
-  readonly downloadUrlJson$: Observable<string | null>;
+  readonly selectedRunId: Signal<string | null>;
+  readonly downloadUrlCsv: Signal<string | null>;
+  readonly downloadUrlJson: Signal<string | null>;
 
   constructor(
     store: Store<State>,
@@ -63,49 +70,60 @@ export class DataDownloadDialogContainer {
         filter((metadata) => Boolean(metadata))
       ) as Observable<CardMetadata>;
 
-    this.downloadUrlCsv$ = combineLatest([
-      store.select(getCardMetadata, data.cardId),
-      this.selectedRunId$,
-    ]).pipe(
-      map(([metadata, selectedRunId]): string | null => {
-        if (!metadata || !selectedRunId) return null;
-        return dataSource.downloadUrl(
-          metadata.plugin,
-          metadata.tag,
-          selectedRunId!,
-          'csv'
-        );
-      }),
-      startWith<string | null>(null)
+    this.selectedRunId = toSignal(this.selectedRunId$, {requireSync: true});
+
+    this.downloadUrlCsv = toSignal(
+      combineLatest([
+        store.select(getCardMetadata, data.cardId),
+        this.selectedRunId$,
+      ]).pipe(
+        map(([metadata, selectedRunId]): string | null => {
+          if (!metadata || !selectedRunId) return null;
+          return dataSource.downloadUrl(
+            metadata.plugin,
+            metadata.tag,
+            selectedRunId!,
+            'csv'
+          );
+        }),
+        startWith<string | null>(null)
+      ),
+      {requireSync: true}
     );
-    this.downloadUrlJson$ = combineLatest([
-      store.select(getCardMetadata, data.cardId),
-      this.selectedRunId$,
-    ]).pipe(
-      map(([metadata, selectedRunId]): string | null => {
-        if (!metadata || !selectedRunId) return null;
-        return dataSource.downloadUrl(
-          metadata.plugin,
-          metadata.tag,
-          selectedRunId!,
-          'json'
-        );
-      }),
-      startWith<string | null>(null)
+    this.downloadUrlJson = toSignal(
+      combineLatest([
+        store.select(getCardMetadata, data.cardId),
+        this.selectedRunId$,
+      ]).pipe(
+        map(([metadata, selectedRunId]): string | null => {
+          if (!metadata || !selectedRunId) return null;
+          return dataSource.downloadUrl(
+            metadata.plugin,
+            metadata.tag,
+            selectedRunId!,
+            'json'
+          );
+        }),
+        startWith<string | null>(null)
+      ),
+      {requireSync: true}
     );
 
-    this.runs$ = combineLatest([
-      store.select(getRunMap),
-      store.select(getCardTimeSeries, data.cardId),
-    ]).pipe(
-      map(([runMap, runToSeries]) => {
-        if (!runToSeries) return [];
-        return Object.keys(runToSeries)
-          .map((runId) => {
-            return runMap.get(runId);
-          })
-          .filter(Boolean) as Run[];
-      })
+    this.runs = toSignal(
+      combineLatest([
+        store.select(getRunMap),
+        store.select(getCardTimeSeries, data.cardId),
+      ]).pipe(
+        map(([runMap, runToSeries]) => {
+          if (!runToSeries) return [];
+          return Object.keys(runToSeries)
+            .map((runId) => {
+              return runMap.get(runId);
+            })
+            .filter(Boolean) as Run[];
+        })
+      ),
+      {requireSync: true}
     );
   }
 }

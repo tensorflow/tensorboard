@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {createSelector, select, Store} from '@ngrx/store';
+import {createSelector, Store} from '@ngrx/store';
 import {
   executionDigestFocused,
   executionScrollLeft,
@@ -89,17 +89,17 @@ function getExecutionDigestForDisplay(
   selector: 'tf-debugger-v2-timeline',
   template: `
     <timeline-component
-      [activeRunId]="activeRunId$ | async"
-      [loadingNumExecutions]="loadingNumExecutions$ | async"
-      [numExecutions]="numExecutions$ | async"
-      [scrollBeginIndex]="scrollBeginIndex$ | async"
-      [scrollBeginIndexUpperLimit]="scrollBeginIndexUpperLimit$ | async"
-      [pageSize]="pageSize$ | async"
-      [displayCount]="displayCount$ | async"
-      [displayExecutionDigests]="displayExecutionDigests$ | async"
-      [displayFocusedAlertTypes]="displayFocusedAlertTypes$ | async"
-      [focusedExecutionIndex]="focusedExecutionIndex$ | async"
-      [focusedExecutionDisplayIndex]="focusedExecutionDisplayIndex$ | async"
+      [activeRunId]="activeRunId()"
+      [loadingNumExecutions]="loadingNumExecutions()"
+      [numExecutions]="numExecutions()"
+      [scrollBeginIndex]="scrollBeginIndex()"
+      [scrollBeginIndexUpperLimit]="scrollBeginIndexUpperLimit()"
+      [pageSize]="pageSize()"
+      [displayCount]="displayCount()"
+      [displayExecutionDigests]="displayExecutionDigests()"
+      [displayFocusedAlertTypes]="displayFocusedAlertTypes()"
+      [focusedExecutionIndex]="focusedExecutionIndex()"
+      [focusedExecutionDisplayIndex]="focusedExecutionDisplayIndex()"
       (onNavigateLeft)="onNavigateLeft()"
       (onNavigateRight)="onNavigateRight()"
       (onExecutionDigestClicked)="onExecutionDigestClicked($event)"
@@ -109,72 +109,66 @@ function getExecutionDigestForDisplay(
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimelineContainer {
-  readonly activeRunId$;
+  readonly activeRunId;
 
-  readonly loadingNumExecutions$;
+  readonly loadingNumExecutions;
 
-  readonly scrollBeginIndex$;
+  readonly scrollBeginIndex;
 
-  readonly scrollBeginIndexUpperLimit$;
+  readonly scrollBeginIndexUpperLimit;
 
-  readonly pageSize$;
+  readonly pageSize;
 
-  readonly displayCount$;
+  readonly displayCount;
 
-  readonly displayExecutionDigests$;
+  readonly displayExecutionDigests;
 
-  readonly displayFocusedAlertTypes$;
+  readonly displayFocusedAlertTypes;
 
-  readonly focusedExecutionIndex$;
+  readonly focusedExecutionIndex;
 
-  readonly focusedExecutionDisplayIndex$;
+  readonly focusedExecutionDisplayIndex;
 
-  readonly numExecutions$;
+  readonly numExecutions;
 
   constructor(private readonly store: Store<State>) {
-    this.activeRunId$ = this.store.pipe(select(getActiveRunId));
-    this.loadingNumExecutions$ = this.store.pipe(
-      select(
-        createSelector(getNumExecutionsLoaded, (loaded) => {
-          return loaded.state == DataLoadState.LOADING;
-        })
+    this.activeRunId = this.store.selectSignal(getActiveRunId);
+    this.loadingNumExecutions = this.store.selectSignal(
+      createSelector(getNumExecutionsLoaded, (loaded) => {
+        return loaded.state == DataLoadState.LOADING;
+      })
+    );
+    this.scrollBeginIndex = this.store.selectSignal(
+      getExecutionScrollBeginIndex
+    );
+    this.scrollBeginIndexUpperLimit = this.store.selectSignal(
+      createSelector(
+        getNumExecutions,
+        getDisplayCount,
+        (numExecutions, displayCount) => {
+          return Math.max(0, numExecutions - displayCount);
+        }
       )
     );
-    this.scrollBeginIndex$ = this.store.pipe(
-      select(getExecutionScrollBeginIndex)
+    this.pageSize = this.store.selectSignal(getExecutionPageSize);
+    this.displayCount = this.store.selectSignal(getDisplayCount);
+    this.displayExecutionDigests = this.store.selectSignal(
+      createSelector(getVisibleExecutionDigests, (visibleDigests) => {
+        return visibleDigests.map((digest) =>
+          getExecutionDigestForDisplay(digest)
+        );
+      })
     );
-    this.scrollBeginIndexUpperLimit$ = this.store.pipe(
-      select(
-        createSelector(
-          getNumExecutions,
-          getDisplayCount,
-          (numExecutions, displayCount) => {
-            return Math.max(0, numExecutions - displayCount);
-          }
-        )
-      )
+    this.displayFocusedAlertTypes = this.store.selectSignal(
+      getFocusAlertTypesOfVisibleExecutionDigests
     );
-    this.pageSize$ = this.store.pipe(select(getExecutionPageSize));
-    this.displayCount$ = this.store.pipe(select(getDisplayCount));
-    this.displayExecutionDigests$ = this.store.pipe(
-      select(
-        createSelector(getVisibleExecutionDigests, (visibleDigests) => {
-          return visibleDigests.map((digest) =>
-            getExecutionDigestForDisplay(digest)
-          );
-        })
-      )
+    this.focusedExecutionIndex = this.store.selectSignal(
+      getFocusedExecutionIndex
     );
-    this.displayFocusedAlertTypes$ = this.store.pipe(
-      select(getFocusAlertTypesOfVisibleExecutionDigests)
+    this.focusedExecutionDisplayIndex = this.store.selectSignal(
+      getFocusedExecutionDisplayIndex
     );
-    this.focusedExecutionIndex$ = this.store.pipe(
-      select(getFocusedExecutionIndex)
-    );
-    this.focusedExecutionDisplayIndex$ = this.store.pipe(
-      select(getFocusedExecutionDisplayIndex)
-    );
-    this.numExecutions$ = this.store.pipe(select(getNumExecutions));
+    this.numExecutions = this.store.selectSignal(getNumExecutions);
   }
 
   onNavigateLeft() {

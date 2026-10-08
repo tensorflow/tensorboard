@@ -32,9 +32,9 @@ import {State} from '../_redux/settings_types';
   selector: 'settings-dialog',
   template: `
     <settings-dialog-component
-      [reloadEnabled]="reloadEnabled$ | async"
-      [reloadPeriodInMs]="reloadPeriodInMs$ | async"
-      [pageSize]="pageSize$ | async"
+      [reloadEnabled]="reloadEnabled()"
+      [reloadPeriodInMs]="reloadPeriodInMs()"
+      [pageSize]="pageSize()"
       (reloadToggled)="onReloadToggled()"
       (reloadPeriodInMsChanged)="onReloadPeriodInMsChanged($event)"
       (pageSizeChanged)="onPageSizeChanged($event)"
@@ -42,14 +42,14 @@ import {State} from '../_redux/settings_types';
   `,
 })
 export class SettingsDialogContainer {
-  readonly reloadEnabled$;
-  readonly reloadPeriodInMs$;
-  readonly pageSize$;
+  readonly reloadEnabled;
+  readonly reloadPeriodInMs;
+  readonly pageSize;
 
   constructor(private store: Store<State>) {
-    this.reloadEnabled$ = this.store.select(getReloadEnabled);
-    this.reloadPeriodInMs$ = this.store.select(getReloadPeriodInMs);
-    this.pageSize$ = this.store.select(getPageSize);
+    this.reloadEnabled = this.store.selectSignal(getReloadEnabled);
+    this.reloadPeriodInMs = this.store.selectSignal(getReloadPeriodInMs);
+    this.pageSize = this.store.selectSignal(getPageSize);
   }
 
   onReloadToggled(): void {

@@ -17,9 +17,11 @@ import {
   Component,
   ElementRef,
   OnDestroy,
+  Signal,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {fromEvent, Observable, Subject} from 'rxjs';
+import {fromEvent, Subject} from 'rxjs';
 import {combineLatestWith, filter, map, takeUntil} from 'rxjs/operators';
 import {MouseEventButtons} from '../../util/dom';
 import {runsTableFullScreenToggled, sideBarWidthChanged} from '../actions';
@@ -34,43 +36,41 @@ import {
   selector: 'tb-dashboard-layout',
   template: `
     <button
-      *ngIf="(width$ | async) === 0"
+      *ngIf="width() === 0"
       class="expand-collapsed-sidebar"
       (click)="expandSidebar()"
     >
       <mat-icon svgIcon="expand_more_24px"></mat-icon>
     </button>
     <nav
-      *ngIf="((width$ | async) ?? 0) > 0"
+      *ngIf="width() > 0"
       class="sidebar"
-      [style.width.%]="width$ | async"
+      [style.width.%]="width()"
       [style.minWidth.px]="MINIMUM_SIDEBAR_WIDTH_IN_PX"
-      [style.maxWidth.%]="(runsTableFullScreen$ | async) ? 100 : ''"
+      [style.maxWidth.%]="runsTableFullScreen() ? 100 : ''"
     >
       <ng-content select="[sidebar]"></ng-content>
       <div
         class="full-screen-toggle"
-        [ngClass]="{'full-screen': (runsTableFullScreen$ | async)}"
+        [ngClass]="{'full-screen': runsTableFullScreen()}"
       >
         <button
           mat-button
           class="full-screen-btn"
-          [ngClass]="(runsTableFullScreen$ | async) ? 'collapse' : 'expand'"
+          [ngClass]="runsTableFullScreen() ? 'collapse' : 'expand'"
           (click)="toggleFullScreen()"
         >
           <mat-icon
             class="expand-collapse-icon"
             [svgIcon]="
-              (runsTableFullScreen$ | async)
-                ? 'arrow_back_24px'
-                : 'arrow_forward_24px'
+              runsTableFullScreen() ? 'arrow_back_24px' : 'arrow_forward_24px'
             "
           ></mat-icon>
         </button>
       </div>
     </nav>
     <div
-      *ngIf="((width$ | async) ?? 0) > 0"
+      *ngIf="width() > 0"
       class="resizer"
       (mousedown)="resizeGrabbed()"
     ></div>
@@ -80,20 +80,23 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LayoutContainer implements OnDestroy {
-  readonly runsTableFullScreen$;
-  readonly width$: Observable<number>;
+  readonly runsTableFullScreen;
+  readonly width: Signal<number>;
   private readonly ngUnsubscribe;
   private resizing: boolean = false;
 
   readonly MINIMUM_SIDEBAR_WIDTH_IN_PX = 75;
 
   constructor(private readonly store: Store<State>, hostElRef: ElementRef) {
-    this.runsTableFullScreen$ = this.store.select(getRunsTableFullScreen);
-    this.width$ = this.store.select(getSideBarWidthInPercent).pipe(
-      combineLatestWith(this.runsTableFullScreen$),
-      map(([percentageWidth, fullScreen]) => {
-        return fullScreen ? 100 : percentageWidth;
-      })
+    this.runsTableFullScreen = this.store.selectSignal(getRunsTableFullScreen);
+    this.width = toSignal(
+      this.store.select(getSideBarWidthInPercent).pipe(
+        combineLatestWith(this.store.select(getRunsTableFullScreen)),
+        map(([percentageWidth, fullScreen]) => {
+          return fullScreen ? 100 : percentageWidth;
+        })
+      ),
+      {requireSync: true}
     );
     this.ngUnsubscribe = new Subject<void>();
     fromEvent<MouseEvent>(hostElRef.nativeElement, 'mousemove')

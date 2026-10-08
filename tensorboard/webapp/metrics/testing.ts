@@ -344,10 +344,10 @@ export function provideMockCardSeriesData(
     .withArgs(selectors.getCardTimeSeries, cardId)
     .and.returnValue(of(runToSeries));
   storeSelectSpy
-    .withArgs(selectors.getCardStepIndexMetaData, cardId)
+    .withArgs(selectors.getCardStepIndexMetaData(cardId))
     .and.returnValue(of({index: stepIndex, closest: false}));
   storeSelectSpy
-    .withArgs(selectors.getMetricsImageCardSteps, cardId)
+    .withArgs(selectors.getMetricsImageCardSteps(cardId))
     .and.returnValue(of(steps));
 }
 
@@ -373,7 +373,7 @@ export function provideMockCardRunToSeriesData(
     .withArgs(selectors.getCardTimeSeries, cardId)
     .and.returnValue(of(runToSeries));
   storeSelectSpy
-    .withArgs(selectors.getCardStepIndexMetaData, cardId)
+    .withArgs(selectors.getCardStepIndexMetaData(cardId))
     .and.returnValue(of({index: stepIndex, closest: false}));
 }
 

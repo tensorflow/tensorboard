@@ -42,7 +42,7 @@ export class GraphExecutionsComponent implements OnChanges {
   graphExecutionData!: {[index: number]: GraphExecution};
 
   @Input()
-  graphExecutionIndices!: number[];
+  graphExecutionIndices!: number[] | null;
 
   @Input()
   focusIndex!: number | null;

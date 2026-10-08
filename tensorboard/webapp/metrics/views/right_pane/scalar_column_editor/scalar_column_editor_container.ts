@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {map} from 'rxjs/operators';
 import {State} from '../../../../app_state';
@@ -42,9 +43,9 @@ function headersWithoutRuns(headers: ColumnHeader[]) {
   selector: 'metrics-scalar-column-editor',
   template: `
     <metrics-scalar-column-editor-component
-      [singleHeaders]="singleHeaders$ | async"
-      [rangeHeaders]="rangeHeaders$ | async"
-      [selectedTab]="selectedTab$ | async"
+      [singleHeaders]="singleHeaders()"
+      [rangeHeaders]="rangeHeaders()"
+      [selectedTab]="selectedTab()"
       (onScalarTableColumnToggled)="onScalarTableColumnToggled($event)"
       (onScalarTableColumnEdit)="onScalarTableColumnEdit($event)"
       (onScalarTableColumnEditorClosed)="onScalarTableColumnEditorClosed()"
@@ -56,18 +57,22 @@ function headersWithoutRuns(headers: ColumnHeader[]) {
 })
 export class ScalarColumnEditorContainer {
   constructor(private readonly store: Store<State>) {
-    this.singleHeaders$ = this.store
-      .select(getSingleSelectionHeaders)
-      .pipe(map(headersWithoutRuns));
-    this.rangeHeaders$ = this.store
-      .select(getRangeSelectionHeaders)
-      .pipe(map(headersWithoutRuns));
-    this.selectedTab$ = this.store.select(getTableEditorSelectedTab);
+    this.singleHeaders = toSignal(
+      this.store
+        .select(getSingleSelectionHeaders)
+        .pipe(map(headersWithoutRuns)),
+      {requireSync: true}
+    );
+    this.rangeHeaders = toSignal(
+      this.store.select(getRangeSelectionHeaders).pipe(map(headersWithoutRuns)),
+      {requireSync: true}
+    );
+    this.selectedTab = this.store.selectSignal(getTableEditorSelectedTab);
   }
 
-  readonly singleHeaders$;
-  readonly rangeHeaders$;
-  readonly selectedTab$;
+  readonly singleHeaders;
+  readonly rangeHeaders;
+  readonly selectedTab;
 
   onScalarTableColumnToggled(toggleInfo: HeaderToggleInfo) {
     this.store.dispatch(dataTableColumnToggled(toggleInfo));

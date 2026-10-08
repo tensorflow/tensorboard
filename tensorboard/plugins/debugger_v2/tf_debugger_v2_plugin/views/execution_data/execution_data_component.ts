@@ -28,7 +28,7 @@ export class ExecutionDataComponent {
   focusedExecutionIndex!: number;
 
   @Input()
-  focusedExecutionData!: Execution;
+  focusedExecutionData!: Execution | null;
 
   @Input()
   tensorDebugMode: TensorDebugMode = TensorDebugMode.UNSPECIFIED;

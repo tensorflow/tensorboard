@@ -81,13 +81,20 @@ describe('regex_edit_dialog', () => {
     store?.resetSelectors();
   });
 
-  function createComponent(experimentIds: string[]) {
+  function createComponent(
+    experimentIds: string[],
+    regexString = 'test regex string'
+  ) {
     TestBed.overrideProvider(MAT_DIALOG_DATA, {
       useValue: {experimentIds},
     });
 
     store = TestBed.inject<Store<State>>(Store) as MockStore<State>;
-    store.overrideSelector(getColorGroupRegexString, 'test regex string');
+    // `getColorGroupRegexString` is only ever read once, via `take(1)`, at
+    // component construction time (the container intentionally treats it as
+    // a one-shot initial value, not a live binding) — so it must be set
+    // before `TestBed.createComponent()` runs below, not overridden after.
+    store.overrideSelector(getColorGroupRegexString, regexString);
     store.overrideSelector(getRuns, []);
     store.overrideSelector(getRunIdsForExperiment, []);
     store.overrideSelector(getDarkModeEnabled, false);
@@ -330,12 +337,13 @@ describe('regex_edit_dialog', () => {
   });
 
   it('fills example and generates group preview', fakeAsync(() => {
-    const fixture = createComponent(['rose']);
+    const fixture = createComponent(['rose'], 'run');
     store.overrideSelector(getRuns, [
       buildRun({id: 'run1', name: 'run 1'}),
       buildRun({id: 'run2', name: 'run 2'}),
     ]);
-    store.overrideSelector(getColorGroupRegexString, 'run');
+    store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+    store.refreshState();
     fixture.detectChanges();
     tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
     fixture.detectChanges();
@@ -357,12 +365,13 @@ describe('regex_edit_dialog', () => {
 
   describe('live grouping result preview', () => {
     it('renders grouping result based on regex in store', fakeAsync(() => {
-      const fixture = createComponent(['rose']);
+      const fixture = createComponent(['rose'], 'run');
       store.overrideSelector(getRuns, [
         buildRun({id: 'run1', name: 'run 1'}),
         buildRun({id: 'run2', name: 'run 2'}),
       ]);
-      store.overrideSelector(getColorGroupRegexString, 'run');
+      store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      store.refreshState();
       fixture.detectChanges();
       tick(TEST_ONLY.INPUT_CHANGE_DEBOUNCE_INTERVAL_MS);
       fixture.detectChanges();
@@ -382,6 +391,7 @@ describe('regex_edit_dialog', () => {
         buildRun({id: 'run2', name: 'run 2'}),
       ]);
       store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      store.refreshState();
       fixture.detectChanges();
 
       const input = fixture.debugElement.query(By.css('input'));
@@ -412,6 +422,7 @@ describe('regex_edit_dialog', () => {
         buildRun({id: 'run2', name: 'run2 name'}),
       ]);
       store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      store.refreshState();
       fixture.detectChanges();
 
       const input = fixture.debugElement.query(By.css('input'));
@@ -515,6 +526,7 @@ describe('regex_edit_dialog', () => {
         buildRun({id: 'run2', name: 'run 2'}),
       ]);
       store.overrideSelector(getRunIdsForExperiment, ['run1', 'run2']);
+      store.refreshState();
       fixture.detectChanges();
 
       const input = fixture.debugElement.query(By.css('input'));
@@ -568,6 +580,7 @@ describe('regex_edit_dialog', () => {
       'run6',
       'run7',
     ]);
+    store.refreshState();
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));

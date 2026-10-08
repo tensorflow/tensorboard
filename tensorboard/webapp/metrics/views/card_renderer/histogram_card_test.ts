@@ -161,7 +161,10 @@ describe('histogram card', () => {
     );
     expect(histogramEl).not.toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.FAILED);
+    store.overrideSelector(
+      selectors.getCardLoadState('card1'),
+      DataLoadState.FAILED
+    );
     store.refreshState();
     fixture.detectChanges();
 
@@ -171,7 +174,7 @@ describe('histogram card', () => {
   it('renders loading spinner when loading', () => {
     provideMockCardSeriesData(selectSpy, PluginType.HISTOGRAMS, 'card1');
     store.overrideSelector(
-      selectors.getCardLoadState,
+      selectors.getCardLoadState('card1'),
       DataLoadState.NOT_LOADED
     );
     store.refreshState();
@@ -181,19 +184,28 @@ describe('histogram card', () => {
     let loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
     expect(loadingEl).not.toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADING);
+    store.overrideSelector(
+      selectors.getCardLoadState('card1'),
+      DataLoadState.LOADING
+    );
     store.refreshState();
     fixture.detectChanges();
     loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
     expect(loadingEl).toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADED);
+    store.overrideSelector(
+      selectors.getCardLoadState('card1'),
+      DataLoadState.LOADED
+    );
     store.refreshState();
     fixture.detectChanges();
     loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
     expect(loadingEl).not.toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.FAILED);
+    store.overrideSelector(
+      selectors.getCardLoadState('card1'),
+      DataLoadState.FAILED
+    );
     store.refreshState();
     fixture.detectChanges();
     loadingEl = fixture.debugElement.query(By.css('mat-spinner'));

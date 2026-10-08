@@ -102,8 +102,8 @@ export class ScalarCardComponent<Downloader> {
   @Input() loadState!: DataLoadState;
   @Input() showFullWidth!: boolean;
   @Input() smoothingEnabled!: boolean;
-  @Input() tag!: string;
-  @Input() title!: string;
+  @Input() tag: string | null = null;
+  @Input() title: string | null = null;
   @Input() tooltipSort!: TooltipSort;
   @Input() xAxisType!: XAxisType;
   @Input() xScaleType!: ScaleType;
@@ -111,9 +111,9 @@ export class ScalarCardComponent<Downloader> {
   @Input() forceSvg!: boolean;
   @Input() columnCustomizationEnabled!: boolean;
   @Input() columnContextMenusEnabled!: boolean;
-  @Input() linkedTimeSelection: TimeSelectionView | undefined;
+  @Input() linkedTimeSelection: TimeSelectionView | undefined | null;
   @Input() stepOrLinkedTimeSelection: TimeSelection | undefined;
-  @Input() minMaxStep!: MinMaxStep;
+  @Input() minMaxStep: MinMaxStep | undefined | null;
   @Input() userViewBox!: Extent | null;
   @Input() columnHeaders!: ColumnHeader[];
   @Input() rangeEnabled!: boolean;

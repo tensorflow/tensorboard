@@ -12,9 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input, Signal} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
 import {combineLatestWith, map} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {getMetricsFilteredPluginTypes} from '../../store';
@@ -28,7 +28,7 @@ import {getSortedRenderableCardIdsWithMetadata} from './common_selectors';
   selector: 'metrics-card-groups',
   template: `
     <metrics-card-groups-component
-      [cardGroups]="cardGroups$ | async"
+      [cardGroups]="cardGroups()"
       [cardObserver]="cardObserver"
     ></metrics-card-groups-component>
   `,
@@ -38,9 +38,8 @@ export class CardGroupsContainer {
   @Input() cardObserver!: CardObserver;
 
   constructor(private readonly store: Store<State>) {
-    this.cardGroups$ = this.store
-      .select(getSortedRenderableCardIdsWithMetadata)
-      .pipe(
+    this.cardGroups = toSignal(
+      this.store.select(getSortedRenderableCardIdsWithMetadata).pipe(
         combineLatestWith(this.store.select(getMetricsFilteredPluginTypes)),
         map(([cardList, filteredPlugins]) => {
           if (!filteredPlugins.size) return cardList;
@@ -49,8 +48,10 @@ export class CardGroupsContainer {
           });
         }),
         map((cardList) => groupCardIdWithMetdata(cardList))
-      );
+      ),
+      {requireSync: true}
+    );
   }
 
-  readonly cardGroups$: Observable<CardGroup[]>;
+  readonly cardGroups: Signal<CardGroup[]>;
 }

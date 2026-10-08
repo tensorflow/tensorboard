@@ -12,9 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Injector,
+  Input,
+  OnInit,
+  Signal,
+} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {combineLatest, Observable} from 'rxjs';
+import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {ExperimentAlias} from '../../../experiments/types';
@@ -30,9 +38,9 @@ import {getDisplayNameForRun} from './utils';
   selector: 'card-run-name',
   template: `
     <card-run-name-component
-      [name]="name$ | async"
-      [attr.title]="name$ | async"
-      [experimentAlias]="experimentAlias$ | async"
+      [name]="name()"
+      [attr.title]="name()"
+      [experimentAlias]="experimentAlias()"
     ></card-run-name-component>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,29 +48,40 @@ import {getDisplayNameForRun} from './utils';
 export class RunNameContainer implements OnInit {
   @Input() runId!: string;
 
-  name$?: Observable<string>;
-  experimentAlias$?: Observable<ExperimentAlias | null>;
+  name!: Signal<string>;
+  experimentAlias!: Signal<ExperimentAlias | null>;
 
-  constructor(private readonly store: Store<State>) {}
+  constructor(
+    private readonly store: Store<State>,
+    private readonly injector: Injector
+  ) {}
 
   /**
    * Build observables once runId is defined (after onInit).
    */
   ngOnInit() {
-    this.name$ = combineLatest([
-      this.store.select(getRun, {runId: this.runId}),
-    ]).pipe(
-      map(([run]) => {
-        return getDisplayNameForRun(this.runId, run, /*experimentAlias=*/ null);
-      })
+    this.name = toSignal(
+      combineLatest([this.store.select(getRun, {runId: this.runId})]).pipe(
+        map(([run]) => {
+          return getDisplayNameForRun(
+            this.runId,
+            run,
+            /*experimentAlias=*/ null
+          );
+        })
+      ),
+      {injector: this.injector, requireSync: true}
     );
-    this.experimentAlias$ = combineLatest([
-      this.store.select(getExperimentIdForRunId, {runId: this.runId}),
-      this.store.select(getExperimentIdToExperimentAliasMap),
-    ]).pipe(
-      map(([experimentId, idToAlias]) => {
-        return experimentId ? idToAlias[experimentId] : null;
-      })
+    this.experimentAlias = toSignal(
+      combineLatest([
+        this.store.select(getExperimentIdForRunId, {runId: this.runId}),
+        this.store.select(getExperimentIdToExperimentAliasMap),
+      ]).pipe(
+        map(([experimentId, idToAlias]) => {
+          return experimentId ? idToAlias[experimentId] : null;
+        })
+      ),
+      {injector: this.injector, requireSync: true}
     );
   }
 }

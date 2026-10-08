@@ -164,7 +164,10 @@ describe('image card', () => {
     const slider = fixture.debugElement.query(By.css('.step-slider'));
     expect(slider).not.toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.FAILED);
+    store.overrideSelector(
+      selectors.getCardLoadState('card1'),
+      DataLoadState.FAILED
+    );
     store.refreshState();
     fixture.detectChanges();
 
@@ -174,7 +177,7 @@ describe('image card', () => {
   it('renders loading spinner when loading', () => {
     provideMockCardSeriesData(selectSpy, PluginType.IMAGES, 'card1');
     store.overrideSelector(
-      selectors.getCardLoadState,
+      selectors.getCardLoadState('card1'),
       DataLoadState.NOT_LOADED
     );
     store.refreshState();
@@ -184,19 +187,28 @@ describe('image card', () => {
     let loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
     expect(loadingEl).not.toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADING);
+    store.overrideSelector(
+      selectors.getCardLoadState('card1'),
+      DataLoadState.LOADING
+    );
     store.refreshState();
     fixture.detectChanges();
     loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
     expect(loadingEl).toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.LOADED);
+    store.overrideSelector(
+      selectors.getCardLoadState('card1'),
+      DataLoadState.LOADED
+    );
     store.refreshState();
     fixture.detectChanges();
     loadingEl = fixture.debugElement.query(By.css('mat-spinner'));
     expect(loadingEl).not.toBeTruthy();
 
-    store.overrideSelector(selectors.getCardLoadState, DataLoadState.FAILED);
+    store.overrideSelector(
+      selectors.getCardLoadState('card1'),
+      DataLoadState.FAILED
+    );
     store.refreshState();
     fixture.detectChanges();
     loadingEl = fixture.debugElement.query(By.css('mat-spinner'));

@@ -16,11 +16,15 @@ import {
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
+  Injector,
   Input,
   OnDestroy,
   OnInit,
   Output,
+  signal,
+  Signal,
 } from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
 import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
 import {
@@ -72,7 +76,7 @@ type ImageCardMetadata = CardMetadata & {
   selector: 'image-card',
   template: `
     <image-card-component
-      [loadState]="loadState$ | async"
+      [loadState]="loadState()"
       [title]="title$ | async"
       [tag]="tag$ | async"
       [runId]="runId$ | async"
@@ -80,15 +84,15 @@ type ImageCardMetadata = CardMetadata & {
       [numSample]="numSample$ | async"
       [imageUrl]="imageUrl$ | async"
       [stepIndex]="stepIndex$ | async"
-      [steps]="steps$ | async"
-      [isClosestStepHighlighted]="isClosestStepHighlighted$ | async"
+      [steps]="steps()"
+      [isClosestStepHighlighted]="isClosestStepHighlighted()"
       (stepIndexChange)="onStepIndexChanged($event)"
-      [brightnessInMilli]="brightnessInMilli$ | async"
-      [contrastInMilli]="contrastInMilli$ | async"
+      [brightnessInMilli]="brightnessInMilli()"
+      [contrastInMilli]="contrastInMilli()"
       [runColorScale]="runColorScale"
       [showActualSize]="showActualSize"
       [allowToggleActualSize]="(actualSizeGlobalSetting$ | async) === false"
-      [isPinned]="isPinned$ | async"
+      [isPinned]="isPinned()"
       [linkedTimeSelection]="linkedTimeSelection$ | async"
       [selectedSteps]="selectedSteps$ | async"
       (onActualSizeToggle)="onActualSizeToggle()"
@@ -109,12 +113,15 @@ type ImageCardMetadata = CardMetadata & {
 export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   constructor(
     private readonly store: Store<State>,
-    private readonly dataSource: MetricsDataSource
+    private readonly dataSource: MetricsDataSource,
+    private readonly injector: Injector
   ) {
-    this.brightnessInMilli$ = this.store.select(
+    this.brightnessInMilli = this.store.selectSignal(
       getMetricsImageBrightnessInMilli
     );
-    this.contrastInMilli$ = this.store.select(getMetricsImageContrastInMilli);
+    this.contrastInMilli = this.store.selectSignal(
+      getMetricsImageContrastInMilli
+    );
     this.actualSizeGlobalSetting$ = this.store.select(
       getMetricsImageShowActualSize
     );
@@ -135,7 +142,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
     );
   }
 
-  loadState$?: Observable<DataLoadState>;
+  loadState: Signal<DataLoadState> = signal(DataLoadState.NOT_LOADED);
   title$?: Observable<string>;
   tag$?: Observable<string>;
   runId$?: Observable<string>;
@@ -143,13 +150,13 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
   numSample$?: Observable<number>;
   imageUrl$?: Observable<string | null>;
   stepIndex$?: Observable<number | null>;
-  isClosestStepHighlighted$?: Observable<boolean | null>;
-  steps$?: Observable<number[]>;
-  isPinned$?: Observable<boolean>;
+  isClosestStepHighlighted: Signal<boolean> = signal(false);
+  steps: Signal<number[]> = signal([]);
+  isPinned: Signal<boolean> = signal(false);
   linkedTimeSelection$?: Observable<TimeSelectionView | null>;
   selectedSteps$?: Observable<number[]>;
-  brightnessInMilli$;
-  contrastInMilli$;
+  readonly brightnessInMilli;
+  readonly contrastInMilli;
   actualSizeGlobalSetting$;
   showActualSize = false;
 
@@ -224,21 +231,26 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       shareReplay(1)
     );
 
-    this.stepIndex$ = this.store
-      .select(getCardStepIndexMetaData, this.cardId)
-      .pipe(
+    const stepIndexMetaData$ = this.store.select(
+      getCardStepIndexMetaData(this.cardId)
+    );
+    this.stepIndex$ = stepIndexMetaData$.pipe(
+      map((stepIndexMetaData) =>
+        stepIndexMetaData ? stepIndexMetaData.index : null
+      )
+    );
+    this.isClosestStepHighlighted = toSignal(
+      stepIndexMetaData$.pipe(
         map((stepIndexMetaData) =>
-          stepIndexMetaData ? stepIndexMetaData.index : null
+          stepIndexMetaData ? stepIndexMetaData.isClosest ?? false : false
         )
-      );
-    this.isClosestStepHighlighted$ = this.store
-      .select(getCardStepIndexMetaData, this.cardId)
-      .pipe(
-        map((stepIndexMetaData) =>
-          stepIndexMetaData ? stepIndexMetaData.isClosest : false
-        )
-      );
-    this.loadState$ = this.store.select(getCardLoadState, this.cardId);
+      ),
+      {injector: this.injector, requireSync: true}
+    );
+    this.loadState = toSignal(
+      this.store.select(getCardLoadState(this.cardId)),
+      {injector: this.injector, requireSync: true}
+    );
 
     this.tag$ = cardMetadata$.pipe(
       map((cardMetadata) => {
@@ -268,14 +280,21 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
       map((cardMetadata) => cardMetadata.numSample)
     );
 
-    this.steps$ = this.store.select(getMetricsImageCardSteps, this.cardId);
+    const steps$ = this.store.select(getMetricsImageCardSteps(this.cardId));
+    this.steps = toSignal(steps$, {
+      injector: this.injector,
+      requireSync: true,
+    });
 
-    this.isPinned$ = this.store.select(getCardPinnedState, this.cardId);
+    this.isPinned = toSignal(
+      this.store.select(getCardPinnedState(this.cardId)),
+      {injector: this.injector, requireSync: true}
+    );
 
     this.linkedTimeSelection$ = this.store
       .select(getMetricsLinkedTimeSelection)
       .pipe(
-        combineLatestWith(this.steps$),
+        combineLatestWith(steps$),
         map(([linkedTimeSelection, steps]) => {
           if (!linkedTimeSelection) return null;
 
@@ -291,7 +310,7 @@ export class ImageCardContainer implements CardRenderer, OnInit, OnDestroy {
 
     // TODO(japie1235813): Reuses `getSelectedSteps` in store_utils.
     this.selectedSteps$ = this.linkedTimeSelection$.pipe(
-      combineLatestWith(this.steps$),
+      combineLatestWith(steps$),
       map(([linkedTimeSelection, steps]) => {
         if (!linkedTimeSelection) return [];
 

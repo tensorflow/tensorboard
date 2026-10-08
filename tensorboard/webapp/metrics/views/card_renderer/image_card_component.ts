@@ -43,11 +43,11 @@ export class ImageCardComponent {
   sliderTrackWidth = '';
 
   @Input() loadState!: DataLoadState;
-  @Input() title!: string;
-  @Input() tag!: string;
-  @Input() runId!: string;
-  @Input() sample!: number;
-  @Input() numSample!: number;
+  @Input() title: string | null = null;
+  @Input() tag: string | null = null;
+  @Input() runId: string | null = null;
+  @Input() sample: number | null = null;
+  @Input() numSample: number | null = null;
   @Input() imageUrl!: string | null;
   @Input() stepIndex!: number | null;
   @Input() steps!: number[];
@@ -57,7 +57,7 @@ export class ImageCardComponent {
   @Input() runColorScale!: RunColorScale;
   @Input() allowToggleActualSize!: boolean;
   @Input() isPinned!: boolean;
-  @Input() selectedSteps!: number[];
+  @Input() selectedSteps: number[] | null = null;
   @Input() linkedTimeSelection?: TimeSelectionView | null = null;
   @Input() isClosestStepHighlighted?: boolean = false;
 

@@ -105,6 +105,7 @@ describe('metrics/views/data_download_dialog', () => {
         ],
       ])
     );
+    store.refreshState();
     fixture.detectChanges();
 
     const options = fixture.debugElement.queryAll(ByCss.SELECT_OPTION);
@@ -143,6 +144,7 @@ describe('metrics/views/data_download_dialog', () => {
         ],
       ])
     );
+    store.refreshState();
     fixture.detectChanges();
 
     const options = fixture.debugElement.queryAll(ByCss.SELECT_OPTION);
@@ -189,6 +191,7 @@ describe('metrics/views/data_download_dialog', () => {
         ],
       ])
     );
+    store.refreshState();
     fixture.detectChanges();
 
     const selectEl = fixture.debugElement.query(ByCss.SELECT).nativeElement;
@@ -244,6 +247,7 @@ describe('metrics/views/data_download_dialog', () => {
         ],
       ])
     );
+    store.refreshState();
     fixture.detectChanges();
 
     const selectEl = fixture.debugElement.query(ByCss.SELECT).nativeElement;
@@ -300,6 +304,7 @@ describe('metrics/views/data_download_dialog', () => {
         ],
       ])
     );
+    store.refreshState();
     fixture.detectChanges();
 
     const selectEl = fixture.debugElement.query(ByCss.SELECT).nativeElement;

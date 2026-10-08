@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {createSelector, select, Store} from '@ngrx/store';
+import {createSelector, Store} from '@ngrx/store';
 import {
   graphExecutionFocused,
   graphExecutionScrollToIndex,
@@ -32,30 +32,30 @@ import {State} from '../../store/debugger_types';
   selector: 'tf-debugger-v2-graph-executions',
   template: `
     <graph-executions-component
-      [numGraphExecutions]="numGraphExecutions$ | async"
-      [graphExecutionData]="graphExecutionData$ | async"
-      [graphExecutionIndices]="graphExecutionIndices$ | async"
-      [focusIndex]="focusIndex$ | async"
-      [focusInputIndices]="focusInputIndices$ | async"
+      [numGraphExecutions]="numGraphExecutions()"
+      [graphExecutionData]="graphExecutionData()"
+      [graphExecutionIndices]="graphExecutionIndices()"
+      [focusIndex]="focusIndex()"
+      [focusInputIndices]="focusInputIndices()"
       (onScrolledIndexChange)="onScrolledIndexChange($event)"
       (onTensorNameClick)="onTensorNameClick($event)"
     ></graph-executions-component>
   `,
 })
 export class GraphExecutionsContainer {
-  readonly numGraphExecutions$;
+  readonly numGraphExecutions;
 
-  readonly graphExecutionData$;
+  readonly graphExecutionData;
 
-  readonly graphExecutionIndices$;
+  readonly graphExecutionIndices;
 
-  readonly focusIndex$;
+  readonly focusIndex;
 
   /**
    * Inferred graph-execution indices that belong to the immediate inputs
    * to the currently-focused graph op.
    */
-  readonly focusInputIndices$;
+  readonly focusInputIndices;
 
   onScrolledIndexChange(scrolledIndex: number) {
     this.store.dispatch(graphExecutionScrollToIndex({index: scrolledIndex}));
@@ -66,24 +66,22 @@ export class GraphExecutionsContainer {
   }
 
   constructor(private readonly store: Store<State>) {
-    this.numGraphExecutions$ = this.store.pipe(select(getNumGraphExecutions));
-    this.graphExecutionData$ = this.store.pipe(select(getGraphExecutionData));
-    this.graphExecutionIndices$ = this.store.pipe(
-      select(
-        createSelector(
-          getNumGraphExecutions,
-          (numGraphExecution: number): number[] | null => {
-            if (numGraphExecution === 0) {
-              return null;
-            }
-            return Array.from({length: numGraphExecution}).map((_, i) => i);
+    this.numGraphExecutions = this.store.selectSignal(getNumGraphExecutions);
+    this.graphExecutionData = this.store.selectSignal(getGraphExecutionData);
+    this.graphExecutionIndices = this.store.selectSignal(
+      createSelector(
+        getNumGraphExecutions,
+        (numGraphExecution: number): number[] | null => {
+          if (numGraphExecution === 0) {
+            return null;
           }
-        )
+          return Array.from({length: numGraphExecution}).map((_, i) => i);
+        }
       )
     );
-    this.focusIndex$ = this.store.pipe(select(getGraphExecutionFocusIndex));
-    this.focusInputIndices$ = this.store.pipe(
-      select(getFocusedGraphExecutionInputIndices)
+    this.focusIndex = this.store.selectSignal(getGraphExecutionFocusIndex);
+    this.focusInputIndices = this.store.selectSignal(
+      getFocusedGraphExecutionInputIndices
     );
   }
 }

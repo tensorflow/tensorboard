@@ -12,9 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Signal} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
 import {map, takeWhile} from 'rxjs/operators';
 import {State} from '../../../app_state';
 import {DataLoadState} from '../../../types/data';
@@ -38,11 +38,11 @@ import {PluginType} from '../../types';
   selector: 'metrics-main-view',
   template: `
     <metrics-main-view-component
-      [showFilteredView]="showFilteredView$ | async"
-      [isSidepaneOpen]="isSidepaneOpen$ | async"
-      [initialTagsLoading]="initialTagsLoading$ | async"
-      [filteredPluginTypes]="filteredPluginTypes$ | async"
-      [slideOutMenuOpen]="isSlideoutMenuOpen$ | async"
+      [showFilteredView]="showFilteredView()"
+      [isSidepaneOpen]="isSidepaneOpen()"
+      [initialTagsLoading]="initialTagsLoading()"
+      [filteredPluginTypes]="filteredPluginTypes()"
+      [slideOutMenuOpen]="isSlideoutMenuOpen()"
       (onSettingsButtonClicked)="onSettingsButtonClicked()"
       (onCloseSidepaneButtonClicked)="onCloseSidepaneButtonClicked()"
       (onPluginTypeToggled)="onPluginVisibilityToggled($event)"
@@ -53,10 +53,9 @@ import {PluginType} from '../../types';
 })
 export class MainViewContainer {
   constructor(private readonly store: Store<State>) {
-    this.isSidepaneOpen$ = this.store.select(isMetricsSettingsPaneOpen);
-    this.initialTagsLoading$ = this.store
-      .select(getMetricsTagMetadataLoadState)
-      .pipe(
+    this.isSidepaneOpen = this.store.selectSignal(isMetricsSettingsPaneOpen);
+    this.initialTagsLoading = toSignal(
+      this.store.select(getMetricsTagMetadataLoadState).pipe(
         // disconnect and don't listen to store if tags are loaded at least once.
         takeWhile((loadState) => {
           return loadState.lastLoadedTimeInMs === null;
@@ -67,27 +66,34 @@ export class MainViewContainer {
             loadState.lastLoadedTimeInMs === null
           );
         })
-      );
-    this.showFilteredView$ = this.store.select(getMetricsTagFilter).pipe(
-      map((filter) => {
-        return filter.length > 0;
-      })
+      ),
+      {requireSync: true}
     );
-    this.filteredPluginTypes$ = this.store.select(
+    this.showFilteredView = toSignal(
+      this.store.select(getMetricsTagFilter).pipe(
+        map((filter) => {
+          return filter.length > 0;
+        })
+      ),
+      {requireSync: true}
+    );
+    this.filteredPluginTypes = this.store.selectSignal(
       getMetricsFilteredPluginTypes
     );
-    this.isSlideoutMenuOpen$ = this.store.select(isMetricsSlideoutMenuOpen);
+    this.isSlideoutMenuOpen = this.store.selectSignal(
+      isMetricsSlideoutMenuOpen
+    );
   }
 
-  readonly isSidepaneOpen$: Observable<boolean>;
+  readonly isSidepaneOpen: Signal<boolean>;
 
-  readonly initialTagsLoading$: Observable<boolean>;
+  readonly initialTagsLoading: Signal<boolean>;
 
-  readonly showFilteredView$: Observable<boolean>;
+  readonly showFilteredView: Signal<boolean>;
 
-  readonly filteredPluginTypes$;
+  readonly filteredPluginTypes;
 
-  readonly isSlideoutMenuOpen$: Observable<boolean>;
+  readonly isSlideoutMenuOpen: Signal<boolean>;
 
   onSettingsButtonClicked() {
     this.store.dispatch(metricsSettingsPaneToggled());

@@ -18,7 +18,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import {createSelector, select, Store} from '@ngrx/store';
+import {createSelector, Store} from '@ngrx/store';
 import {debuggerLoaded, debuggerUnloaded} from './actions';
 import {getActiveRunId, getDebuggerRunListing} from './store';
 import {State} from './store/debugger_types';
@@ -29,9 +29,9 @@ import {State} from './store/debugger_types';
   selector: 'tf-debugger-v2',
   template: `
     <debugger-component
-      [runs]="runs$ | async"
-      [runIds]="runsIds$ | async"
-      [activeRunId]="activeRunId$ | async"
+      [runs]="runs()"
+      [runIds]="runsIds()"
+      [activeRunId]="activeRunId()"
     ></debugger-component>
   `,
   styles: [
@@ -44,22 +44,20 @@ import {State} from './store/debugger_types';
   ],
 })
 export class DebuggerContainer implements OnInit, OnDestroy {
-  readonly runs$;
+  readonly runs;
 
-  readonly runsIds$;
+  readonly runsIds;
 
-  readonly activeRunId$;
+  readonly activeRunId;
 
   constructor(private readonly store: Store<State>) {
-    this.runs$ = this.store.pipe(select(getDebuggerRunListing));
-    this.runsIds$ = this.store.pipe(
-      select(
-        createSelector(getDebuggerRunListing, (runs): string[] =>
-          Object.keys(runs)
-        )
+    this.runs = this.store.selectSignal(getDebuggerRunListing);
+    this.runsIds = this.store.selectSignal(
+      createSelector(getDebuggerRunListing, (runs): string[] =>
+        Object.keys(runs)
       )
     );
-    this.activeRunId$ = this.store.pipe(select(getActiveRunId));
+    this.activeRunId = this.store.selectSignal(getActiveRunId);
   }
 
   ngOnInit(): void {

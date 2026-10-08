@@ -99,12 +99,12 @@ export class LineChartComponent
    * contents. Do note that this component may not intercept pointer-events.
    */
   @Input()
-  customVisTemplate?: TemplateRef<TemplateContext>;
+  customVisTemplate: TemplateRef<TemplateContext> | undefined;
 
   @Input()
-  customChartOverlayTemplate?: TemplateRef<
-    TemplateContext & {interactionState: InteractionState}
-  >;
+  customChartOverlayTemplate:
+    | TemplateRef<TemplateContext & {interactionState: InteractionState}>
+    | undefined;
 
   @Input()
   useDarkMode: boolean = false;
@@ -118,7 +118,7 @@ export class LineChartComponent
   // In case of PR curve line chart, we do not want to compute the viewBox based on the
   // data.
   @Input()
-  fixedViewBox?: Extent;
+  fixedViewBox: Extent | undefined;
 
   @Input()
   seriesMetadataMap!: DataSeriesMetadataMap;
@@ -130,20 +130,20 @@ export class LineChartComponent
   yScaleType: ScaleType = ScaleType.LINEAR;
 
   @Input()
-  customXFormatter?: Formatter;
+  customXFormatter: Formatter | undefined;
 
   @Input()
-  customYFormatter?: Formatter;
+  customYFormatter: Formatter | undefined;
 
   @Input()
-  tooltipTemplate?: TooltipTemplate;
+  tooltipTemplate: TooltipTemplate | undefined;
 
   @Input() userViewBox: Extent | null = null;
 
   @Input()
-  lineOnly?: boolean = false;
+  lineOnly: boolean | undefined = false;
 
-  @Input() disableTooltip?: boolean = false;
+  @Input() disableTooltip: boolean | undefined = false;
 
   @Output()
   viewBoxChanged = new EventEmitter<Extent | null>();
@@ -156,7 +156,7 @@ export class LineChartComponent
    * changed and applies the change when the update is enabled.
    */
   @Input()
-  disableUpdate?: boolean;
+  disableUpdate: boolean | undefined;
 
   /**
    * Whether to ignore outlier when computing default viewBox from the dataSeries.

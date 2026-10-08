@@ -152,7 +152,7 @@ describe('card view test', () => {
       }),
     ]);
 
-    store.overrideSelector(selectors.getCardPinnedState, true);
+    store.overrideSelector(selectors.getCardPinnedState('cardId'), true);
     store.refreshState();
     scalarCard.componentInstance.pinStateChanged.emit(false);
     fixture.detectChanges();

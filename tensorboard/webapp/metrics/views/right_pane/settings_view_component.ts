@@ -82,7 +82,7 @@ export class SettingsViewComponent {
   @Output() onSlideOutToggled = new EventEmitter<void>();
   @Output() onEnableSavingPinsToggled = new EventEmitter<boolean>();
 
-  @Input() isImageSupportEnabled!: boolean;
+  @Input() isImageSupportEnabled: boolean | null = null;
 
   readonly TooltipSortDropdownOptions: DropdownOption[] = [
     {value: TooltipSort.ALPHABETICAL, displayText: 'Alphabetical'},
@@ -133,7 +133,7 @@ export class SettingsViewComponent {
   readonly MAX_CARD_WIDTH_SLIDER_VALUE = MAX_CARD_WIDTH_SLIDER_VALUE;
   readonly MIN_CARD_WIDTH_SLIDER_VALUE = MIN_CARD_WIDTH_SLIDER_VALUE;
   readonly cardWidthSliderChanged$ = new EventEmitter<number>();
-  @Input() cardMinWidth!: number;
+  @Input() cardMinWidth!: number | null;
   @Output()
   cardWidthChanged = this.cardWidthSliderChanged$.pipe(
     auditTime(SLIDER_AUDIT_TIME_MS)

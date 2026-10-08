@@ -26,8 +26,10 @@ import {RouteRegistryModule} from '../app_routing/route_registry_module';
 import {RouteKind} from '../app_routing/types';
 import {CoreModule} from '../core/core_module';
 import {TestableNoopHashDeepLinkerModule} from '../deeplink/testing';
+import {ExperimentsModule} from '../experiments/experiments_module';
 import {FeatureFlagModule} from '../feature_flag/feature_flag_module';
 import {RunsModule} from '../runs/runs_module';
+import {SettingsModule} from '../settings/settings_module';
 import {MatIconTestingModule} from './mat_icon_module';
 
 @Component({
@@ -56,7 +58,9 @@ export function provideRoute(): RouteDef[] {
     FeatureFlagModule,
     CoreModule,
     AppRoutingModule,
+    ExperimentsModule,
     RunsModule,
+    SettingsModule,
     TestableNoopHashDeepLinkerModule,
     RouteRegistryModule.registerRoutes(provideRoute),
     NgrxStoreModule.forRoot([]),

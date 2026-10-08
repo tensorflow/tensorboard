@@ -12,8 +12,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {createSelector, select, Store} from '@ngrx/store';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
+import {Store} from '@ngrx/store';
 import {alertTypeFocusToggled} from '../../actions';
 import {
   getAlertsBreakdown,
@@ -49,9 +54,9 @@ const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   selector: 'tf-debugger-v2-alerts',
   template: `
     <alerts-component
-      [numAlerts]="numAlerts$ | async"
-      [alertsBreakdown]="alertsBreakdown$ | async"
-      [focusType]="focusType$ | async"
+      [numAlerts]="numAlerts()"
+      [alertsBreakdown]="alertsBreakdown()"
+      [focusType]="focusType()"
       (onToggleFocusType)="onToggleFocusType($event)"
     >
     </alerts-component>
@@ -59,31 +64,27 @@ const ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL: {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlertsContainer {
-  readonly numAlerts$;
+  private readonly store: Store<State> = inject(Store);
 
-  readonly alertsBreakdown$;
+  readonly numAlerts = this.store.selectSignal(getNumAlerts);
 
-  readonly focusType$;
+  private readonly rawAlertsBreakdown =
+    this.store.selectSignal(getAlertsBreakdown);
 
-  constructor(private readonly store: Store<State>) {
-    this.numAlerts$ = this.store.pipe(select(getNumAlerts));
-    this.alertsBreakdown$ = this.store.pipe(
-      select(
-        createSelector(getAlertsBreakdown, (alertsBreakdown) => {
-          const alertTypes = Object.keys(alertsBreakdown);
-          alertTypes.sort();
-          return alertTypes.map((alertType): AlertTypeDisplay => {
-            return {
-              type: alertType as AlertType,
-              ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
-              count: alertsBreakdown[alertType],
-            };
-          });
-        })
-      )
-    );
-    this.focusType$ = this.store.pipe(select(getAlertsFocusType));
-  }
+  readonly alertsBreakdown = computed(() => {
+    const alertsBreakdown = this.rawAlertsBreakdown();
+    const alertTypes = Object.keys(alertsBreakdown);
+    alertTypes.sort();
+    return alertTypes.map((alertType): AlertTypeDisplay => {
+      return {
+        type: alertType as AlertType,
+        ...ALERT_TYPE_TO_DISPLAY_NAME_AND_SYMBOL[alertType],
+        count: alertsBreakdown[alertType],
+      };
+    });
+  });
+
+  readonly focusType = this.store.selectSignal(getAlertsFocusType);
 
   onToggleFocusType(alertType: AlertType) {
     this.store.dispatch(alertTypeFocusToggled({alertType}));

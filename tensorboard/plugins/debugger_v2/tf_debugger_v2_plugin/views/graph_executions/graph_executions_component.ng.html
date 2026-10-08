@@ -27,7 +27,7 @@ limitations under the License.
     (scrolledIndexChange)="onScrolledIndexChange.emit($event)"
   >
     <div
-      *cdkVirtualFor="let i of graphExecutionIndices"
+      *cdkVirtualFor="let i of graphExecutionIndices ?? []"
       class="tensor-container"
     >
       <div

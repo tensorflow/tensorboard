@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {select, Store} from '@ngrx/store';
+import {Store} from '@ngrx/store';
 import {graphOpFocused} from '../../actions';
 import {
   getFocusedGraphOpConsumers,
@@ -28,27 +28,27 @@ import {State} from '../../store/debugger_types';
   selector: 'tf-debugger-v2-graph',
   template: `
     <graph-component
-      [opInfo]="opInfo$ | async"
-      [inputOps]="inputOps$ | async"
-      [consumerOps]="consumerOps$ | async"
+      [opInfo]="opInfo()"
+      [inputOps]="inputOps()"
+      [consumerOps]="consumerOps()"
       (onGraphOpNavigate)="onGraphOpNavigate($event)"
     ></graph-component>
   `,
 })
 export class GraphContainer {
-  readonly opInfo$;
+  readonly opInfo;
 
-  readonly inputOps$;
+  readonly inputOps;
 
-  readonly consumerOps$;
+  readonly consumerOps;
 
   onGraphOpNavigate(event: {graph_id: string; op_name: string}) {
     this.store.dispatch(graphOpFocused(event));
   }
 
   constructor(private readonly store: Store<State>) {
-    this.opInfo$ = this.store.pipe(select(getFocusedGraphOpInfo));
-    this.inputOps$ = this.store.pipe(select(getFocusedGraphOpInputs));
-    this.consumerOps$ = this.store.pipe(select(getFocusedGraphOpConsumers));
+    this.opInfo = this.store.selectSignal(getFocusedGraphOpInfo);
+    this.inputOps = this.store.selectSignal(getFocusedGraphOpInputs);
+    this.consumerOps = this.store.selectSignal(getFocusedGraphOpConsumers);
   }
 }

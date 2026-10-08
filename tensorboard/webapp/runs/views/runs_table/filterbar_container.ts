@@ -26,7 +26,7 @@ import {FilterAddedEvent} from '../../../widgets/data_table/types';
   standalone: false,
   selector: 'filterbar',
   template: `<filterbar-component
-    [filters]="filters$ | async"
+    [filters]="filters()"
     (removeHparamFilter)="removeHparamFilter($event)"
     (addFilter)="addHparamFilter($event)"
   >
@@ -35,12 +35,12 @@ import {FilterAddedEvent} from '../../../widgets/data_table/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilterbarContainer implements OnDestroy {
-  filters$;
+  filters;
 
   private readonly ngUnsubscribe = new Subject<void>();
 
   constructor(private readonly store: Store<State>) {
-    this.filters$ = this.store.select(
+    this.filters = this.store.selectSignal(
       hparamsSelectors.getDashboardHparamFilterMap
     );
   }

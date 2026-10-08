@@ -47,7 +47,7 @@ export class RunsDataTable {
   @Input() selectableColumns!: ColumnHeader[];
   @Input() numColumnsLoaded!: number;
   @Input() numColumnsToLoad!: number;
-  @Input() loading!: boolean;
+  @Input() loading: boolean | null = null;
   @Input() columnFilters!: Map<string, DiscreteFilter | IntervalFilter>;
 
   ColumnHeaderType = ColumnHeaderType;

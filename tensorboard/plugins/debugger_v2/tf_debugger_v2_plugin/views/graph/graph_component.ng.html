@@ -20,10 +20,13 @@ limitations under the License.
 
   <div class="graph-structure-container">
     <div *ngIf="opInfo !== undefined && opInfo !== null; else noOpFocused">
-      <div *ngIf="inputOps.length > 0; else noInputs" class="inputs-container">
+      <div
+        *ngIf="(inputOps ?? []).length > 0; else noInputs"
+        class="inputs-container"
+      >
         <div>
           <div
-            *ngFor="let inputOpInfo of inputOps; let slot = index"
+            *ngFor="let inputOpInfo of inputOps ?? []; let slot = index"
             class="input-op-section"
           >
             <div class="input-slot-header">Input slot {{slot}}:</div>
@@ -63,7 +66,7 @@ limitations under the License.
       >
         <div>
           <div
-            *ngFor="let slotConsumers of consumerOps; let slot = index"
+            *ngFor="let slotConsumers of consumerOps ?? []; let slot = index"
             class="slot-consumers-container"
           >
             <div class="slot-consumers-header">
