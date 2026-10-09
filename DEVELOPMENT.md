@@ -53,15 +53,17 @@ Python packages imported by Bazel targets are resolved from
 `tensorboard/pip_package/requirements_bazel_lock.txt`. After changing either
 pip requirements file or the TensorFlow compatibility baseline, regenerate the
 lock on Linux with Python 3.10 and review the resulting version changes. Bazel
-tests use the stable TensorFlow version in `requirements_bazel.in`; the
-pip-package smoke test separately exercises the CI-selected version, currently
-`tf-nightly`.
+tests use the TensorFlow compatibility baseline in `requirements_bazel.in`;
+the pip-package smoke test separately exercises the CI-selected version,
+currently `tf-nightly`.
 
 ```sh
 (tf)$ python -m pip install "uv==0.5.31"
+(tf)$ cd tensorboard/pip_package
 (tf)$ uv pip compile --python-version 3.10 --generate-hashes \
-    --output-file tensorboard/pip_package/requirements_bazel_lock.txt \
-    tensorboard/pip_package/requirements_bazel.in
+    --output-file requirements_bazel_lock.txt \
+    requirements_bazel.in
+(tf)$ cd ../..
 ```
 
 The Flogger artifacts used by TensorBoard's customized Soy repository are

@@ -12,4 +12,4 @@ Copy the proto files from TensorFlow to TensorBoard using the following process:
 * git add .
 * git commit -m "Update TensorFlow protos to xxxx"
 
-These were taken from TensorFlow version 1.12.0-dev20181012
+These were taken from TensorFlow version 2.22.0-rc0.
