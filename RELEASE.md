@@ -1,3 +1,17 @@
+# Release 2.22.0
+
+The 2.22 minor series tracks TensorFlow 2.22.
+
+## Features
+- Time Series dashboard: Added a persistent setting that lets users limit scalar chart tooltips to a configurable number of rows (five by default), with an additional-item count for hidden rows, or continue showing the full tooltip. (#7133, #7135)
+
+## Bug Fixes
+- Fixed latent frontend binding and rendering issues uncovered by Angular's strict template checking, including incorrect event and property bindings and incorrect `trackBy` callbacks. (#7148)
+- Preserved TensorBoard's checkbox styling after changes to Angular Material's checkbox structure. (#7144)
+
+## Breaking Changes
+- Source builds now require Bazel 8.7 and use Bzlmod exclusively. `WORKSPACE`-based dependency resolution is no longer supported, and the checked-in module and Python dependency locks define the supported hermetic build graph. (#7145, #7150)
+
 # Release 2.21.0
 
 The 2.21 minor series tracks TensorFlow 2.21.
