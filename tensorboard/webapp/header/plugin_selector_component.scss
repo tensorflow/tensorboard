@@ -33,7 +33,7 @@ limitations under the License.
   width: 144px;
 
   .mdc-text-field {
-    @include tb_theme.tb-theme-background-prop(background-color, app-bar);
+    background-color: transparent;
     // Default padding is "0 16px".
     padding: 0 4px;
   }
@@ -172,7 +172,7 @@ mat-option {
       }
 
       .mat-mdc-tab-header-pagination {
-        @include tb_theme.tb-theme-background-prop(background-color, app-bar);
+        background-color: var(--mat-toolbar-container-background-color);
       }
     }
   }
