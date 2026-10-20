@@ -48,6 +48,8 @@ style.textContent = `
     --tb-layout-background-color: #3a3a3a;
     --tb-link: #42a5f5; /* material blue 400. */
     --tb-link-visited: #ba68c8; /* material purple 300. */
+    /* Matches the dark Angular app header (material grey 800). */
+    --tb-toolbar-background-color: #424242;
     /* Overrides paper-material */
     --shadow-elevation-2dp_-_box-shadow: 0 2px 2px 0 rgba(255, 255, 255, 0.14),
       0 1px 5px 0 rgba(255, 255, 255, 0.12),

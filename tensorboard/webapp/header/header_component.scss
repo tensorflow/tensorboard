@@ -12,15 +12,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
+@use '@angular/material' as mat;
+@use 'sass:map';
 @use 'tensorboard/webapp/theme/tb_theme';
 
 mat-toolbar {
+  // Material's M2 toolbar uses the surface color, not TensorBoard's `app-bar`.
+  @include mat.toolbar-overrides(
+    (
+      container-background-color: tb_theme.$tb-app-bar-color,
+      container-text-color: #fff,
+    )
+  );
+
   align-items: center;
   color: #fff;
   display: flex;
   height: 64px;
   overflow: hidden;
   width: 100%;
+
+  @include tb_theme.tb-dark-theme {
+    @include mat.toolbar-overrides(
+      (
+        container-background-color: map.get(tb_theme.$tb-dark-background, card),
+      )
+    );
+  }
 }
 
 .brand,

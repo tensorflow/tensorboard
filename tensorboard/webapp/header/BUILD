@@ -9,7 +9,6 @@ sass_binary(
     name = "plugin_selector_styles",
     src = "plugin_selector_component.scss",
     include_paths = ["external/npm/node_modules"],
-    deps = ["//tensorboard/webapp/theme"],
 )
 
 sass_binary(

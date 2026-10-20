@@ -12,8 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-@use 'tensorboard/webapp/theme/tb_theme';
-
 :host {
   align-items: center;
   display: flex;
@@ -33,7 +31,7 @@ limitations under the License.
   width: 144px;
 
   .mdc-text-field {
-    @include tb_theme.tb-theme-background-prop(background-color, app-bar);
+    background-color: transparent;
     // Default padding is "0 16px".
     padding: 0 4px;
   }
@@ -172,7 +170,7 @@ mat-option {
       }
 
       .mat-mdc-tab-header-pagination {
-        @include tb_theme.tb-theme-background-prop(background-color, app-bar);
+        background-color: var(--mat-toolbar-container-background-color);
       }
     }
   }
