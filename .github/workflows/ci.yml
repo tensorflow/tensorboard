@@ -42,7 +42,7 @@ jobs:
     # Other workflows are likely ok to use standard GH runners for now.
     # Googlers, see b/460874304.
     # Bazel build and test support is currently validated on Linux only.
-    runs-on: linux-x86-n2-32
+    runs-on: linux-x86-n4-32
     # Pinned to a digest because zizmor's unpinned-images check rejects tags.
     # To refresh: crane digest <image>:latest
     container: us-docker.pkg.dev/ml-oss-artifacts-published/ml-public-container/ml-build@sha256:5544b5920fb9773007a2d61400dc70ba24ef03339cc521ac5ce89abc59b40eb7
