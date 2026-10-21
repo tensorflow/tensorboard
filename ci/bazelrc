@@ -4,7 +4,7 @@ build --local_resources=memory=4000
 build --worker_max_instances=2
 
 # Ensure sandboxing is on to increase hermeticity.
-build --spawn_strategy=sandboxed
+build --spawn_strategy=processwrapper-sandbox
 build --worker_sandboxing
 # Bazel may materialize frontend/npm assets with CopyFile/CopyDirectory
 # actions that are not executable under processwrapper-sandbox alone.
