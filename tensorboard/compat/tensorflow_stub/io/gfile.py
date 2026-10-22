@@ -199,8 +199,11 @@ class LocalFileSystem:
         if not self.isdir(dirname):
             raise errors.NotFoundError(None, None, "Could not find directory")
 
-        entries = os.listdir(compat.as_str_any(dirname))
-        entries = [compat.as_str_any(item) for item in entries]
+        try:
+            entries = os.listdir(compat.as_str_any(dirname))
+            entries = [compat.as_str_any(item) for item in entries]
+        except OSError:
+            raise errors.NotFoundError(None, None, "Could not find directory")
         return entries
 
     def makedirs(self, path):
