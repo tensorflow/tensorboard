@@ -15,7 +15,7 @@
 """Inline png images in html.
 
 Replaces %*.png% in the input .html file with a data URI containing the
-base64-encoded image content of the corresopnding .png files in the images/
+base64-encoded image content of the corresponding .png files in the images/
 subdirectory.
 """
 
