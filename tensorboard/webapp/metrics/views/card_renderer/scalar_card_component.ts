@@ -184,7 +184,7 @@ export class ScalarCardComponent<Downloader> {
 
   getCustomXFormatter(): Formatter | undefined {
     switch (this.xAxisType) {
-      case XAxisType.RELATIVE:
+      case XAxisType.RELATIVE_TIME:
         return relativeTimeFormatter;
       case XAxisType.STEP:
         return siNumberFormatter;

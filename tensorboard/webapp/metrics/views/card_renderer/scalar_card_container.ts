@@ -264,7 +264,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         map((xAxisType) => {
           switch (xAxisType) {
             case XAxisType.STEP:
-            case XAxisType.RELATIVE:
+            case XAxisType.RELATIVE_TIME:
               return ScaleType.LINEAR;
             case XAxisType.WALL_TIME:
               return ScaleType.TIME;
@@ -437,7 +437,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
             points: series.points.map((point) => {
               let x: number;
               switch (xAxisType) {
-                case XAxisType.RELATIVE:
+                case XAxisType.RELATIVE_TIME:
                   x = point.relativeTimeInMs;
                   break;
                 case XAxisType.WALL_TIME:

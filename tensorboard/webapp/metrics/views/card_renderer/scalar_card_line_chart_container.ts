@@ -123,7 +123,8 @@ export class ScalarCardLineChartContainer
             map((xAxisType) => {
               switch (xAxisType) {
                 case XAxisType.STEP:
-                case XAxisType.RELATIVE:
+                case XAxisType.RELATIVE_STEP:
+                case XAxisType.RELATIVE_TIME:
                   return ScaleType.LINEAR;
                 case XAxisType.WALL_TIME:
                   return ScaleType.TIME;
