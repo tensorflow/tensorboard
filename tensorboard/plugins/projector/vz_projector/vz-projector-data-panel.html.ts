@@ -122,7 +122,6 @@ export const template = html`
     }
 
     .metadata-editor,
-    .supervise-settings,
     .colorlabel-container {
       display: flex;
     }
@@ -138,15 +137,6 @@ export const template = html`
 
     [hidden] {
       display: none;
-    }
-
-    .supervise-settings paper-dropdown-menu {
-      width: 100px;
-      margin-right: 10px;
-    }
-
-    .supervise-settings paper-input {
-      width: calc(100% - 110px);
     }
 
     .metadata-editor paper-dropdown-menu {
@@ -354,31 +344,6 @@ export const template = html`
       </template>
     </div>
     <template is="dom-if" if="[[_hasChoice(labelOptions)]]">
-      <!-- Supervise by -->
-      <div hidden$="[[!showSuperviseSettings]]" class="supervise-settings">
-        <paper-dropdown-menu no-animations label="Supervise with">
-          <paper-listbox
-            attr-for-selected="value"
-            class="dropdown-content"
-            on-selected-item-changed="superviseColumnChanged"
-            selected="{{superviseColumn}}"
-            slot="dropdown-content"
-          >
-            <template is="dom-repeat" items="[[metadataFields]]">
-              <paper-item value="[[item]]" label="[[item]]">
-                [[item]]
-              </paper-item>
-            </template>
-          </paper-listbox>
-        </paper-dropdown-menu>
-        <paper-input
-          value="{{superviseInput}}"
-          label="{{superviseInputLabel}}"
-          on-change="superviseInputChange"
-          on-input="superviseInputTyping"
-        >
-        </paper-input>
-      </div>
       <!-- Edit by -->
       <div class="metadata-editor">
         <paper-dropdown-menu no-animations label="Edit by">
