@@ -40,6 +40,12 @@ def audio(
 ):
     """Write an audio summary.
 
+    Usage Example:
+
+    >>> audio = tf.reshape(tf.linspace(0.0, 50.0, 4 * 8 * 2), (4, 8, 2))
+    >>> tf.summary.audio('k488', audio, 2)
+    <tf.Tensor: shape=(), dtype=bool, numpy=...>
+
     Arguments:
       name: A name for this summary. The summary tag used for TensorBoard will
         be this name prefixed by any active name scopes.
