@@ -15,7 +15,10 @@ sass_binary(
     name = "header_styles",
     src = "header_component.scss",
     include_paths = ["external/npm/node_modules"],
-    deps = ["//tensorboard/webapp/theme"],
+    deps = [
+        "//tensorboard/webapp/angular_components:material_sass",
+        "//tensorboard/webapp/theme",
+    ],
 )
 
 tf_ng_module(
