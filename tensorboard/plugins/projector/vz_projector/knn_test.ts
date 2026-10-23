@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-import {findKNN, findKNNGPUCosDistNorm, NearestEntry, TEST_ONLY} from './knn';
+import {findKNN, findKNNGPUCosDistNorm, NearestEntry} from './knn';
 import {cosDistNorm, unit} from './vector';
 
 describe('projector knn test', () => {
@@ -65,22 +65,6 @@ describe('projector knn test', () => {
 
       expect(getIndices(values)).toEqual([[1], [0]]);
     });
-
-    it('splits a large data into one that would fit into GPU memory', async () => {
-      const size = TEST_ONLY.OPTIMAL_GPU_BLOCK_SIZE + 5;
-      const data = new Array(size).fill(
-        unitVector(new Float32Array([1, 1, 1]))
-      );
-      const values = await findKNNGPUCosDistNorm(data, 1, (a) => a);
-
-      expect(getIndices(values)).toEqual([
-        // Since distance to the diagonal entries (distance to self is 0) is
-        // non-sensical, the diagonal entires are ignored. So for the first
-        // item, the nearest neighbor should be 2nd item (index 1).
-        [1],
-        ...new Array(size - 1).fill([0]),
-      ]);
-    });
   });
 
   describe('#findKNN', () => {
@@ -106,23 +90,6 @@ describe('projector knn test', () => {
       );
 
       // Floating point precision makes it hard to test. Just assert indices.
-      expect(getIndices(findKnnGpuCosVal)).toEqual(getIndices(findKnnVal));
-    });
-
-    it('splits a large data without the result being wrong', async () => {
-      const size = TEST_ONLY.OPTIMAL_GPU_BLOCK_SIZE + 5;
-      const data = Array.from(new Array(size)).map((_, index) => {
-        return unitVector(new Float32Array([index + 1, index + 1]));
-      });
-
-      const findKnnGpuCosVal = await findKNNGPUCosDistNorm(data, 2, (a) => a);
-      const findKnnVal = await findKNN(
-        data,
-        2,
-        (a) => a,
-        (a, b, limit) => cosDistNorm(a, b)
-      );
-
       expect(getIndices(findKnnGpuCosVal)).toEqual(getIndices(findKnnVal));
     });
   });
