@@ -569,10 +569,10 @@ describe('scalar card', () => {
         ).toBe(siNumberFormatter);
       }));
 
-      it('uses relative time formatter when xAxisType is RELATIVE', fakeAsync(() => {
+      it('uses relative time formatter when xAxisType is RELATIVE_TIME', fakeAsync(() => {
         store.overrideSelector(
           selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
+          XAxisType.RELATIVE_TIME
         );
 
         const cardMetadata = {
@@ -822,8 +822,8 @@ describe('scalar card', () => {
         expectedPoints: expectedPoints.wallTime,
       },
       {
-        name: 'relative',
-        xType: XAxisType.RELATIVE,
+        name: 'relative_time',
+        xType: XAxisType.RELATIVE_TIME,
         expectedPoints: expectedPoints.relative,
       },
     ];
@@ -1470,8 +1470,8 @@ describe('scalar card', () => {
       ]);
     }));
 
-    it('shows relative time when XAxisType is RELATIVE', fakeAsync(() => {
-      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.RELATIVE);
+    it('shows relative time when XAxisType is RELATIVE_TIME', fakeAsync(() => {
+      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.RELATIVE_TIME);
       store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
       const fixture = createComponent('card1');
       setTooltipData(fixture, [
@@ -2516,14 +2516,14 @@ describe('scalar card', () => {
         ).toEqual(1);
       }));
 
-      it('does not render fobs when axis type is RELATIVE', fakeAsync(() => {
+      it('does not render fobs when axis type is RELATIVE_TIME', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
         });
         store.overrideSelector(
           selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
+          XAxisType.RELATIVE_TIME
         );
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -2781,14 +2781,14 @@ describe('scalar card', () => {
         expect(dataTableComponent).toBeFalsy();
       }));
 
-      it('does not render table when axis type is RELATIVE', fakeAsync(() => {
+      it('does not render table when axis type is RELATIVE_TIME', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
         });
         store.overrideSelector(
           selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
+          XAxisType.RELATIVE_TIME
         );
         const fixture = createComponent('card1');
         fixture.detectChanges();
