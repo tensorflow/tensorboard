@@ -4,7 +4,7 @@
     "emitDecoratorMetadata": true,
     "exactOptionalPropertyTypes": true,
     "experimentalDecorators": true,
-    // TODO(@cdavalos): Remove this after migrating from @bazel/concatjs to rules_js/rules_ts.
+    // TODO(@cdavalos7): Remove this after migrating from @bazel/concatjs to rules_js/rules_ts.
     // TypeScript 6.0 rejects deprecated options added by concatjs.
     "ignoreDeprecations": "6.0",
     "importHelpers": true,
@@ -26,7 +26,7 @@
     "plugins": [
       {
         "name": "@bazel/tsetse",
-        // TODO(@cdavalos): Re-enable these rules after upgrading concatjs and tsutils.
+        // TODO(@cdavalos7): Re-enable these rules after upgrading concatjs and tsutils.
         // The current versions are incompatible with TypeScript 6.0.
         "disabledRules": [
           "ban-promise-as-condition",
