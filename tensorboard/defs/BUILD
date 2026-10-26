@@ -66,6 +66,7 @@ nodejs_binary(
         "@npm//typescript",
     ],
     entry_point = "@npm//:node_modules/@bazel/concatjs/internal/tsc_wrapped/tsc_wrapped.js",
+    templated_args = ["--nobazel_run_linker"],
     visibility = ["//tensorboard:__subpackages__"],
 )
 
