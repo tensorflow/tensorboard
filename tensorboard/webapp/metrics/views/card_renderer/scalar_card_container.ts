@@ -264,6 +264,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
         map((xAxisType) => {
           switch (xAxisType) {
             case XAxisType.STEP:
+            case XAxisType.RELATIVE_STEP:
             case XAxisType.RELATIVE_TIME:
               return ScaleType.LINEAR;
             case XAxisType.WALL_TIME:
@@ -418,12 +419,14 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
       map((partitionedSeriesList) => {
         return partitionedSeriesList.map((partitionedSeries) => {
           const firstWallTime = partitionedSeries.points[0]?.wallTime;
+          const firstStep = partitionedSeries.points[0]?.step;
           return {
             ...partitionedSeries,
             points: partitionedSeries.points.map((point) => {
               return {
                 ...point,
                 relativeTimeInMs: point.wallTime - firstWallTime,
+                relativeStep: point.step - firstStep,
               };
             }),
           };
@@ -437,6 +440,9 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
             points: series.points.map((point) => {
               let x: number;
               switch (xAxisType) {
+                case XAxisType.RELATIVE_STEP:
+                  x = point.relativeStep;
+                  break;
                 case XAxisType.RELATIVE_TIME:
                   x = point.relativeTimeInMs;
                   break;
@@ -721,7 +727,7 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     stepSeries: ScalarStepDatum[],
     xAxisType: XAxisType
   ): ScalarCardPoint[] {
-    const isStepBased = xAxisType === XAxisType.STEP;
+    const isStepBased = xAxisType === XAxisType.STEP || xAxisType === XAxisType.RELATIVE_STEP;
     return stepSeries.map((stepDatum) => {
       // Normalize data and convert wallTime in seconds to milliseconds.
       // TODO(stephanwlee): when the legacy line chart is removed, do the conversion
