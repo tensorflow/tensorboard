@@ -124,8 +124,9 @@ export class SettingsViewComponent {
   readonly XAxisType = XAxisType;
   readonly XAxisTypeDropdownOptions: DropdownOption[] = [
     {value: XAxisType.STEP, displayText: 'Step'},
-    {value: XAxisType.RELATIVE, displayText: 'Relative'},
+    {value: XAxisType.RELATIVE_STEP, displayText: 'Relative Step'},
     {value: XAxisType.WALL_TIME, displayText: 'Wall'},
+    {value: XAxisType.RELATIVE_TIME, displayText: 'Relative Time'},
   ];
   @Input() xAxisType!: XAxisType;
   @Output() xAxisTypeChanged = new EventEmitter<XAxisType>();
