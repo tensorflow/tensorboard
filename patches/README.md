@@ -28,7 +28,7 @@ hunk disappeared.
 **Modified files:**
 * `node_modules/@bazel/concatjs/internal/common/compilation.bzl`
 * `node_modules/@bazel/concatjs/internal/common/tsconfig.bzl`
-* `node_modules/@bazel/concatjs/package.json`
+* `node_modules/@bazel/concatjs/web_test/karma_web_test.bzl`
 
 **What it does:**
 Three independent changes:
@@ -41,8 +41,15 @@ Three independent changes:
    Angular 21, APF packaging exposes type definitions only through
    `package.json` `"exports"`, which the Bazel `node_modules` path mapping
    cannot resolve.
-3. `package.json` adds `typescript` as a direct dependency because the Bazel
-   sandbox cannot find it otherwise.
+3. `karma_web_test.bzl` points the generated test launcher at the Bzlmod
+   canonical runfiles path of rules_nodejs
+   (`+_repo_rules+build_bazel_rules_nodejs`), so the Bash runfiles library is
+   found when the Karma suites start.
+
+The patch used to also add `typescript` to concatjs's `package.json` so the
+Bazel sandbox could find it. Since TypeScript 6.0 the `tsc_wrapped` and
+`tsc_wrapped_with_angular` binaries in `tensorboard/defs/BUILD` list
+`@npm//typescript` in their `data` instead, so that hunk is gone.
 
 Note that putting the mappings from (2) in the workspace `tsconfig.json` does not
 work: the tsconfig Bazel generates does `extends` the workspace one, but it also
@@ -61,10 +68,10 @@ hunk.
 To regenerate:
 * `vi node_modules/@bazel/concatjs/internal/common/compilation.bzl`
 * `vi node_modules/@bazel/concatjs/internal/common/tsconfig.bzl`
-* `vi node_modules/@bazel/concatjs/package.json`
+* `vi node_modules/@bazel/concatjs/web_test/karma_web_test.bzl`
 * make edits
-* `yarn patch-package "@bazel/concatjs" --exclude '^$'` (the `--exclude` is
-  required, otherwise the `package.json` hunk is dropped)
+* `yarn patch-package "@bazel/concatjs" --exclude '^$'` (keep the `--exclude`
+  so a future `package.json` change is not silently dropped)
 * update `third_party/nodejs_extensions.bzl` with the new patch file name
 
 

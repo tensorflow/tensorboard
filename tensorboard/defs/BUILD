@@ -46,6 +46,28 @@ tb_proto_library(
 ts_library(
     name = "strict_types",
     srcs = ["strict_type_check.d.ts"],
+    compiler = ":tsc_wrapped",
+)
+
+# Custom ts_library compiler for non-Angular targets.
+#
+# The default @npm//@bazel/concatjs/bin:tsc_wrapped needs `typescript` at runtime,
+# but does not include it in its runfiles. This may work locally because the
+# execroot's node_modules directory is available, but fails in the sandbox.
+# Define the binary here and add `typescript` explicitly so the compiler works
+# reliably in both local and sandboxed builds.
+#
+# Angular targets use tsc_wrapped_with_angular below, which declares the Angular
+# compiler dependencies separately.
+nodejs_binary(
+    name = "tsc_wrapped",
+    data = [
+        "@npm//@bazel/concatjs",
+        "@npm//typescript",
+    ],
+    entry_point = "@npm//:node_modules/@bazel/concatjs/internal/tsc_wrapped/tsc_wrapped.js",
+    templated_args = ["--nobazel_run_linker"],
+    visibility = ["//tensorboard:__subpackages__"],
 )
 
 # Isolated canary for the modern rules_ts/rules_js stack. Production
@@ -57,21 +79,25 @@ tf_ts_project(
     srcs = ["rules_ts_canary.ts"],
 )
 
-# Custom ts_library compiler that runs tsc_wrapped with angular/compiler-cli statically linked
-# This can be used with worker mode because we don't need the linker at runtime to make
-# the angular plugin loadable
-# Just a clone of @npm//@bazel/concatjs/bin:tsc_wrapped with added deps
+# Custom ts_library compiler for Angular targets (tf_ng_module).
+#
+# Same binary as tsc_wrapped above, plus @angular/compiler-cli so the Angular
+# plugin can be loaded without the linker. tsc_wrapped only loads that plugin
+# for targets with use_angular_plugin = True.
+#
+# Both binaries go away once the frontend moves to rules_ts / rules_angular.
 nodejs_binary(
     name = "tsc_wrapped_with_angular",
     data = [
         "@npm//@angular/compiler-cli",
         "@npm//@bazel/concatjs",
-        "@npm//@bazel/typescript",
+        "@npm//typescript",
     ],
     entry_point = "@npm//:node_modules/@bazel/concatjs/internal/tsc_wrapped/tsc_wrapped.js",
-    # Disables the Bazel node modules linker. The node module linker is unreliable for the
-    # persistent worker executable, as it would rely on the `node_modules/` folder in the
-    # execroot that can be shared in non-sandbox environments or for persistent workers.
+    # Disables the Bazel node modules linker, here and in tsc_wrapped. The node
+    # module linker is unreliable for the persistent worker executable, as it would
+    # rely on the `node_modules/` folder in the execroot that can be shared in
+    # non-sandbox environments or for persistent workers.
     # https://docs.bazel.build/versions/main/command-line-reference.html#flag--worker_sandboxing.
     templated_args = ["--nobazel_run_linker"],
     visibility = ["//tensorboard:__subpackages__"],
