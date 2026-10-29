@@ -727,7 +727,8 @@ export class ScalarCardContainer implements CardRenderer, OnInit, OnDestroy {
     stepSeries: ScalarStepDatum[],
     xAxisType: XAxisType
   ): ScalarCardPoint[] {
-    const isStepBased = xAxisType === XAxisType.STEP || xAxisType === XAxisType.RELATIVE_STEP;
+    const isStepBased =
+      xAxisType === XAxisType.STEP || xAxisType === XAxisType.RELATIVE_STEP;
     return stepSeries.map((stepDatum) => {
       // Normalize data and convert wallTime in seconds to milliseconds.
       // TODO(stephanwlee): when the legacy line chart is removed, do the conversion
