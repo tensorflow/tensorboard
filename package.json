@@ -46,7 +46,6 @@
     "@types/lodash": "^4.14.172",
     "@types/marked": "^2.0.4",
     "@types/node": "^16.4.13",
-    "@types/offscreencanvas": "^2019.6.3",
     "@types/requirejs": "^2.1.33",
     "@types/resize-observer-browser": "^0.1.6",
     "@types/three": "^0.131.0",

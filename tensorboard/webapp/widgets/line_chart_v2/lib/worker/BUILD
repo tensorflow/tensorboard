@@ -14,7 +14,6 @@ tf_ts_library(
         ":compact_data_series",
         "//tensorboard/webapp/widgets/line_chart_v2/lib:internal_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
-        "@npm//@types/offscreencanvas",
     ],
 )
 

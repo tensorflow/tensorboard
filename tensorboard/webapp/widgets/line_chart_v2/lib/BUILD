@@ -55,7 +55,6 @@ tf_ts_library(
     deps = [
         ":internal_types",
         "//tensorboard/webapp/widgets/line_chart_v2/lib/renderer:types",
-        "@npm//@types/offscreencanvas",
     ],
 )
 
@@ -112,7 +111,6 @@ tf_ts_library(
     visibility = ["//tensorboard:internal"],
     deps = [
         ":internal_types",
-        "@npm//@types/offscreencanvas",
     ],
 )
 
