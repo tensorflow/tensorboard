@@ -277,7 +277,7 @@ class _AsyncWriterThread(threading.Thread):
             except queue.Empty:
                 pass
             finally:
-                if data:
+                if data is not None:
                     self._queue.task_done()
 
             now = time.time()
