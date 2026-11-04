@@ -102,8 +102,9 @@ export class ScalarCardLineChartComponent {
 
   getCustomXFormatter(): Formatter | undefined {
     switch (this.xAxisType) {
-      case XAxisType.RELATIVE:
+      case XAxisType.RELATIVE_TIME:
         return relativeTimeFormatter;
+      case XAxisType.RELATIVE_STEP:
       case XAxisType.STEP:
         return siNumberFormatter;
       case XAxisType.WALL_TIME:

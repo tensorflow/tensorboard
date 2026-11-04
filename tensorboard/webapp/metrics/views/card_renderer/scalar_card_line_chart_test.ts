@@ -538,10 +538,23 @@ describe('scalar card line chart', () => {
         ).toBe(siNumberFormatter);
       }));
 
-      it('uses relative time formatter when xAxisType is RELATIVE', fakeAsync(() => {
+      it('uses SI unit formatter when xAxisType is RELATIVE_STEP', fakeAsync(() => {
         store.overrideSelector(
           selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
+          XAxisType.RELATIVE_STEP
+        );
+        const fixture = createComponent();
+
+        expect(
+          fixture.debugElement.query(Selector.LINE_CHART).componentInstance
+            .customXFormatter
+        ).toBe(siNumberFormatter);
+      }));
+
+      it('uses relative time formatter when xAxisType is RELATIVE_TIME', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE_TIME
         );
         const fixture = createComponent();
 
@@ -958,8 +971,11 @@ describe('scalar card line chart', () => {
       ]);
     }));
 
-    it('shows relative time when XAxisType is RELATIVE', fakeAsync(() => {
-      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.RELATIVE);
+    it('shows relative time when XAxisType is RELATIVE_TIME', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsXAxisType,
+        XAxisType.RELATIVE_TIME
+      );
       const fixture = createComponent();
       setTooltipData(fixture, [
         buildTooltipDatum(
@@ -1398,10 +1414,10 @@ describe('scalar card line chart', () => {
         ).toEqual(1);
       }));
 
-      it('does not render fobs when axis type is RELATIVE', fakeAsync(() => {
+      it('does not render fobs when axis type is RELATIVE_TIME', fakeAsync(() => {
         store.overrideSelector(
           selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
+          XAxisType.RELATIVE_TIME
         );
         const fixture = createComponent();
         fixture.detectChanges();

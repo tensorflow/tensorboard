@@ -569,10 +569,37 @@ describe('scalar card', () => {
         ).toBe(siNumberFormatter);
       }));
 
-      it('uses relative time formatter when xAxisType is RELATIVE', fakeAsync(() => {
+      it('uses SI unit formatter when xAxisType is RELATIVE_STEP', fakeAsync(() => {
         store.overrideSelector(
           selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
+          XAxisType.RELATIVE_STEP
+        );
+
+        const cardMetadata = {
+          plugin: PluginType.SCALARS,
+          tag: 'tagA',
+          run: null,
+        };
+        provideMockCardRunToSeriesData(
+          selectSpy,
+          PluginType.SCALARS,
+          'card1',
+          cardMetadata,
+          null /* runToSeries */
+        );
+
+        const fixture = createComponent('card1');
+
+        expect(
+          fixture.debugElement.query(Selector.LINE_CHART).componentInstance
+            .customXFormatter
+        ).toBe(siNumberFormatter);
+      }));
+
+      it('uses relative time formatter when xAxisType is RELATIVE_TIME', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE_TIME
         );
 
         const cardMetadata = {
@@ -800,6 +827,10 @@ describe('scalar card', () => {
         {x: 333, y: 1},
         {x: 555, y: 2},
       ],
+      relativeStep: [
+        {x: 0, y: 1},
+        {x: 222, y: 2},
+      ],
       wallTime: [
         {x: 100000, y: 1},
         {x: 101000, y: 2},
@@ -817,13 +848,18 @@ describe('scalar card', () => {
         expectedPoints: expectedPoints.step,
       },
       {
+        name: 'relative_step',
+        xType: XAxisType.RELATIVE_STEP,
+        expectedPoints: expectedPoints.relativeStep,
+      },
+      {
         name: 'wall_time',
         xType: XAxisType.WALL_TIME,
         expectedPoints: expectedPoints.wallTime,
       },
       {
         name: 'relative',
-        xType: XAxisType.RELATIVE,
+        xType: XAxisType.RELATIVE_TIME,
         expectedPoints: expectedPoints.relative,
       },
     ];
@@ -1101,10 +1137,19 @@ describe('scalar card', () => {
         points: [
           // Keeps the data structure as is but do notice adjusted wallTime and
           // line_chart_v2 required "x" and "y" props.
-          {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
+          {
+            wallTime: 2000,
+            relativeTimeInMs: 0,
+            relativeStep: 0,
+            value: 1,
+            step: 1,
+            x: 1,
+            y: 1,
+          },
           {
             wallTime: 4000,
             relativeTimeInMs: 2000,
+            relativeStep: 1,
             value: 10,
             step: 2,
             x: 2,
@@ -1115,17 +1160,34 @@ describe('scalar card', () => {
       {
         id: 'run2',
         points: [
-          {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
+          {
+            wallTime: 2000,
+            relativeTimeInMs: 0,
+            relativeStep: 0,
+            value: 1,
+            step: 1,
+            x: 1,
+            y: 1,
+          },
         ],
       },
       {
         id: '["smoothed","run1"]',
         points: [
-          {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
+          {
+            wallTime: 2000,
+            relativeTimeInMs: 0,
+            relativeStep: 0,
+            value: 1,
+            step: 1,
+            x: 1,
+            y: 1,
+          },
           // Exact smoothed value is not too important.
           {
             wallTime: 4000,
             relativeTimeInMs: 2000,
+            relativeStep: 1,
             value: 10,
             step: 2,
             x: 2,
@@ -1136,7 +1198,15 @@ describe('scalar card', () => {
       {
         id: '["smoothed","run2"]',
         points: [
-          {wallTime: 2000, relativeTimeInMs: 0, value: 1, step: 1, x: 1, y: 1},
+          {
+            wallTime: 2000,
+            relativeTimeInMs: 0,
+            relativeStep: 0,
+            value: 1,
+            step: 1,
+            x: 1,
+            y: 1,
+          },
         ],
       },
     ]);
@@ -1216,7 +1286,15 @@ describe('scalar card', () => {
         id: 'run1',
         points: [
           // Keeps the data structure as is but requires "x" and "y" props.
-          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1, relativeTimeInMs: 0},
+          {
+            wallTime: 2000,
+            value: 1,
+            step: 1,
+            x: 1,
+            y: 1,
+            relativeTimeInMs: 0,
+            relativeStep: 0,
+          },
           {
             wallTime: 4000,
             value: 10,
@@ -1224,13 +1302,22 @@ describe('scalar card', () => {
             x: 2,
             y: 10,
             relativeTimeInMs: 2000,
+            relativeStep: 1,
           },
         ],
       },
       {
         id: 'run2',
         points: [
-          {wallTime: 2000, value: 1, step: 1, x: 1, y: 1, relativeTimeInMs: 0},
+          {
+            wallTime: 2000,
+            value: 1,
+            step: 1,
+            x: 1,
+            y: 1,
+            relativeTimeInMs: 0,
+            relativeStep: 0,
+          },
         ],
       },
     ]);
@@ -1470,8 +1557,11 @@ describe('scalar card', () => {
       ]);
     }));
 
-    it('shows relative time when XAxisType is RELATIVE', fakeAsync(() => {
-      store.overrideSelector(selectors.getMetricsXAxisType, XAxisType.RELATIVE);
+    it('shows relative time when XAxisType is RELATIVE_TIME', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsXAxisType,
+        XAxisType.RELATIVE_TIME
+      );
       store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
       const fixture = createComponent('card1');
       setTooltipData(fixture, [
@@ -2080,6 +2170,7 @@ describe('scalar card', () => {
               x: 1,
               y: 1,
               relativeTimeInMs: 0,
+              relativeStep: 0,
             },
             {
               wallTime: 4000,
@@ -2088,6 +2179,7 @@ describe('scalar card', () => {
               x: 2,
               y: 10,
               relativeTimeInMs: 2000,
+              relativeStep: 1,
             },
             {
               wallTime: 6000,
@@ -2096,6 +2188,7 @@ describe('scalar card', () => {
               x: 2,
               y: 30,
               relativeTimeInMs: 4000,
+              relativeStep: 1,
             },
           ],
         },
@@ -2109,6 +2202,7 @@ describe('scalar card', () => {
               x: 1,
               y: 10,
               relativeTimeInMs: 0,
+              relativeStep: 0,
             },
             {
               wallTime: 3000,
@@ -2117,6 +2211,7 @@ describe('scalar card', () => {
               x: 4,
               y: 20,
               relativeTimeInMs: -3000,
+              relativeStep: 3,
             },
           ],
         },
@@ -2130,6 +2225,7 @@ describe('scalar card', () => {
               x: 1,
               y: 1,
               relativeTimeInMs: 0,
+              relativeStep: 0,
             },
           ],
         },
@@ -2210,6 +2306,7 @@ describe('scalar card', () => {
             {
               wallTime: 2000,
               relativeTimeInMs: 0,
+              relativeStep: 0,
               value: 1,
               step: 1,
               x: 2000,
@@ -2218,6 +2315,7 @@ describe('scalar card', () => {
             {
               wallTime: 4000,
               relativeTimeInMs: 2000,
+              relativeStep: 1,
               value: 10,
               step: 2,
               x: 4000,
@@ -2226,6 +2324,7 @@ describe('scalar card', () => {
             {
               wallTime: 6000,
               relativeTimeInMs: 4000,
+              relativeStep: 1,
               value: 30,
               step: 2,
               x: 6000,
@@ -2234,6 +2333,7 @@ describe('scalar card', () => {
             {
               wallTime: 6000,
               relativeTimeInMs: 4000,
+              relativeStep: 0,
               value: 10,
               step: 1,
               x: 6000,
@@ -2247,6 +2347,7 @@ describe('scalar card', () => {
             {
               wallTime: 3000,
               relativeTimeInMs: 0,
+              relativeStep: 0,
               value: 20,
               step: 4,
               x: 3000,
@@ -2516,14 +2617,14 @@ describe('scalar card', () => {
         ).toEqual(1);
       }));
 
-      it('does not render fobs when axis type is RELATIVE', fakeAsync(() => {
+      it('does not render fobs when axis type is RELATIVE_TIME', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
         });
         store.overrideSelector(
           selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
+          XAxisType.RELATIVE_TIME
         );
         const fixture = createComponent('card1');
         fixture.detectChanges();
@@ -2781,14 +2882,14 @@ describe('scalar card', () => {
         expect(dataTableComponent).toBeFalsy();
       }));
 
-      it('does not render table when axis type is RELATIVE', fakeAsync(() => {
+      it('does not render table when axis type is RELATIVE_TIME', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
           end: null,
         });
         store.overrideSelector(
           selectors.getMetricsXAxisType,
-          XAxisType.RELATIVE
+          XAxisType.RELATIVE_TIME
         );
         const fixture = createComponent('card1');
         fixture.detectChanges();
