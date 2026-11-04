@@ -58,6 +58,7 @@ class FakeFlags:
         logdir="",
         logdir_spec="",
         path_prefix="",
+        port=None,
         reuse_port=False,
         version_tb=False,
     ):
@@ -72,6 +73,7 @@ class FakeFlags:
         self.logdir = logdir
         self.logdir_spec = logdir_spec
         self.path_prefix = path_prefix
+        self.port = port
         self.reuse_port = reuse_port
         self.version_tb = version_tb
 
@@ -131,6 +133,22 @@ class CorePluginFlagsTest(tf.test.TestCase):
         msg = str(cm.exception)
         self.assertIn("must start with slash", msg)
         self.assertIn(repr("noslash"), msg)
+
+    def testHostUnixSocket_alone_isAccepted(self):
+        loader = core_plugin.CorePluginLoader()
+        for value in ("unix:///tmp/tb.sock", "unix://tb.sock"):
+            loader.fix_flags(FakeFlags(logdir="/tmp", host=value))
+
+    def testHostUnixSocket_conflictsWithPort(self):
+        loader = core_plugin.CorePluginLoader()
+        flag = FakeFlags(
+            logdir="/tmp",
+            host="unix:///tmp/tb.sock",
+            port=6006,
+        )
+        with self.assertRaises(base_plugin.FlagsError) as cm:
+            loader.fix_flags(flag)
+        self.assertIn("unix://", str(cm.exception))
 
 
 class CorePluginTest(tf.test.TestCase):
