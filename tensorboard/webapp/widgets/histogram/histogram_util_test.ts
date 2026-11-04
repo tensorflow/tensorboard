@@ -54,6 +54,38 @@ describe('histogram util', () => {
       });
     });
 
+    describe('count conservation at the range boundary', () => {
+      function totalCount(bins: Bin[]): number {
+        return bins.reduce((sum, bin) => sum + bin.y, 0);
+      }
+
+      it('preserves a bin whose right edge sits on range.right', () => {
+        // A zero-width bin at x=1 sits exactly on the range's right edge (the
+        // widest histogram spans [0, 1]). It must not be dropped when the bins
+        // are redistributed into `binCount` result bins.
+        const input: Bin[] = [
+          {x: 0, dx: 1, y: 1},
+          {x: 1, dx: 0, y: 5},
+        ];
+        const [result] = histogramsToBins(
+          buildNormalizedHistograms([binsToHistogram(input)], 6)
+        );
+        expect(totalCount(result)).toBeCloseTo(totalCount(input), 6);
+      });
+
+      it('preserves counts when the final normal bin ends on range.right', () => {
+        const input: Bin[] = [
+          {x: 0, dx: 1, y: 2},
+          {x: 1, dx: 1, y: 3},
+          {x: 2, dx: 1, y: 4},
+        ];
+        const [result] = histogramsToBins(
+          buildNormalizedHistograms([binsToHistogram(input)], 7)
+        );
+        expect(totalCount(result)).toBeCloseTo(totalCount(input), 6);
+      });
+    });
+
     describe('single histogram', () => {
       it('converts a 0 width bin into a default bin', () => {
         expect(
