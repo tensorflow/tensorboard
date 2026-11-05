@@ -41,6 +41,7 @@ export const fetchRunsSucceeded = createAction(
     runsForAllExperiments: Run[];
     newRuns: ExperimentIdToRuns;
     expNameByExpId?: Record<string, string>;
+    expAliasByExpId?: Record<string, string>;
   }>()
 );
 
@@ -84,6 +85,7 @@ export const runGroupByChanged = createAction(
     experimentIds: string[];
     groupBy: GroupBy;
     expNameByExpId?: Record<string, string>;
+    expAliasByExpId?: Record<string, string>;
   }>()
 );
 

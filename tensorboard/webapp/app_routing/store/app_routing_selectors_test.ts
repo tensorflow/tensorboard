@@ -211,6 +211,44 @@ describe('app_routing_selectors', () => {
     });
   });
 
+  describe('getExperimentIdToAliasTextMap', () => {
+    beforeEach(() => {
+      selectors.getExperimentIdToExperimentAliasMap.release();
+      selectors.getExperimentIdToAliasTextMap.release();
+    });
+
+    it('returns a map of id to alias text for COMPARE route', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({
+          activeRoute: buildRoute({
+            routeKind: RouteKind.COMPARE_EXPERIMENT,
+            params: {
+              experimentIds: 'exp1:123,exp2:234',
+            },
+          }),
+        })
+      );
+
+      expect(selectors.getExperimentIdToAliasTextMap(state)).toEqual({
+        123: 'exp1',
+        234: 'exp2',
+      });
+    });
+
+    it('returns an empty map for non-compare route', () => {
+      const state = buildStateFromAppRoutingState(
+        buildAppRoutingState({
+          activeRoute: buildRoute({
+            routeKind: RouteKind.UNKNOWN,
+            params: {},
+          }),
+        })
+      );
+
+      expect(selectors.getExperimentIdToAliasTextMap(state)).toEqual({});
+    });
+  });
+
   describe('getRegisteredRouteKinds', () => {
     beforeEach(() => {
       selectors.getRegisteredRouteKinds.release();
