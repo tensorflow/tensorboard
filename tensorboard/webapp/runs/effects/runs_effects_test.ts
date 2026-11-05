@@ -30,6 +30,7 @@ import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {
   getActiveRoute,
   getDashboardExperimentNames,
+  getExperimentIdToAliasTextMap,
   getExperimentIdsFromRoute,
   getRuns,
   getRunsLoadState,
@@ -110,6 +111,7 @@ describe('runs_effects', () => {
     });
     store.overrideSelector(getExperimentIdsFromRoute, null);
     store.overrideSelector(getActiveRoute, buildRoute());
+    store.overrideSelector(getExperimentIdToAliasTextMap, {});
   });
 
   afterEach(() => {
@@ -176,6 +178,7 @@ describe('runs_effects', () => {
                 456: 'exp2',
                 123: 'exp1',
               },
+              expAliasByExpId: {},
             }),
           ]);
         });
@@ -262,6 +265,7 @@ describe('runs_effects', () => {
                 456: 'exp2',
                 123: 'exp1',
               },
+              expAliasByExpId: {},
             }),
           ]);
         });
@@ -354,6 +358,7 @@ describe('runs_effects', () => {
               456: 'exp1',
               123: 'exp2',
             },
+            expAliasByExpId: {},
           }),
         ]);
       });
@@ -391,12 +396,53 @@ describe('runs_effects', () => {
             runsForAllExperiments: [...createFooRuns()],
             newRuns: {},
             expNameByExpId: {123: 'exp1'},
+            expAliasByExpId: {},
           }),
         ]);
 
         action.next(buildNavigatedAction());
         action.next(buildNavigatedAction());
         expect(actualActions.length).toBe(2);
+      });
+
+      it('includes experiment aliases in fetchRunsSucceeded', () => {
+        store.overrideSelector(getActiveRoute, buildRoute());
+        store.overrideSelector(getExperimentIdsFromRoute, ['123']);
+        store.overrideSelector(getDashboardExperimentNames, {123: 'exp1'});
+        store.overrideSelector(getExperimentIdToAliasTextMap, {
+          123: 'alias1',
+        });
+        const createFooRuns = () => [
+          createRun({
+            id: 'foo/runA',
+            name: 'runA',
+          }),
+        ];
+
+        selectSpy
+          .withArgs(getRuns, {experimentId: '123'})
+          .and.returnValue(of(createFooRuns()));
+        store.overrideSelector(getRunsLoadState, {
+          state: DataLoadState.LOADED,
+          lastLoadedTimeInMs: 0,
+        });
+        store.refreshState();
+
+        action.next(buildNavigatedAction());
+
+        expect(actualActions).toEqual([
+          actions.fetchRunsRequested({
+            experimentIds: ['123'],
+            requestedExperimentIds: [],
+          }),
+          actions.fetchRunsSucceeded({
+            experimentIds: ['123'],
+            runsForAllExperiments: [...createFooRuns()],
+            newRuns: {},
+            expNameByExpId: {123: 'exp1'},
+            expAliasByExpId: {123: 'alias1'},
+          }),
+        ]);
       });
 
       it('dispatches fetchRunsSucceeded even if data is already loaded', () => {
@@ -434,6 +480,7 @@ describe('runs_effects', () => {
             runsForAllExperiments: [...createFooRuns()],
             newRuns: {},
             expNameByExpId: {foo: 'exp1'},
+            expAliasByExpId: {},
           }),
         ]);
       });
@@ -515,6 +562,7 @@ describe('runs_effects', () => {
             456: {runs: createBarRuns()},
           },
           expNameByExpId: {456: 'exp1', 123: 'exp2'},
+          expAliasByExpId: {},
         }),
         actions.fetchRunsSucceeded({
           experimentIds: ['123'],
@@ -523,6 +571,7 @@ describe('runs_effects', () => {
             123: {runs: createFooRuns()},
           },
           expNameByExpId: {456: 'exp1', 123: 'exp2'},
+          expAliasByExpId: {},
         }),
       ]);
     });
@@ -652,6 +701,7 @@ describe('runs_effects', () => {
               },
             },
             expNameByExpId: {foo: 'exp1', bar: 'exp2'},
+            expAliasByExpId: {},
           }),
           actions.fetchRunsSucceeded({
             experimentIds: ['foo', 'bar'],
@@ -665,6 +715,7 @@ describe('runs_effects', () => {
               },
             },
             expNameByExpId: {foo: 'exp1', bar: 'exp2'},
+            expAliasByExpId: {},
           }),
         ]);
       });

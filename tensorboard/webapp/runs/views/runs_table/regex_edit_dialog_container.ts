@@ -36,6 +36,7 @@ import {
   getDarkModeEnabled,
   getDashboardExperimentNames,
   getEnableColorByExperiment,
+  getExperimentIdToAliasTextMap,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings/';
 import {runGroupByChanged} from '../../actions';
@@ -83,6 +84,7 @@ export class RegexEditDialogContainer {
   private readonly runIdToEid$: Observable<Record<string, string>>;
   private readonly allRuns$: Observable<Run[]>;
   private readonly expNameByExpId$: Observable<Record<string, string>>;
+  private readonly expAliasByExpId$: Observable<Record<string, string>>;
   readonly enableColorByExperiment;
 
   // Tentative regex string and type are used because we don't want to change the state
@@ -123,6 +125,7 @@ export class RegexEditDialogContainer {
           this.allRuns$,
           this.runIdToEid$,
           this.expNameByExpId$,
+          this.expAliasByExpId$,
           this.store.select(settingsSelectors.getColorPalette),
           this.store.select(getDarkModeEnabled)
         ),
@@ -133,6 +136,7 @@ export class RegexEditDialogContainer {
             allRuns,
             runIdToEid,
             expNameByExpId,
+            expAliasByExpId,
             colorPalette,
             darkModeEnabled,
           ]) => {
@@ -144,7 +148,8 @@ export class RegexEditDialogContainer {
               groupBy,
               allRuns,
               runIdToEid,
-              expNameByExpId
+              expNameByExpId,
+              expAliasByExpId
             );
             const groupKeyToColorString = new Map<string, string>();
             const colorRunPairList: ColorGroup[] = [];
@@ -177,6 +182,7 @@ export class RegexEditDialogContainer {
     }>(MAT_DIALOG_DATA);
 
     this.expNameByExpId$ = this.store.select(getDashboardExperimentNames);
+    this.expAliasByExpId$ = this.store.select(getExperimentIdToAliasTextMap);
     this.enableColorByExperiment = this.store.selectSignal(
       getEnableColorByExperiment
     );
@@ -225,7 +231,8 @@ export class RegexEditDialogContainer {
 
     // Assigned last: both derived signals subscribe eagerly, and depend on
     // fields assigned above (groupByRegexTypeObs$, allRuns$, runIdToEid$,
-    // expNameByExpId$) via the lazy `defer()` in colorRunPairListObs$.
+    // expNameByExpId$, expAliasByExpId$) via the lazy `defer()` in
+    // colorRunPairListObs$.
     this.groupByRegexType = toSignal(this.groupByRegexTypeObs$, {
       requireSync: true,
     });
@@ -247,13 +254,15 @@ export class RegexEditDialogContainer {
       this.groupByRegexStringObs$,
       this.groupByRegexTypeObs$,
       this.expNameByExpId$,
-    ]).subscribe(([regexString, key, expNameByExpId]) => {
+      this.expAliasByExpId$,
+    ]).subscribe(([regexString, key, expNameByExpId, expAliasByExpId]) => {
       if (regexString) {
         this.store.dispatch(
           runGroupByChanged({
             experimentIds: this.experimentIds,
             groupBy: {key, regexString},
             expNameByExpId,
+            expAliasByExpId,
           })
         );
       }
