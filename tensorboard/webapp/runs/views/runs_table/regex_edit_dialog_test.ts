@@ -38,6 +38,7 @@ import {
   getRunIdsForExperiment,
   getRuns,
   getEnableColorByExperiment,
+  getExperimentIdToAliasTextMap,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
@@ -105,6 +106,9 @@ describe('regex_edit_dialog', () => {
     store.overrideSelector(getDashboardExperimentNames, {
       rose: 'exp_name_rose',
     });
+    store.overrideSelector(getExperimentIdToAliasTextMap, {
+      rose: 'alias_rose',
+    });
     store.overrideSelector(getEnableColorByExperiment, true);
     actualActions = [];
     // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
@@ -157,6 +161,7 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test(\\d+)'},
       })
     );
@@ -183,6 +188,7 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
@@ -213,6 +219,7 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'test'},
       })
     );
@@ -293,6 +300,7 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
@@ -315,6 +323,7 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test regex string'},
       })
     );

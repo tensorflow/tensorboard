@@ -16,11 +16,19 @@ import {GroupBy, GroupByKey, Run, RunGroup} from '../types';
 
 import {ExperimentId, RunId} from './runs_types';
 
+/**
+ * Groups runs according to `groupBy`.
+ *
+ * For `GroupByKey.REGEX_BY_EXP`, the regex is first matched against the
+ * user-defined experiment alias (e.g. set in the compare view URL), when
+ * available, and falls back to the experiment name otherwise.
+ */
 export function groupRuns(
   groupBy: GroupBy,
   runs: Run[],
   runIdToExpId: Readonly<Record<RunId, ExperimentId>>,
-  expNameByExpId?: Record<string, string>
+  expNameByExpId?: Record<string, string>,
+  expAliasByExpId?: Record<string, string>
 ): RunGroup {
   const matches: {[id: string]: Run[]} = {};
   const nonMatches: Run[] = [];
@@ -79,8 +87,8 @@ export function groupRuns(
     case GroupByKey.REGEX_BY_EXP:
       if (
         !groupBy.regexString ||
-        !expNameByExpId ||
-        Object.keys(expNameByExpId).length === 0
+        ((!expNameByExpId || Object.keys(expNameByExpId).length === 0) &&
+          (!expAliasByExpId || Object.keys(expAliasByExpId).length === 0))
       ) {
         break;
       }
@@ -92,9 +100,14 @@ export function groupRuns(
       }
 
       for (const run of runs) {
-        // Tries to match against experiment alias of the run.
-        const experimentName = expNameByExpId[runIdToExpId[run.id]];
-        const matchesList = experimentName.match(regExp);
+        // Tries to match against the experiment alias of the run first, then
+        // falls back to the experiment name.
+        const experimentId = runIdToExpId[run.id];
+        const experimentAlias = expAliasByExpId?.[experimentId];
+        const experimentName = expNameByExpId?.[experimentId];
+        const matchesList =
+          (experimentAlias ? experimentAlias.match(regExp) : null) ??
+          (experimentName ? experimentName.match(regExp) : null);
         if (matchesList) {
           const hasCapturingGroup = matchesList.length > 1;
           // In case regex string does not have a capturing group, we use pseudo
