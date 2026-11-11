@@ -86,7 +86,7 @@ import {
 } from './scalar_card_types';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
   selector: 'line-chart',
   template: `
@@ -168,7 +168,7 @@ class TestableLineChart {
 }
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
   selector: 'test-scalar-card-line-chart',
   template: `
@@ -1412,6 +1412,27 @@ describe('scalar card line chart', () => {
         expect(
           fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
         ).toEqual(1);
+      }));
+
+      it('does not render fobs when axis type is RELATIVE_STEP', fakeAsync(() => {
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE_STEP
+        );
+        const fixture = createComponent();
+        fixture.componentInstance.minMaxStep = {
+          minStep: 0,
+          maxStep: 100,
+        };
+        fixture.componentInstance.stepOrLinkedTimeSelection = {
+          start: { step: 20 },
+          end: null,
+        };
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
+        ).toEqual(0);
       }));
 
       it('does not render fobs when axis type is RELATIVE_TIME', fakeAsync(() => {

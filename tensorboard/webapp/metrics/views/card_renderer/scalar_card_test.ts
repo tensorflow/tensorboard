@@ -140,7 +140,7 @@ import {
 import {VisLinkedTimeSelectionWarningModule} from './vis_linked_time_selection_warning_module';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
   selector: 'line-chart',
   template: `
@@ -225,7 +225,7 @@ class TestableLineChart {
 // DataDownloadContainer pulls in entire redux and, for this test, we don't want to
 // know about their data requirements.
 @Component({
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false,
   selector: 'testable-data-download-dialog',
   template: `{{ cardId }}`,
@@ -2617,6 +2617,23 @@ describe('scalar card', () => {
         ).toEqual(1);
       }));
 
+      it('does not render fobs when axis type is RELATIVE_STEP', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: { step: 20 },
+          end: null,
+        });
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE_STEP
+        );
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        expect(
+          fixture.debugElement.queryAll(By.directive(CardFobComponent)).length
+        ).toEqual(0);
+      }));
+
       it('does not render fobs when axis type is RELATIVE_TIME', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
           start: {step: 20},
@@ -2872,6 +2889,25 @@ describe('scalar card', () => {
 
       it('does not render table when disabled', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, null);
+        const fixture = createComponent('card1');
+        fixture.detectChanges();
+
+        const dataTableComponent = fixture.debugElement.query(
+          By.directive(DataTableComponent)
+        );
+
+        expect(dataTableComponent).toBeFalsy();
+      }));
+
+      it('does not render table when axis type is RELATIVE_STEP', fakeAsync(() => {
+        store.overrideSelector(getMetricsLinkedTimeSelection, {
+          start: { step: 20 },
+          end: null,
+        });
+        store.overrideSelector(
+          selectors.getMetricsXAxisType,
+          XAxisType.RELATIVE_STEP
+        );
         const fixture = createComponent('card1');
         fixture.detectChanges();
 
