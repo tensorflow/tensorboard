@@ -440,6 +440,106 @@ describe('run store utils test', () => {
           nonMatches: [buildRun({id: 'eid4/gamma', name: 'foo3bar'})],
         });
       });
+
+      it('groups runs by experiment alias when available', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX_BY_EXP, regexString: '^([^_]+)'},
+          [
+            buildRun({id: 'eid1/alpha', name: 'alpha'}),
+            buildRun({id: 'eid2/alpha', name: 'alpha'}),
+            buildRun({id: 'eid3/alpha', name: 'alpha'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid2/alpha': 'eid2',
+            'eid3/alpha': 'eid3',
+          },
+          {
+            eid1: '20261015T143202',
+            eid2: '20261021T155814',
+            eid3: '20261015T010521',
+          },
+          {
+            eid1: 'heads16',
+            eid2: 'heads16_resumed',
+            eid3: 'baseline',
+          }
+        );
+
+        expect(actual).toEqual({
+          matches: {
+            '["heads16"]': [
+              buildRun({id: 'eid1/alpha', name: 'alpha'}),
+              buildRun({id: 'eid2/alpha', name: 'alpha'}),
+            ],
+            '["baseline"]': [buildRun({id: 'eid3/alpha', name: 'alpha'})],
+          },
+          nonMatches: [],
+        });
+      });
+
+      it('falls back to experiment name when the alias does not match', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo(\\d+)'},
+          [
+            buildRun({id: 'eid1/alpha', name: 'alpha'}),
+            buildRun({id: 'eid2/alpha', name: 'alpha'}),
+            buildRun({id: 'eid3/alpha', name: 'alpha'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid2/alpha': 'eid2',
+            'eid3/alpha': 'eid3',
+          },
+          {
+            eid1: 'foo1',
+            eid2: 'foo2',
+            eid3: 'bar',
+          },
+          {
+            eid1: 'foo2',
+            eid2: 'no_match',
+          }
+        );
+
+        expect(actual).toEqual({
+          matches: {
+            '["2"]': [
+              // Alias "foo2" takes precedence over name "foo1".
+              buildRun({id: 'eid1/alpha', name: 'alpha'}),
+              // Alias does not match, so the name "foo2" is used.
+              buildRun({id: 'eid2/alpha', name: 'alpha'}),
+            ],
+          },
+          nonMatches: [buildRun({id: 'eid3/alpha', name: 'alpha'})],
+        });
+      });
+
+      it('groups runs by experiment alias when no names are provided', () => {
+        const actual = groupRuns(
+          {key: GroupByKey.REGEX_BY_EXP, regexString: 'foo'},
+          [
+            buildRun({id: 'eid1/alpha', name: 'alpha'}),
+            buildRun({id: 'eid2/alpha', name: 'alpha'}),
+          ],
+          {
+            'eid1/alpha': 'eid1',
+            'eid2/alpha': 'eid2',
+          },
+          {},
+          {
+            eid1: 'foo',
+            eid2: 'bar',
+          }
+        );
+
+        expect(actual).toEqual({
+          matches: {
+            pseudo_group: [buildRun({id: 'eid1/alpha', name: 'alpha'})],
+          },
+          nonMatches: [buildRun({id: 'eid2/alpha', name: 'alpha'})],
+        });
+      });
     });
   });
 

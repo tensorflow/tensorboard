@@ -35,6 +35,7 @@ import * as hparamsActions from '../../hparams/_redux/hparams_actions';
 import {
   getActiveRoute,
   getDashboardExperimentNames,
+  getExperimentIdToAliasTextMap,
   getExperimentIdsFromRoute,
   getRuns,
   getRunsLoadState,
@@ -226,8 +227,11 @@ export class RunsEffects {
         }
         return {newRuns, runsForAllExperiments};
       }),
-      withLatestFrom(this.store.select(getDashboardExperimentNames)),
-      tap(([runsData, expNameByExpId]) => {
+      withLatestFrom(
+        this.store.select(getDashboardExperimentNames),
+        this.store.select(getExperimentIdToAliasTextMap)
+      ),
+      tap(([runsData, expNameByExpId, expAliasByExpId]) => {
         const {newRuns, runsForAllExperiments} = runsData;
         this.store.dispatch(
           actions.fetchRunsSucceeded({
@@ -235,6 +239,7 @@ export class RunsEffects {
             newRuns,
             runsForAllExperiments,
             expNameByExpId,
+            expAliasByExpId,
           })
         );
       }),
