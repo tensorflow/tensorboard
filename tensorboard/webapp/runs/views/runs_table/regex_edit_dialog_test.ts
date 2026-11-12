@@ -214,7 +214,7 @@ describe('regex_edit_dialog', () => {
     );
     buttons[1].nativeElement.click();
 
-    expect(matSelect.nativeNode.textContent).toBe('Experiment Name');
+    expect(matSelect.nativeNode.textContent).toBe('Experiment Alias / Name');
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
@@ -223,6 +223,35 @@ describe('regex_edit_dialog', () => {
         groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'test'},
       })
     );
+  });
+
+  it('dispatches only once on save, even if store values change afterwards', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input'));
+    const keyArgs: SendKeyArgs = {
+      key: 'test',
+      prevString: '',
+      type: KeyType.CHARACTER,
+      startingCursorIndex: 0,
+    };
+    sendKey(fixture, input, keyArgs);
+    const buttons = fixture.debugElement.queryAll(
+      By.css('div[mat-dialog-actions] button')
+    );
+    buttons[1].nativeElement.click();
+    const dispatchCountAfterSave = dispatchSpy.calls.count();
+    expect(dispatchCountAfterSave).toBeGreaterThan(0);
+
+    // A later change in the store (e.g. navigating to another compare URL)
+    // must not re-dispatch the saved regex.
+    store.overrideSelector(getDashboardExperimentNames, {
+      rose: 'new_exp_name_rose',
+    });
+    store.refreshState();
+
+    expect(dispatchSpy.calls.count()).toBe(dispatchCountAfterSave);
   });
 
   it('show only one dropdown option if colorByExperiment flag is disabled', () => {

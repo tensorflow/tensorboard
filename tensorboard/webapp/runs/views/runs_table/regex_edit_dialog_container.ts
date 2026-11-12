@@ -255,18 +255,20 @@ export class RegexEditDialogContainer {
       this.groupByRegexTypeObs$,
       this.expNameByExpId$,
       this.expAliasByExpId$,
-    ]).subscribe(([regexString, key, expNameByExpId, expAliasByExpId]) => {
-      if (regexString) {
-        this.store.dispatch(
-          runGroupByChanged({
-            experimentIds: this.experimentIds,
-            groupBy: {key, regexString},
-            expNameByExpId,
-            expAliasByExpId,
-          })
-        );
-      }
-    });
+    ])
+      .pipe(take(1))
+      .subscribe(([regexString, key, expNameByExpId, expAliasByExpId]) => {
+        if (regexString) {
+          this.store.dispatch(
+            runGroupByChanged({
+              experimentIds: this.experimentIds,
+              groupBy: {key, regexString},
+              expNameByExpId,
+              expAliasByExpId,
+            })
+          );
+        }
+      });
   }
 }
 
