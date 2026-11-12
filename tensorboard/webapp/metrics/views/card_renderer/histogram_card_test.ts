@@ -286,7 +286,9 @@ describe('histogram card', () => {
 
     fixture.detectChanges();
 
-    expect(histogramEl.componentInstance.timeProperty).toBe(TimeProperty.STEP);
+    expect(histogramEl.componentInstance.timeProperty).toBe(
+      TimeProperty.RELATIVE_STEP
+    );
 
     store.overrideSelector(
       selectors.getMetricsXAxisType,
