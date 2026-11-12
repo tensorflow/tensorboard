@@ -1425,7 +1425,7 @@ describe('scalar card line chart', () => {
           maxStep: 100,
         };
         fixture.componentInstance.stepOrLinkedTimeSelection = {
-          start: { step: 20 },
+          start: {step: 20},
           end: null,
         };
         fixture.detectChanges();

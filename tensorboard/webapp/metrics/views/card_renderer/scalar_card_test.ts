@@ -2619,7 +2619,7 @@ describe('scalar card', () => {
 
       it('does not render fobs when axis type is RELATIVE_STEP', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: { step: 20 },
+          start: {step: 20},
           end: null,
         });
         store.overrideSelector(
@@ -2901,7 +2901,7 @@ describe('scalar card', () => {
 
       it('does not render table when axis type is RELATIVE_STEP', fakeAsync(() => {
         store.overrideSelector(getMetricsLinkedTimeSelection, {
-          start: { step: 20 },
+          start: {step: 20},
           end: null,
         });
         store.overrideSelector(
