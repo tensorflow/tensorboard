@@ -349,7 +349,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
         return datum.wallTime;
       case TimeProperty.STEP:
         return datum.step;
-      case TimeProperty.RELATIVE:
+      case TimeProperty.RELATIVE_TIME:
         return datum.wallTime - this.data[0].wallTime;
     }
   }
@@ -461,7 +461,7 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       case TimeProperty.STEP: {
         return this.formatters.step;
       }
-      case TimeProperty.RELATIVE: {
+      case TimeProperty.RELATIVE_TIME: {
         return this.formatters.relative;
       }
       default:

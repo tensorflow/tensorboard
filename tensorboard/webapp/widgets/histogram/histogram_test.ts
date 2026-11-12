@@ -412,7 +412,7 @@ describe('histogram test', () => {
           }),
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
-        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
+        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE_TIME;
         fixture.detectChanges();
         mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
@@ -517,7 +517,7 @@ describe('histogram test', () => {
           'translate(0px, 50px)',
         ]);
 
-        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
+        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE_TIME;
         fixture.detectChanges();
         // Even the RELATIVE time property takes minimum relative value to the
         // max (-300, 300) which has the same spacing as the WALL_TIME.
@@ -763,7 +763,7 @@ describe('histogram test', () => {
         );
       });
 
-      it('shows relative time on yAxis for TimeProperty.RELATIVE', () => {
+      it('shows relative time on yAxis for TimeProperty.RELATIVE_TIME', () => {
         const data = [
           buildHistogramDatum({
             step: 1,
@@ -779,7 +779,7 @@ describe('histogram test', () => {
 
         const fixture = createComponent('foo', data);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
-        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
+        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE_TIME;
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 

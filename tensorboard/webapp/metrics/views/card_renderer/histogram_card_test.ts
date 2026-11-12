@@ -297,7 +297,7 @@ describe('histogram card', () => {
     fixture.detectChanges();
 
     expect(histogramEl.componentInstance.timeProperty).toBe(
-      TimeProperty.RELATIVE
+      TimeProperty.RELATIVE_TIME
     );
   });
 

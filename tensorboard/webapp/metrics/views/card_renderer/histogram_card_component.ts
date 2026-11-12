@@ -67,7 +67,7 @@ export class HistogramCardComponent {
       case XAxisType.WALL_TIME:
         return TimeProperty.WALL_TIME;
       case XAxisType.RELATIVE_TIME:
-        return TimeProperty.RELATIVE;
+        return TimeProperty.RELATIVE_TIME;
       default:
         throw new Error('Invalid xAxisType for histogram time property.');
     }

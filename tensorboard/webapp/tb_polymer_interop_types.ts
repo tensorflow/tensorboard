@@ -75,7 +75,7 @@ export declare interface VzHistogramDatum {
 export enum TimeProperty {
   STEP = 'step',
   WALL_TIME = 'wall_time',
-  RELATIVE = 'relative',
+  RELATIVE_TIME = 'relative_time',
 }
 
 export enum HistogramMode {
