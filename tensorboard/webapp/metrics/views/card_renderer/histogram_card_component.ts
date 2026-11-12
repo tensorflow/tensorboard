@@ -62,8 +62,9 @@ export class HistogramCardComponent {
   timeProperty(xAxisType: XAxisType) {
     switch (xAxisType) {
       case XAxisType.STEP:
-      case XAxisType.RELATIVE_STEP:
         return TimeProperty.STEP;
+      case XAxisType.RELATIVE_STEP:
+        return TimeProperty.RELATIVE_STEP;
       case XAxisType.WALL_TIME:
         return TimeProperty.WALL_TIME;
       case XAxisType.RELATIVE_TIME:
