@@ -424,14 +424,14 @@ describe('histogram test', () => {
 
       it('renders relative step from first data in RELATIVE_STEP mode', () => {
         const fixture = createComponent('foo', [
-          buildHistogramDatum({ step: 1000 }),
-          buildHistogramDatum({ step: 1001 }),
-          buildHistogramDatum({ step: 1002 }),
-          buildHistogramDatum({ step: 1003 }),
-          buildHistogramDatum({ step: 1004 }),
-          buildHistogramDatum({ step: 1005 }),
-          buildHistogramDatum({ step: 1006 }),
-          buildHistogramDatum({ step: 1007 }),
+          buildHistogramDatum({step: 1000}),
+          buildHistogramDatum({step: 1001}),
+          buildHistogramDatum({step: 1002}),
+          buildHistogramDatum({step: 1003}),
+          buildHistogramDatum({step: 1004}),
+          buildHistogramDatum({step: 1005}),
+          buildHistogramDatum({step: 1006}),
+          buildHistogramDatum({step: 1007}),
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
         fixture.componentInstance.timeProperty = TimeProperty.RELATIVE_STEP;
@@ -443,7 +443,6 @@ describe('histogram test', () => {
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
         ).toEqual(['0', '2', '4', '6']);
       });
-
     });
 
     describe('overlay mode', () => {
@@ -824,11 +823,11 @@ describe('histogram test', () => {
         const data = [
           buildHistogramDatum({
             step: 1000,
-            bins: [buildBin({ x: 0, dx: 10, y: 100 })],
+            bins: [buildBin({x: 0, dx: 10, y: 100})],
           }),
           buildHistogramDatum({
             step: 2500,
-            bins: [buildBin({ x: 0, dx: 10, y: 100 })],
+            bins: [buildBin({x: 0, dx: 10, y: 100})],
           }),
         ];
 

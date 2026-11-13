@@ -478,7 +478,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   private getMaxTicks(yScale: Scales[keyof Scales]) {
     const {height} = this.layout.contentClientRect;
     const maxPerHeight = height / 15;
-    if (this.timeProperty === TimeProperty.STEP || this.timeProperty === TimeProperty.RELATIVE_STEP) {
+    if (
+      this.timeProperty === TimeProperty.STEP ||
+      this.timeProperty === TimeProperty.RELATIVE_STEP
+    ) {
       const [min, max] = yScale.domain() as [number, number];
       const numberOfSteps = Math.max(max - min + 1, 1);
       return Math.min(numberOfSteps, maxPerHeight);
