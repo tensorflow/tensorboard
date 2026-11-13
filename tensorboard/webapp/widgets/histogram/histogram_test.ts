@@ -396,7 +396,7 @@ describe('histogram test', () => {
         ]);
       });
 
-      it('renders relative time from first data in RELATIVE mode', () => {
+      it('renders relative time from first data in RELATIVE_TIME mode', () => {
         const fixture = createComponent('foo', [
           buildHistogramDatum({
             step: 0,
@@ -412,7 +412,7 @@ describe('histogram test', () => {
           }),
         ]);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
-        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
+        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE_TIME;
         fixture.detectChanges();
         mockContentRect(fixture);
         intersectionObserver.simulateVisibilityChange(fixture, true);
@@ -420,6 +420,28 @@ describe('histogram test', () => {
         expect(
           getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
         ).toEqual(['0h', '600h', '1000h']);
+      });
+
+      it('renders relative step from first data in RELATIVE_STEP mode', () => {
+        const fixture = createComponent('foo', [
+          buildHistogramDatum({step: 1000}),
+          buildHistogramDatum({step: 1001}),
+          buildHistogramDatum({step: 1002}),
+          buildHistogramDatum({step: 1003}),
+          buildHistogramDatum({step: 1004}),
+          buildHistogramDatum({step: 1005}),
+          buildHistogramDatum({step: 1006}),
+          buildHistogramDatum({step: 1007}),
+        ]);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE_STEP;
+        fixture.detectChanges();
+        mockContentRect(fixture);
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        expect(
+          getAxisLabelText(fixture.debugElement.query(byCss.Y_AXIS))
+        ).toEqual(['0', '2', '4', '6']);
       });
     });
 
@@ -517,9 +539,9 @@ describe('histogram test', () => {
           'translate(0px, 50px)',
         ]);
 
-        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
+        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE_TIME;
         fixture.detectChanges();
-        // Even the RELATIVE time property takes minimum relative value to the
+        // Even the RELATIVE_TIME time property takes minimum relative value to the
         // max (-300, 300) which has the same spacing as the WALL_TIME.
         expect(
           getGroupTransforms(fixture.debugElement.query(byCss.HISTOGRAMS))
@@ -763,7 +785,7 @@ describe('histogram test', () => {
         );
       });
 
-      it('shows relative time on yAxis for TimeProperty.RELATIVE', () => {
+      it('shows relative time on yAxis for TimeProperty.RELATIVE_TIME', () => {
         const data = [
           buildHistogramDatum({
             step: 1,
@@ -779,7 +801,7 @@ describe('histogram test', () => {
 
         const fixture = createComponent('foo', data);
         fixture.componentInstance.mode = HistogramMode.OFFSET;
-        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE;
+        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE_TIME;
         fixture.detectChanges();
         intersectionObserver.simulateVisibilityChange(fixture, true);
 
@@ -792,6 +814,36 @@ describe('histogram test', () => {
               // This should print 24h but d3.format from Polymer based
               // histogram drops `4` for some reason.
               label: '20h',
+            },
+          })
+        );
+      });
+
+      it('shows relative step on yAxis for TimeProperty.RELATIVE_STEP', () => {
+        const data = [
+          buildHistogramDatum({
+            step: 1000,
+            bins: [buildBin({x: 0, dx: 10, y: 100})],
+          }),
+          buildHistogramDatum({
+            step: 2500,
+            bins: [buildBin({x: 0, dx: 10, y: 100})],
+          }),
+        ];
+
+        const fixture = createComponent('foo', data);
+        fixture.componentInstance.mode = HistogramMode.OFFSET;
+        fixture.componentInstance.timeProperty = TimeProperty.RELATIVE_STEP;
+        fixture.detectChanges();
+        intersectionObserver.simulateVisibilityChange(fixture, true);
+
+        const tooltipData = simulateMouseMove(fixture, 1, 5, 10);
+
+        expect(tooltipData).toEqual(
+          buildTooltipData({
+            yAxis: {
+              position: 0,
+              label: '1500',
             },
           })
         );

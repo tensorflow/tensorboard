@@ -63,10 +63,12 @@ export class HistogramCardComponent {
     switch (xAxisType) {
       case XAxisType.STEP:
         return TimeProperty.STEP;
+      case XAxisType.RELATIVE_STEP:
+        return TimeProperty.RELATIVE_STEP;
       case XAxisType.WALL_TIME:
         return TimeProperty.WALL_TIME;
-      case XAxisType.RELATIVE:
-        return TimeProperty.RELATIVE;
+      case XAxisType.RELATIVE_TIME:
+        return TimeProperty.RELATIVE_TIME;
       default:
         throw new Error('Invalid xAxisType for histogram time property.');
     }
