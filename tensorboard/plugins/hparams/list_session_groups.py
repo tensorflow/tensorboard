@@ -17,6 +17,7 @@
 
 import collections
 import dataclasses
+import math
 import operator
 import re
 from typing import Optional
@@ -472,7 +473,8 @@ def _create_key_func(extractor, none_is_largest):
     Returns a key_func to be used in list.sort() that sorts session groups
     by the value extracted by extractor. 'None' extracted values will either
     be considered largest or smallest as specified by the "none_is_largest"
-    boolean parameter.
+    boolean parameter. NaN values are treated like 'None', since NaN does not
+    compare to other numbers and would leave the list in an arbitrary order.
 
     Args:
       extractor: An extractor function that extract the key from the session
@@ -483,16 +485,23 @@ def _create_key_func(extractor, none_is_largest):
     if none_is_largest:
 
         def key_func_none_is_largest(session_group):
-            value = extractor(session_group)
+            value = _nan_to_none(extractor(session_group))
             return (value is None, value)
 
         return key_func_none_is_largest
 
     def key_func_none_is_smallest(session_group):
-        value = extractor(session_group)
+        value = _nan_to_none(extractor(session_group))
         return (value is not None, value)
 
     return key_func_none_is_smallest
+
+
+def _nan_to_none(value):
+    """Returns None if 'value' is a float NaN; otherwise returns 'value'."""
+    if isinstance(value, float) and math.isnan(value):
+        return None
+    return value
 
 
 # Extractors. An extractor is a function that extracts some property (a metric

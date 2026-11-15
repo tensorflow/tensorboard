@@ -1294,6 +1294,77 @@ class ListSessionGroupsTest(tf.test.TestCase):
             expected_total_size=4,
         )
 
+    def test_sort_metric_with_nan_values(self):
+        # A diverged session can log a NaN metric value. NaN is sorted like a
+        # missing value, so it must not break the order of the other groups.
+        def read_last_scalars_with_nan(*args, **kwargs):
+            result = self._mock_read_last_scalars(*args, **kwargs)
+            result["session_1"]["delta_temp"] = provider.ScalarDatum(
+                wall_time=10,
+                step=2,
+                value=float("nan"),
+            )
+            return result
+
+        self._mock_tb_context.data_provider.read_last_scalars.side_effect = (
+            read_last_scalars_with_nan
+        )
+        self._verify_handler(
+            request="""
+                col_params: {
+                  metric: { tag: 'delta_temp' }
+                  order: ORDER_ASC
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
+            expected_session_group_names=["group_3", "group_2", "group_1"],
+            expected_total_size=3,
+        )
+        self._verify_handler(
+            request="""
+                col_params: {
+                  metric: { tag: 'delta_temp' }
+                  order: ORDER_DESC
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
+            expected_session_group_names=["group_2", "group_3", "group_1"],
+            expected_total_size=3,
+        )
+        self._verify_handler(
+            request="""
+                col_params: {
+                  metric: { tag: 'delta_temp' }
+                  order: ORDER_ASC
+                  missing_values_first: true
+                }
+                allowed_statuses: [
+                  STATUS_UNKNOWN,
+                  STATUS_SUCCESS,
+                  STATUS_FAILURE,
+                  STATUS_RUNNING
+                ]
+                start_index: 0
+                slice_size: 3
+            """,
+            expected_session_group_names=["group_1", "group_3", "group_2"],
+            expected_total_size=3,
+        )
+
     def test_filter_hparams_include_invalid_number_values(self):
         self._mock_tb_context.data_provider.list_tensors.side_effect = (
             self._mock_list_tensors_invalid_number_values
