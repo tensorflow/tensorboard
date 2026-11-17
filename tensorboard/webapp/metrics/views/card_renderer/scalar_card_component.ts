@@ -196,6 +196,20 @@ export class ScalarCardComponent<Downloader> {
     }
   }
 
+  getStepTooltipHeader(): string {
+    return this.xAxisType === XAxisType.RELATIVE_STEP
+      ? 'Relative Step'
+      : 'Step';
+  }
+
+  getStepTooltipValue(point: ScalarCardPoint): string {
+    const step =
+      this.xAxisType === XAxisType.RELATIVE_STEP
+        ? point.relativeStep ?? point.step
+        : point.step;
+    return this.stepFormatter.formatShort(step);
+  }
+
   getCursorAwareTooltipData(
     tooltipData: TooltipDatum<ScalarCardSeriesMetadata, ScalarCardPoint>[],
     cursorLocationInDataCoord: {x: number; y: number},
