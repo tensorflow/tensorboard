@@ -1634,6 +1634,87 @@ describe('scalar card', () => {
       ]);
     }));
 
+    it('shows relative step when XAxisType is RELATIVE_STEP', fakeAsync(() => {
+      store.overrideSelector(
+        selectors.getMetricsXAxisType,
+        XAxisType.RELATIVE_STEP
+      );
+      store.overrideSelector(selectors.getMetricsScalarSmoothing, 0);
+      const fixture = createComponent('card1');
+      setTooltipData(fixture, [
+        buildTooltipDatum(
+          {
+            id: 'smoothed_row1',
+            type: SeriesType.DERIVED,
+            displayName: 'Row 1',
+            alias: null,
+            visible: true,
+            color: '#00f',
+            aux: false,
+            originalSeriesId: 'row1',
+          },
+          {
+            x: 980,
+            step: 5980,
+            relativeStep: 980,
+            y: 1000,
+            value: 1000,
+            wallTime: new Date('2020-01-01').getTime(),
+            relativeTimeInMs: 10,
+          }
+        ),
+        buildTooltipDatum(
+          {
+            id: 'smoothed_row2',
+            type: SeriesType.DERIVED,
+            displayName: 'Row 2',
+            alias: null,
+            visible: true,
+            color: '#0f0',
+            aux: false,
+            originalSeriesId: 'row2',
+          },
+          {
+            x: 1980,
+            step: 12980,
+            relativeStep: 1980,
+            y: -1000,
+            value: -1000,
+            wallTime: new Date('2020-01-05').getTime(),
+            relativeTimeInMs: 432000000,
+          }
+        ),
+      ]);
+      fixture.detectChanges();
+
+      const headerCols = fixture.debugElement.queryAll(
+        Selector.TOOLTIP_HEADER_COLUMN
+      );
+      const headerText = headerCols.map((col) =>
+        col.nativeElement.textContent.trim()
+      );
+      expect(headerText).toEqual([
+        '',
+        'Run',
+        'Value',
+        'Relative Step', // or 'Step' if you keep the original <th> header
+        'Time',
+        'Relative',
+      ]);
+
+      const rows = fixture.debugElement.queryAll(Selector.TOOLTIP_ROW);
+      const tableContent = rows.map((row) => {
+        return row
+          .queryAll(By.css('td'))
+          .map((td) => td.nativeElement.textContent.trim());
+      });
+
+      expect(tableContent).toEqual([
+        ['', 'Row 1', '1000', '980', '1/1/20, 12:00\u202fAM', '10 ms'],
+        ['', 'Row 2', '-1000', '1,980', '1/5/20, 12:00\u202fAM', '5 day'],
+      ]);
+    }));
+
     it('renders alias when alias is non-null', fakeAsync(() => {
       const fixture = createComponent('card1');
       setTooltipData(fixture, [

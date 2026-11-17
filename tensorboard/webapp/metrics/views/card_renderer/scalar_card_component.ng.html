@@ -138,7 +138,7 @@ limitations under the License.
             <th>Run</th>
             <th *ngIf="smoothingEnabled">Smoothed</th>
             <th>Value</th>
-            <th>Step</th>
+            <th>{{ xAxisType === XAxisType.RELATIVE_STEP ? 'Relative Step' : 'Step' }}</th>
             <th>Time</th>
             <th>Relative</th>
           </tr>
@@ -168,7 +168,15 @@ limitations under the License.
               </td>
               <td>{{ valueFormatter.formatShort(datum.dataPoint.value) }}</td>
               <!-- Print the step with comma for readability. -->
-              <td>{{ stepFormatter.formatShort(datum.dataPoint.step) }}</td>
+              <td>
+                {{
+                stepFormatter.formatShort(
+                xAxisType === XAxisType.RELATIVE_STEP
+                ? datum.dataPoint.relativeStep ?? datum.dataPoint.step
+                : datum.dataPoint.step
+                )
+                }}
+              </td>
               <td>{{ datum.dataPoint.wallTime | date: 'short' }}</td>
               <td>
                 {{

@@ -88,6 +88,7 @@ export class ScalarCardComponent<Downloader> {
   readonly DataLoadState = DataLoadState;
   readonly RendererType = RendererType;
   readonly ScaleType = ScaleType;
+  readonly XAxisType = XAxisType;
 
   @Input() cardId!: string;
   @Input() chartMetadataMap!: ScalarCardSeriesMetadataMap;
