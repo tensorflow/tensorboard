@@ -131,3 +131,20 @@ export const getExperimentIdToExperimentAliasMap = createSelector(
     return Object.fromEntries(map.entries());
   }
 );
+
+/**
+ * Returns a map from experiment id to its user-defined alias text, e.g. the
+ * aliases set in the compare view URL (`/compare/alias1:eid1,alias2:eid2`).
+ * Empty when the route does not define experiment aliases.
+ */
+export const getExperimentIdToAliasTextMap = createSelector(
+  getExperimentIdToExperimentAliasMap,
+  (aliasMap): Record<string, string> => {
+    return Object.fromEntries(
+      Object.entries(aliasMap).map(([experimentId, alias]) => [
+        experimentId,
+        alias.aliasText,
+      ])
+    );
+  }
+);

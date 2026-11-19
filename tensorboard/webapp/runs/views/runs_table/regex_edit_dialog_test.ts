@@ -38,10 +38,11 @@ import {
   getRunIdsForExperiment,
   getRuns,
   getEnableColorByExperiment,
+  getExperimentIdToAliasTextMap,
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
-import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
+import {KeyType, sendKey, sendKeys, SendKeyArgs} from '../../../testing/dom';
 import {provideMockTbStore} from '../../../testing/utils';
 import {runGroupByChanged} from '../../actions';
 import {buildRun} from '../../store/testing';
@@ -105,6 +106,9 @@ describe('regex_edit_dialog', () => {
     store.overrideSelector(getDashboardExperimentNames, {
       rose: 'exp_name_rose',
     });
+    store.overrideSelector(getExperimentIdToAliasTextMap, {
+      rose: 'alias_rose',
+    });
     store.overrideSelector(getEnableColorByExperiment, true);
     actualActions = [];
     // Cast to jasmine.Spy for compatibility between NgRx dispatch signature overloads.
@@ -157,6 +161,7 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test(\\d+)'},
       })
     );
@@ -183,6 +188,7 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
@@ -208,14 +214,44 @@ describe('regex_edit_dialog', () => {
     );
     buttons[1].nativeElement.click();
 
-    expect(matSelect.nativeNode.textContent).toBe('Experiment Name');
+    expect(matSelect.nativeNode.textContent).toBe('Experiment Alias / Name');
     expect(dispatchSpy).toHaveBeenCalledWith(
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX_BY_EXP, regexString: 'test'},
       })
     );
+  });
+
+  it('dispatches only once on save, even if store values change afterwards', () => {
+    const fixture = createComponent(['rose']);
+    fixture.detectChanges();
+
+    const input = fixture.debugElement.query(By.css('input'));
+    const keyArgs: SendKeyArgs = {
+      key: 'test',
+      prevString: '',
+      type: KeyType.CHARACTER,
+      startingCursorIndex: 0,
+    };
+    sendKey(fixture, input, keyArgs);
+    const buttons = fixture.debugElement.queryAll(
+      By.css('div[mat-dialog-actions] button')
+    );
+    buttons[1].nativeElement.click();
+    const dispatchCountAfterSave = dispatchSpy.calls.count();
+    expect(dispatchCountAfterSave).toBeGreaterThan(0);
+
+    // A later change in the store (e.g. navigating to another compare URL)
+    // must not re-dispatch the saved regex.
+    store.overrideSelector(getDashboardExperimentNames, {
+      rose: 'new_exp_name_rose',
+    });
+    store.refreshState();
+
+    expect(dispatchSpy.calls.count()).toBe(dispatchCountAfterSave);
   });
 
   it('show only one dropdown option if colorByExperiment flag is disabled', () => {
@@ -281,6 +317,10 @@ describe('regex_edit_dialog', () => {
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
+    // Type the regex first (emits input events), then press Enter, like a
+    // user would. sendKey() fires keydown (which saves) before the input
+    // event, so the text must already be known to the dialog.
+    sendKeys(fixture, input, 'test');
     const keyArgs: SendKeyArgs = {
       key: 'Enter',
       prevString: 'test',
@@ -293,6 +333,7 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test'},
       })
     );
@@ -315,6 +356,7 @@ describe('regex_edit_dialog', () => {
       runGroupByChanged({
         experimentIds: ['rose'],
         expNameByExpId: {rose: 'exp_name_rose'},
+        expAliasByExpId: {rose: 'alias_rose'},
         groupBy: {key: GroupByKey.REGEX, regexString: 'test regex string'},
       })
     );

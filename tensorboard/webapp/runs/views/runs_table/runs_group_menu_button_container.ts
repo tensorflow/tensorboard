@@ -15,13 +15,14 @@ limitations under the License.
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {Store} from '@ngrx/store';
-import {Observable} from 'rxjs';
+import {combineLatest, Observable} from 'rxjs';
 import {filter, map, shareReplay, startWith, take} from 'rxjs/operators';
 import {RouteKind} from '../../../app_routing/types';
 import {State} from '../../../app_state';
 import {
   getDashboardExperimentNames,
   getEnableColorByExperiment,
+  getExperimentIdToAliasTextMap,
   getRegisteredRouteKinds,
 } from '../../../selectors';
 import {runGroupByChanged} from '../../actions';
@@ -74,6 +75,7 @@ export class RunsGroupMenuButtonContainer {
     );
     this.groupByRegexString = this.store.selectSignal(getColorGroupRegexString);
     this.expNameByExpId$ = this.store.select(getDashboardExperimentNames);
+    this.expAliasByExpId$ = this.store.select(getExperimentIdToAliasTextMap);
   }
 
   readonly showExperimentsGroupBy;
@@ -86,15 +88,20 @@ export class RunsGroupMenuButtonContainer {
 
   readonly expNameByExpId$: Observable<Record<string, string>>;
 
+  readonly expAliasByExpId$: Observable<Record<string, string>>;
+
   onGroupByChange(groupBy: GroupBy) {
-    this.expNameByExpId$.pipe(take(1)).subscribe((expNameByExpId) => {
-      this.store.dispatch(
-        runGroupByChanged({
-          experimentIds: this.experimentIds,
-          groupBy,
-          expNameByExpId,
-        })
-      );
-    });
+    combineLatest([this.expNameByExpId$, this.expAliasByExpId$])
+      .pipe(take(1))
+      .subscribe(([expNameByExpId, expAliasByExpId]) => {
+        this.store.dispatch(
+          runGroupByChanged({
+            experimentIds: this.experimentIds,
+            groupBy,
+            expNameByExpId,
+            expAliasByExpId,
+          })
+        );
+      });
   }
 }
