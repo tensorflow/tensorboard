@@ -42,7 +42,7 @@ import {
 } from '../../../selectors';
 import {selectors as settingsSelectors} from '../../../settings';
 import {buildColorPalette} from '../../../settings/testing';
-import {KeyType, sendKey, SendKeyArgs} from '../../../testing/dom';
+import {KeyType, sendKey, sendKeys, SendKeyArgs} from '../../../testing/dom';
 import {provideMockTbStore} from '../../../testing/utils';
 import {runGroupByChanged} from '../../actions';
 import {buildRun} from '../../store/testing';
@@ -317,6 +317,10 @@ describe('regex_edit_dialog', () => {
     fixture.detectChanges();
 
     const input = fixture.debugElement.query(By.css('input'));
+    // Type the regex first (emits input events), then press Enter, like a
+    // user would. sendKey() fires keydown (which saves) before the input
+    // event, so the text must already be known to the dialog.
+    sendKeys(fixture, input, 'test');
     const keyArgs: SendKeyArgs = {
       key: 'Enter',
       prevString: 'test',
