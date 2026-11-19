@@ -277,6 +277,30 @@ describe('histogram card', () => {
     expect(histogramEl.componentInstance.timeProperty).toBe(
       TimeProperty.WALL_TIME
     );
+
+    store.overrideSelector(
+      selectors.getMetricsXAxisType,
+      XAxisType.RELATIVE_STEP
+    );
+    store.refreshState();
+
+    fixture.detectChanges();
+
+    expect(histogramEl.componentInstance.timeProperty).toBe(
+      TimeProperty.RELATIVE_STEP
+    );
+
+    store.overrideSelector(
+      selectors.getMetricsXAxisType,
+      XAxisType.RELATIVE_TIME
+    );
+    store.refreshState();
+
+    fixture.detectChanges();
+
+    expect(histogramEl.componentInstance.timeProperty).toBe(
+      TimeProperty.RELATIVE_TIME
+    );
   });
 
   describe('full size', () => {

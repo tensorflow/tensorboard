@@ -345,11 +345,13 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   private getTimeValue(datum: HistogramDatum): number {
     switch (this.timeProperty) {
-      case TimeProperty.WALL_TIME:
-        return datum.wallTime;
       case TimeProperty.STEP:
         return datum.step;
-      case TimeProperty.RELATIVE:
+      case TimeProperty.RELATIVE_STEP:
+        return datum.step - this.data[0].step;
+      case TimeProperty.WALL_TIME:
+        return datum.wallTime;
+      case TimeProperty.RELATIVE_TIME:
         return datum.wallTime - this.data[0].wallTime;
     }
   }
@@ -456,12 +458,15 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
       return this.formatters.count;
     }
     switch (this.timeProperty) {
-      case TimeProperty.WALL_TIME:
-        return this.formatters.wallTime;
       case TimeProperty.STEP: {
         return this.formatters.step;
       }
-      case TimeProperty.RELATIVE: {
+      case TimeProperty.RELATIVE_STEP: {
+        return this.formatters.step;
+      }
+      case TimeProperty.WALL_TIME:
+        return this.formatters.wallTime;
+      case TimeProperty.RELATIVE_TIME: {
         return this.formatters.relative;
       }
       default:
@@ -473,7 +478,10 @@ export class HistogramComponent implements AfterViewInit, OnChanges, OnDestroy {
   private getMaxTicks(yScale: Scales[keyof Scales]) {
     const {height} = this.layout.contentClientRect;
     const maxPerHeight = height / 15;
-    if (this.timeProperty === TimeProperty.STEP) {
+    if (
+      this.timeProperty === TimeProperty.STEP ||
+      this.timeProperty === TimeProperty.RELATIVE_STEP
+    ) {
       const [min, max] = yScale.domain() as [number, number];
       const numberOfSteps = Math.max(max - min + 1, 1);
       return Math.min(numberOfSteps, maxPerHeight);
