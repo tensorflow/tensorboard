@@ -1697,7 +1697,7 @@ describe('scalar card', () => {
         '',
         'Run',
         'Value',
-        'Relative Step', // or 'Step' if you keep the original <th> header
+        'Relative Step',
         'Time',
         'Relative',
       ]);
