@@ -65,6 +65,7 @@ export interface ScalarCardPoint extends Point {
   value: number;
   step: number;
   relativeTimeInMs: number;
+  relativeStep?: number;
 }
 
 export type ScalarCardDataSeries = DataSeries<ScalarCardPoint>;

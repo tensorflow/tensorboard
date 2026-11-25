@@ -184,14 +184,29 @@ export class ScalarCardComponent<Downloader> {
 
   getCustomXFormatter(): Formatter | undefined {
     switch (this.xAxisType) {
-      case XAxisType.RELATIVE:
+      case XAxisType.RELATIVE_TIME:
         return relativeTimeFormatter;
+      case XAxisType.RELATIVE_STEP:
       case XAxisType.STEP:
         return siNumberFormatter;
       case XAxisType.WALL_TIME:
       default:
         return undefined;
     }
+  }
+
+  getStepTooltipHeader(): string {
+    return this.xAxisType === XAxisType.RELATIVE_STEP
+      ? 'Relative Step'
+      : 'Step';
+  }
+
+  getStepTooltipValue(point: ScalarCardPoint): string {
+    const step =
+      this.xAxisType === XAxisType.RELATIVE_STEP
+        ? point.relativeStep ?? point.step
+        : point.step;
+    return this.stepFormatter.formatShort(step);
   }
 
   getCursorAwareTooltipData(
