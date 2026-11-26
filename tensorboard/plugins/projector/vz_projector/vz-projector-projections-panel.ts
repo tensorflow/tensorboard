@@ -419,9 +419,10 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
     this.customSelectedSearchByMetadataOption =
       this.searchByMetadataOptions[Math.max(0, searchByMetadataIndex)];
   }
-  public showTab(id: ProjectionType) {
-    this.currentProjection = id;
-    const tab = this.$$('.ink-tab[data-tab="' + id + '"]') as HTMLElement;
+  public showTab(projection: ProjectionType) {
+    const tab = this.$$(
+      '.ink-tab[data-tab="' + projection + '"]'
+    ) as HTMLElement;
     const allTabs = this.root?.querySelectorAll('.ink-tab');
     if (allTabs) {
       for (let i = 0; i < allTabs.length; i++) {
@@ -436,7 +437,9 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
       }
     }
     util.classed(
-      this.$$('.ink-panel-content[data-panel="' + id + '"]') as HTMLElement,
+      this.$$(
+        '.ink-panel-content[data-panel="' + projection + '"]'
+      ) as HTMLElement,
       'active',
       true
     );
@@ -449,25 +452,29 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
         this.style.height = main.clientHeight + 'px';
       });
     }
-    this.beginProjection(id);
+    this.beginProjection(projection);
   }
   private beginProjection(projection: ProjectionType) {
     if (this.polymerChangesTriggerReprojection === false) {
       return;
     }
-    if (projection === 'pca') {
+    if (this.currentProjection !== projection) {
+      this.currentProjection = projection;
       if (this.dataSet != null) {
-        this.dataSet.stopTSNE();
+        if (projection === 'tsne') {
+          this.dataSet.tSNEShouldPause = false;
+        } else {
+          this.dataSet.tSNEShouldPause = true;
+        }
       }
+    }
+    if (projection === 'pca') {
       this.showPCA();
     } else if (projection === 'tsne') {
       this.showTSNE();
     } else if (projection === 'umap') {
       this.showUmap();
     } else if (projection === 'custom') {
-      if (this.dataSet != null) {
-        this.dataSet.stopTSNE();
-      }
       this.computeAllCentroids();
       this.reprojectCustom();
     }
@@ -510,6 +517,7 @@ class ProjectionsPanel extends LegacyElementMixin(PolymerElement) {
       (iteration: number) => {
         if (iteration != null) {
           this.runTsneButton.disabled = false;
+          this.pauseTsneButton.innerText = 'Pause';
           this.pauseTsneButton.disabled = false;
           this.iterationLabelTsne.innerText = '' + iteration;
           this.projector.notifyProjectionPositionsUpdated();
