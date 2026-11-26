@@ -34,6 +34,37 @@ from tensorboard import test as tb_test
 
 
 class EventFileWriterTest(tb_test.TestCase):
+    def test_flush_empty_events(self):
+        logdir = self.get_temp_dir()
+        w = EventFileWriter(logdir)
+        events = [event_pb2.Event(), event_pb2.Event(step=1), event_pb2.Event()]
+        for event in events:
+            w.add_event(event)
+
+        # Flush must finish even when an event serializes to an empty bytestring.
+        flush_errors = []
+
+        def flush():
+            try:
+                w.flush()
+            except Exception as error:
+                flush_errors.append(error)
+
+        flush_thread = threading.Thread(target=flush, daemon=True)
+        flush_thread.start()
+        flush_thread.join(timeout=10)
+        self.assertFalse(flush_thread.is_alive())
+        w.close()
+        self.assertEmpty(flush_errors)
+
+        event_files = glob.glob(os.path.join(logdir, "*"))
+        self.assertLen(event_files, 1)
+        r = PyRecordReader_New(event_files[0])
+        r.GetNext()  # Skip file metadata.
+        for event in events:
+            r.GetNext()
+            self.assertEqual(event.SerializeToString(), r.record())
+
     def test_event_file_writer_roundtrip(self):
         _TAGNAME = "dummy"
         _DUMMY_VALUE = 42
