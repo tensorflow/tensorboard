@@ -98,18 +98,24 @@ class LocalDataIngester(ingester.DataIngester):
 
         def _reload():
             while True:
-                start = time.time()
-                logger.info("TensorBoard reload process beginning")
-                for path, name in self._path_to_run.items():
-                    self._multiplexer.AddRunsFromDirectory(path, name)
-                logger.info(
-                    "TensorBoard reload process: Reload the whole Multiplexer"
-                )
-                self._multiplexer.Reload()
-                duration = time.time() - start
-                logger.info(
-                    "TensorBoard done reloading. Load took %0.3f secs", duration
-                )
+                try:
+                    start = time.time()
+                    logger.info("TensorBoard reload process beginning")
+                    for path, name in self._path_to_run.items():
+                        self._multiplexer.AddRunsFromDirectory(path, name)
+                    logger.info(
+                        "TensorBoard reload process: Reload the whole Multiplexer"
+                    )
+                    self._multiplexer.Reload()
+                    duration = time.time() - start
+                    logger.info(
+                        "TensorBoard done reloading. Load took %0.3f secs",
+                        duration,
+                    )
+                except Exception:
+                    logger.error(
+                        "TensorBoard reload failed", exc_info=True
+                    )
                 if self._reload_interval == 0:
                     # Only load the multiplexer once. Do not continuously reload.
                     break
