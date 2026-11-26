@@ -90,6 +90,18 @@ py_test(
 )
 
 py_test(
+    name = "metrics_test",
+    size = "small",
+    srcs = [
+        "metrics_test.py",
+    ],
+    deps = [
+        ":hparams_plugin",
+        "//tensorboard:test",
+    ],
+)
+
+py_test(
     name = "list_metric_evals_test",
     size = "small",
     srcs = [
