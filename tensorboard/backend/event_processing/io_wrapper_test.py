@@ -325,6 +325,89 @@ class IoWrapperTest(tf.test.TestCase):
             io_wrapper.GetLogdirSubdirectories(temp_dir),
         )
 
+    def testGetLogdirSubdirectoriesCloudUsesSecondTargetedPattern(self):
+        path = "gs://bucket/logdir"
+        self.stubs.Set(io_wrapper.tf.io.gfile, "exists", lambda _: True)
+        self.stubs.Set(io_wrapper.tf.io.gfile, "isdir", lambda _: True)
+        self.stubs.Set(io_wrapper.io_util, "IsCloudPath", lambda _: True)
+
+        event_files = [
+            "gs://bucket/logdir/run1/tensorboard/events.out.tfevents.1",
+            "gs://bucket/logdir/run2/tensorboard/events.out.tfevents.2",
+        ]
+        glob_calls = []
+        expected_first = "gs://bucket/logdir/**/*tfevents*"
+        expected_second = "gs://bucket/logdir/**/**/*tfevents*"
+
+        def fake_glob(pattern):
+            glob_calls.append(pattern)
+            if pattern == expected_first:
+                return []
+            if pattern == expected_second:
+                return event_files
+            self.fail("unexpected glob pattern: %r" % pattern)
+
+        self.stubs.Set(io_wrapper.tf.io.gfile, "glob", fake_glob)
+        self.stubs.Set(
+            io_wrapper,
+            "ListRecursivelyViaGlobbing",
+            lambda _: self.fail("legacy fallback should not run"),
+        )
+
+        self.assertCountEqual(
+            [
+                "gs://bucket/logdir/run1/tensorboard",
+                "gs://bucket/logdir/run2/tensorboard",
+            ],
+            io_wrapper.GetLogdirSubdirectories(path),
+        )
+        self.assertEqual(
+            [expected_first, expected_second],
+            glob_calls,
+        )
+
+    def testGetLogdirSubdirectoriesCloudFallsBackToLegacyGlobbing(self):
+        path = "gs://bucket/logdir"
+        self.stubs.Set(io_wrapper.tf.io.gfile, "exists", lambda _: True)
+        self.stubs.Set(io_wrapper.tf.io.gfile, "isdir", lambda _: True)
+        self.stubs.Set(io_wrapper.io_util, "IsCloudPath", lambda _: True)
+        self.stubs.Set(io_wrapper.tf.io.gfile, "glob", lambda _: [])
+
+        def legacy_listing(_):
+            return iter(
+                [
+                    (
+                        "gs://bucket/logdir/run1/tensorboard",
+                        (
+                            "gs://bucket/logdir/run1/tensorboard/events.out.tfevents.1",
+                        ),
+                    ),
+                    (
+                        "gs://bucket/logdir/run2/tensorboard",
+                        (
+                            "gs://bucket/logdir/run2/tensorboard/model.ckpt",
+                            "gs://bucket/logdir/run2/tensorboard/events.out.tfevents.2",
+                        ),
+                    ),
+                    (
+                        "gs://bucket/logdir/run3",
+                        ("gs://bucket/logdir/run3/model.ckpt",),
+                    ),
+                ]
+            )
+
+        self.stubs.Set(
+            io_wrapper, "ListRecursivelyViaGlobbing", legacy_listing
+        )
+
+        self.assertCountEqual(
+            [
+                "gs://bucket/logdir/run1/tensorboard",
+                "gs://bucket/logdir/run2/tensorboard",
+            ],
+            io_wrapper.GetLogdirSubdirectories(path),
+        )
+
     def _CreateDeepDirectoryStructure(self, top_directory):
         """Creates a reasonable deep structure of subdirectories with files.
 
