@@ -404,6 +404,36 @@ class MigrateEventTest(tf.test.TestCase):
                 )
                 self.assertEqual(new_value.metadata.plugin_data.content, b"1")
 
+    def test_graph_def_experimental_filter_graph_empty(self):
+        # Simulate legacy graph event with an empty graph
+        old_event = event_pb2.Event()
+        old_event.step = 0
+        old_event.wall_time = 456.75
+        old_event.graph_def = b""
+
+        new_events = self._migrate_event(
+            old_event, experimental_filter_graph=True
+        )
+        # _migrate_event emits both the original event and the migrated event.
+        # The migrated event contains a default empty GraphDef.
+        self.assertLen(new_events, 2)
+        self.assertProtoEquals(new_events[0], old_event)
+
+        # We expect that parsing `b""` as a `GraphDef` produces the default
+        # 'empty' proto, just like `graph_pb2.GraphDef()`.  Furthermore, we
+        # expect serializing that to produce `b""` again (as opposed to some
+        # other representation of the default proto, e.g. one in which default
+        # values are materialized).
+        # Here we extract the serialized graph_def from the migrated event,
+        # which is the result of such a deserialize/serialize cycle, to validate
+        # these expectations.
+        # This also demonstrates that empty `GraphDefs` are not rejected or
+        # ignored.
+        new_event = new_events[1]
+        tensor = tensor_util.make_ndarray(new_event.summary.value[0].tensor)
+        new_graph_def_bytes = tensor[0]
+        self.assertEqual(new_graph_def_bytes, b"")
+
 
 if __name__ == "__main__":
     tf.test.main()
