@@ -119,8 +119,14 @@ function rebuildBins(bins: Bin[], range: Range, binCount: number): Bin[] {
   let nextBinContribution = 0;
   for (let i = 0; i < binCount; i++) {
     const resultLeft = left + i * dx;
-    const resultRight = resultLeft + dx;
     const isLastResultBin = i === binCount - 1;
+    // The last result bin must extend exactly to `range.right`. Computing it as
+    // `resultLeft + dx` accumulates floating-point error in the repeated `i * dx`
+    // sum and can land just below `range.right`; an input bin whose right edge
+    // sits exactly on `range.right` then satisfies `bin.x + bin.dx > resultRight`
+    // and is skipped without being consumed, dropping its counts. Clamp the last
+    // result bin's right edge to `range.right` so those counts are preserved.
+    const resultRight = isLastResultBin ? right : resultLeft + dx;
 
     let resultY = nextBinContribution;
     nextBinContribution = 0;
