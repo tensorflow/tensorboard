@@ -567,9 +567,6 @@ class Projector
     this.registerHoverListener((hoverIndex: number) =>
       this.onHover(hoverIndex)
     );
-    this.registerProjectionChangedListener((projection: Projection) =>
-      this.onProjectionChanged(projection)
-    );
     this.registerSelectionChangedListener(
       (
         selectedPointIndices: number[],
@@ -616,9 +613,6 @@ class Projector
     } else {
       this.statusBar.style.display = 'none';
     }
-  }
-  onProjectionChanged(projection?: Projection) {
-    this.dataPanel.projectionChanged(projection);
   }
   setProjection(projection: Projection | null) {
     this.projection = projection;
@@ -686,7 +680,6 @@ class Projector
     if (state.shuffledDataIndices) {
       this.dataSet.shuffledDataIndices = state.shuffledDataIndices;
     }
-    this.dataSet.hasTSNERun = state.selectedProjection === 'tsne';
     this.dataSet.tSNEIteration = state.tSNEIteration;
     this.projectionsPanel.restoreUIFromBookmark(state);
     this.inspectorPanel.restoreUIFromBookmark(state);
