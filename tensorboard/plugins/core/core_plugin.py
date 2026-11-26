@@ -351,7 +351,8 @@ instead of `--logdir`.
             help="""\
 What host to listen to (default: localhost). To serve to the entire local
 network on both IPv4 and IPv6, see `--bind_all`, with which this option is
-mutually exclusive.
+mutually exclusive. May also be set to `unix://<path>` (e.g.
+`unix:///tmp/tb.sock`) to listen on a Unix domain socket.
 """,
         )
 
@@ -390,7 +391,8 @@ unavailable. (default: "default").\
 Enables the SO_REUSEPORT option on the socket opened by TensorBoard's HTTP
 server, for platforms that support it. This is useful in cases when a parent
 process has obtained the port already and wants to delegate access to the
-port to TensorBoard as a subprocess.(default: %(default)s).\
+port to TensorBoard as a subprocess. Ignored when `--host` is set to a
+`unix://` socket. (default: %(default)s).\
 """,
         )
 
@@ -707,6 +709,14 @@ disable fast-loading mode. (default: false)\
             )
         elif flags.host is not None and flags.bind_all:
             raise FlagsError("Must not specify both --host and --bind_all.")
+        elif (
+            flags.host is not None
+            and flags.host.startswith("unix://")
+            and flags.port is not None
+        ):
+            raise FlagsError(
+                "--host=unix://... must not be combined with --port."
+            )
         elif (
             flags.load_fast == "true" and flags.detect_file_replacement is True
         ):

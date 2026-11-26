@@ -139,7 +139,7 @@ class TensorBoard:
                 ) from e
             assets_zip_provider = assets.get_default_assets_zip_provider()
         if server_class is None:
-            server_class = create_port_scanning_werkzeug_server
+            server_class = _default_server_class
         if subcommands is None:
             subcommands = []
         self.plugin_loaders = [
@@ -333,7 +333,8 @@ class TensorBoard:
         info = manager.TensorBoardInfo(
             version=version.VERSION,
             start_time=int(time.time()),
-            port=server_url.port,
+            # For Unix sockets, server_url.port is None.
+            port=server_url.port or 0,
             pid=os.getpid(),
             path_prefix=self.flags.path_prefix,
             logdir=self.flags.logdir or self.flags.logdir_spec,
@@ -474,6 +475,15 @@ class TensorBoard:
             deprecated_multiplexer,
         )
         return self.server_class(app, self.flags)
+
+
+def _default_server_class(wsgi_app, flags):
+    """Default server factory."""
+
+    # Skip port scanning for Unix-socket servers.
+    if flags.host is not None and flags.host.startswith("unix://"):
+        return WerkzeugServer(wsgi_app, flags)
+    return create_port_scanning_werkzeug_server(wsgi_app, flags)
 
 
 def _should_use_data_server(flags):
@@ -696,9 +706,13 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
         self._flags = flags
         host = flags.host
         port = flags.port
+        self._unix_socket = host is not None and host.startswith("unix://")
 
-        self._auto_wildcard = flags.bind_all
-        if self._auto_wildcard:
+        self._auto_wildcard = flags.bind_all and not self._unix_socket
+        if self._unix_socket:
+            # Werkzeug accepts host="unix://<path>" directly, port is ignored.
+            port = 0
+        elif self._auto_wildcard:
             # Serve on all interfaces, and attempt to serve both IPv4 and IPv6
             # traffic through one socket.
             host = self._get_wildcard_address(port)
@@ -715,12 +729,14 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
                 return s.connect_ex(("localhost", port)) == 0
 
         try:
-            if is_port_in_use(port):
+            if not self._unix_socket and is_port_in_use(port):
                 raise TensorBoardPortInUseError(
                     "TensorBoard could not bind to port %d, it was already in use"
                     % port
                 )
             super().__init__(host, port, wsgi_app, _WSGIRequestHandler)
+            if self._unix_socket:
+                os.chmod(self.server_address, 0o700)
         except socket.error as e:
             if hasattr(errno, "EACCES") and e.errno == errno.EACCES:
                 raise TensorBoardServerException(
@@ -801,7 +817,7 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
 
     def server_bind(self):
         """Override to set custom options on the socket."""
-        if self._flags.reuse_port:
+        if self._flags.reuse_port and not self._unix_socket:
             try:
                 socket.SO_REUSEPORT
             except AttributeError:
@@ -856,6 +872,13 @@ class WerkzeugServer(serving.ThreadedWSGIServer, TensorBoardServer):
 
     def get_url(self):
         if not self._url:
+            if self._unix_socket:
+                self._url = "%s%s/" % (
+                    self._host,
+                    self._flags.path_prefix.rstrip("/"),
+                )
+                return self._url
+
             if self._auto_wildcard:
                 display_host = socket.getfqdn()
                 # Confirm that the connection is open, otherwise change to `localhost`
