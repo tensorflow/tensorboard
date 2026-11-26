@@ -71,26 +71,26 @@ export function findKNNGPUCosDistNorm<T>(
   let piece = 0;
 
   const typedArray = vector.toTypedArray(dataPoints, accessor);
-  const bigMatrix = tf.tensor(typedArray, [N, dim]);
+  const bigMatrix = tf.tensor2d(typedArray, [N, dim]);
   const bigMatrixTransposed = tf.transpose(bigMatrix);
   // 1 - A * A^T.
   const bigMatrixSquared = tf.matMul(bigMatrix, bigMatrixTransposed);
-  const cosDistMatrix = tf.sub(1, bigMatrixSquared);
+  const cosDistMatrix = tf.sub(tf.scalar(1), bigMatrixSquared);
 
-  let maybePaddedCosDistMatrix = cosDistMatrix;
+  let maybePaddedCosDistMatrix: tf.Tensor2D = cosDistMatrix;
   if (actualPieceSize * numPieces > N) {
     // Expect the input to be rank 2 (though it is not typed that way) so we
     // want to pad the first dimension so we split very evenly (all splitted
     // tensor have exactly the same dimesion).
-    const padding: Array<[number, number]> = [
+    const padding: number[][] = [
       [0, actualPieceSize * numPieces - N],
       [0, 0],
     ];
-    maybePaddedCosDistMatrix = tf.pad(cosDistMatrix, padding);
+    maybePaddedCosDistMatrix = tf.pad(cosDistMatrix, padding) as tf.Tensor2D;
   }
   const splits = tf.split(
-    maybePaddedCosDistMatrix,
-    new Array(numPieces).fill(actualPieceSize),
+    maybePaddedCosDistMatrix as tf.Tensor,
+    new Array(numPieces).fill(actualPieceSize) as number[],
     0
   );
 
