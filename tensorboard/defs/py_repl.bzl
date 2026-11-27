@@ -17,6 +17,7 @@
 # Minimal wrapper over ctx.actions.write to write a string to a file.
 # Simpler than the genrule equivalent since we don't need to escape.
 load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 def _write_file_impl(ctx):
     ctx.actions.write(ctx.outputs.out, ctx.attr.content, ctx.attr.is_executable)
@@ -102,7 +103,7 @@ def py_repl(name, preamble = None, deps = None, **kwargs):
     # Use `args` to pass the location of the data dep which is shorter
     # and sweeter than the sh runfiles self-bootstrapping rigamarole.
     # Thanks, underappreciated https://stackoverflow.com/a/64841428.
-    native.sh_binary(
+    sh_binary(
         name = name,
         srcs = [name + ".sh"],
         args = ["$(location :" + name + "_py)"],
